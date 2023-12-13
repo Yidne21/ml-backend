@@ -1,7 +1,7 @@
 import httpStatus from 'http-status';
 import { Strategy, ExtractJwt } from 'passport-jwt';
 import APIError from '../../errors/APIError';
-// import User from '../../models/users';
+import User from '../../models/users';
 import { jwtKey } from '../environments';
 
 const strategy = new Strategy(
@@ -11,11 +11,7 @@ const strategy = new Strategy(
   },
   async (payload, done) => {
     try {
-      // const user = await User.findOne({ _id: payload._id });
-      const user = {
-        _id: '123',
-        email: '',
-      };
+      const user = await User.findOne({ _id: payload._id });
 
       if (!user) {
         const NotFound = new APIError(

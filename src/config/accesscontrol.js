@@ -11,14 +11,14 @@ const grantList = [
   },
 
   {
-    role: 'encoder',
+    role: 'pharmaciest',
     resource: 'product',
     action: 'create:any',
     attributes: '*',
   },
 
   {
-    role: 'sales',
+    role: 'customer',
     resource: 'product',
     action: 'read:own',
     attributes: '*',
