@@ -7,45 +7,50 @@ import {
 } from '../validators/user.validator';
 import parseValidationResult from '../validators/errors.parser';
 import {
-  registerUserController,
-  getSingleUserByIdController,
+  signUpUserController,
+  userDetailController,
   deleteUserByIdController,
   getAllUserController,
   updateUserController,
   loginUserController,
   refreshTokenController,
+  sendOTP,
+  verifyOTP,
 } from '../controllers/user';
 import { authenticateJwt } from '../controllers/middlewares';
 
 const router = express.Router();
 
+router.post('/send-otp', sendOTP);
+router.post('/verify-otp', verifyOTP);
+
 router.post(
   '/create',
   // authenticateJwt,
-  registerUserValidator(),
+  //  registerUserValidator(),
   parseValidationResult,
-  registerUserController
+  signUpUserController
 );
 
 router.get('/all', getAllUserController);
 
 router.put(
   '/:userId',
-  updateUserValidator(),
+  // updateUserValidator(),
   parseValidationResult,
   updateUserController
 );
 
 router.get(
   '/:userId',
-  getUserValidator(),
+  // getUserValidator(),
   parseValidationResult,
-  getSingleUserByIdController
+  userDetailController
 );
 
 router.delete(
   '/:userId',
-  deleteUserValidator(),
+  // deleteUserValidator(),
   parseValidationResult,
   deleteUserByIdController
 );

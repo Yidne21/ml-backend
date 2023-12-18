@@ -9,8 +9,13 @@ import {
   verifyRefreshToken,
 } from '../../utils/index';
 
-export async function registerUser(creatUserParams) {
-  const { name, phoneNumber, password, role } = creatUserParams;
+export async function signUpUser({
+  name,
+  phoneNumber,
+  password,
+  role,
+  profilePictureUrl,
+}) {
   const hashedpassword = await bcrypt.hash(password, 10);
   const UserModel = this.model(modelNames.user);
 
@@ -19,10 +24,12 @@ export async function registerUser(creatUserParams) {
     phoneNumber,
     role,
     password: hashedpassword,
+    profilePicture: profilePictureUrl,
   };
 
   const existingUser = await UserModel.find({ phoneNumber });
-  if (existingUser !== 0) {
+  console.log(existingUser);
+  if (existingUser.length > 0) {
     throw new APIError(
       `This ${phoneNumber} phone number is already used try another`,
       httpStatus.CLIENT_ERROR
@@ -35,6 +42,7 @@ export async function registerUser(creatUserParams) {
 
     return newUser.clean();
   } catch (error) {
+    console.log(error);
     if (error instanceof APIError) throw error;
     else {
       throw new APIError(
@@ -46,12 +54,12 @@ export async function registerUser(creatUserParams) {
   }
 }
 
-export async function getSingleUserById(id) {
+export async function userDetail(userId) {
   const UserModel = this.model(modelNames.user);
 
   try {
     const existingUser = await UserModel.find({
-      _id: mongoose.Types.ObjectId(id),
+      _id: mongoose.Types.ObjectId(userId),
     });
 
     if (existingUser.length === 0) {
@@ -60,7 +68,7 @@ export async function getSingleUserById(id) {
     const user = await UserModel.aggregate([
       {
         $match: {
-          _id: new mongoose.Types.ObjectId(id),
+          _id: new mongoose.Types.ObjectId(userId),
         },
       },
       {
@@ -127,8 +135,8 @@ export async function updateUser(userParams) {
       },
       { new: true }
     );
-
-    return updatedUser;
+    const cleanUser = updatedUser.clean();
+    return cleanUser;
   } catch (error) {
     if (error instanceof APIError) throw error;
     else {

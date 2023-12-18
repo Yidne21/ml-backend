@@ -33,3 +33,6 @@ export const jwtRefreshKey = value.JWT_REFRESH_KEY;
 export const appEmailAddress = value.APP_EMAIL_ADDRESS;
 export const appDomain = value.APP_DOMAIN;
 export const appName = value.APP_NAME;
+export const twilioAuthToken = value.TWILIO_AUTH_TOKEN;
+export const twilioAccountSid = value.TWILIO_ACCOUNT_SID;
+export const twilioServiceId = value.TWILIO_SERVICE_ID;

@@ -53,6 +53,7 @@
     "passport-google-oauth20": "^2.0.0",
     "passport-jwt": "^4.0.0",
     "passport-local": "^1.0.0",
+    "twilio": "^4.20.0",
     "winston": "^3.3.3",
     "yarn": "^1.22.19",
     "zlib": "^1.0.5"

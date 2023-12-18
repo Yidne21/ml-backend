@@ -12,6 +12,21 @@ const orderSchema = new mongoose.Schema(
       required: true,
       ref: 'User',
     },
+    deliveryAddress: [
+      {
+        address: { type: String },
+        location: {
+          type: {
+            type: String,
+            enum: ['Point'],
+            required: true,
+          },
+          coordinates: {
+            type: [Number],
+          },
+        },
+      },
+    ],
     drugId: {
       type: mongoose.Types.ObjectId,
       required: true,

@@ -1,25 +1,58 @@
+/* eslint-disable import/no-extraneous-dependencies */
 import httpStatus from 'http-status';
 import User from '../models/users';
+import * as environments from '../config/environments';
 
-export const registerUserController = async (req, res, next) => {
+const client = require('twilio')(
+  environments.twilioAccountSid,
+  environments.twilioAuthToken,
+  { lazyLoading: true }
+);
+
+export const sendOTP = async (req, res, next) => {
+  const { phoneNumber } = req.body;
+  try {
+    const otpResponse = await client.verify
+      .services(environments.twilioServiceId)
+      .verifications.create({ to: `+251${phoneNumber}`, channel: 'sms' });
+    res.status(httpStatus.OK).json(otpResponse);
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
+
+export const verifyOTP = async (req, res, next) => {
+  const { phoneNumber, code } = req.body;
+  try {
+    const otpResponse = await client.verify
+      .services(environments.twilioServiceId)
+      .verificationChecks.create({ to: `+251${phoneNumber}`, code });
+    res.status(httpStatus.OK).json(otpResponse);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const signUpUserController = async (req, res, next) => {
   const { name, phoneNumber, password, role } = req.body;
 
   const creatUserParams = { name, phoneNumber, password, role };
   console.log('-----------1--------');
   try {
-    const user = await User.registerUser(creatUserParams);
+    const user = await User.signUpUser(creatUserParams);
     res.status(httpStatus.OK).json(user);
   } catch (error) {
     next(error);
   }
 };
 
-export const getSingleUserByIdController = async (req, res, next) => {
+export const userDetailController = async (req, res, next) => {
   const { userId } = req.params;
 
   console.log('-----------1--------');
   try {
-    const user = await User.getSingleUserById(userId);
+    const user = await User.userDetail(userId);
     res.status(httpStatus.OK).json(user);
   } catch (error) {
     next(error);
@@ -40,9 +73,14 @@ export const deleteUserByIdController = async (req, res, next) => {
 
 export const updateUserController = async (req, res, next) => {
   const { userId } = req.params;
-  const { name, phoneNumber } = req.body;
+  const { email, name, phoneNumber } = req.body;
 
-  const userParams = { userId, name, phoneNumber };
+  const userParams = {
+    userId,
+    name,
+    email,
+    phoneNumber,
+  };
   try {
     const updatedUser = await User.updateUser(userParams);
     res.status(httpStatus.OK).json(updatedUser);
