@@ -7,18 +7,12 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "start": "nodemon src/index.js --exec babel-node -e js",
-    "start:prod": "yarn build && NODE_ENV=production node build/index.js",
+    "start": "nodemon src/index.js",
+    "start:prod": "yarn build && node build/index.js",
     "clean": "rm -rf build && mkdir build",
     "build-babel": "babel -d ./build ./src -s",
-    "build": "yarn clean",
-    "lint": "eslint . --ext .js --color -f table",
-    "test": "NODE_ENV=test mocha __tests__ --require @babel/register --recursive",
-    "coverage": "nyc yarn test",
-    "generate": "plop --plopfile internals/generators/plopfile.js",
-    "prepare": "husky install",
-    "seedAppSetting": "node src/utils/seeders/appSetting.js"
-  },
+    "build": "yarn clean && yarn build-babel"
+  },  
   "engines": {
     "node": ">=14"
   },
