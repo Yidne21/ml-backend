@@ -1,3 +1,4 @@
+import { string } from 'joi';
 import mongoose from 'mongoose';
 
 const drugSchema = new mongoose.Schema(
@@ -5,6 +6,7 @@ const drugSchema = new mongoose.Schema(
     name: { type: String },
     price: { type: Number, required: true },
     cost: { type: Number, required: true },
+    drugPhoto: [{ type: String }],
     pharmacyId: {
       type: mongoose.Types.ObjectId,
       required: true,

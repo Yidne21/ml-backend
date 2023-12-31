@@ -1,6 +1,7 @@
 import httpStatus from 'http-status';
 import bcrypt from 'bcrypt';
 import mongoose from 'mongoose';
+import { th } from '@faker-js/faker';
 import APIError from '../../errors/APIError';
 import modelNames from '../../utils/constants';
 import {
@@ -9,13 +10,7 @@ import {
   verifyRefreshToken,
 } from '../../utils/index';
 
-export async function signUpUser({
-  name,
-  phoneNumber,
-  password,
-  role,
-  profilePictureUrl,
-}) {
+export async function signUpUser({ name, phoneNumber, password, role }) {
   const hashedpassword = await bcrypt.hash(password, 10);
   const UserModel = this.model(modelNames.user);
 
@@ -24,11 +19,9 @@ export async function signUpUser({
     phoneNumber,
     role,
     password: hashedpassword,
-    profilePicture: profilePictureUrl,
   };
 
   const existingUser = await UserModel.find({ phoneNumber });
-  console.log(existingUser);
   if (existingUser.length > 0) {
     throw new APIError(
       `This ${phoneNumber} phone number is already used try another`,
@@ -75,12 +68,16 @@ export async function userDetail(userId) {
         $project: {
           name: 1,
           phoneNumber: 1,
-          role: 1,
+          avatar: 1,
+          email: 1,
+          address: 1,
+          location: 1,
+          coverPhoto: 1,
         },
       },
     ]);
 
-    return { ...user };
+    return user[0];
   } catch (error) {
     if (error instanceof APIError) throw error;
     else {
@@ -105,10 +102,9 @@ export async function deleteUser(id) {
     }
 
     const deletedUser = await UserModel.findOneAndDelete(id);
-    console.log(deletedUser);
-
     return {
       message: 'user deleted successfuly',
+      user: deletedUser,
     };
   } catch (error) {
     if (error instanceof APIError) throw error;
@@ -122,21 +118,53 @@ export async function deleteUser(id) {
   }
 }
 
-export async function updateUser(userParams) {
+export async function updateUser({
+  userId,
+  email,
+  avatar,
+  coverPhoto,
+  newPassword,
+  address,
+  oldPassword,
+}) {
   const UserModel = this.model(modelNames.user);
 
-  try {
-    const updatedUser = await UserModel.findByIdAndUpdate(
-      userParams.userId,
-      {
-        name: userParams.name,
-        phoneNumber: userParams.phoneNumber,
-        email: userParams.email,
-      },
-      { new: true }
+  const existingUser = await UserModel.findById(userId);
+
+  if (!existingUser) {
+    throw new APIError('User not found', httpStatus.NOT_FOUND);
+  }
+
+  let hashedPassword;
+  if (oldPassword && newPassword) {
+    const passwordMatch = await bcrypt.compare(
+      oldPassword,
+      existingUser.password
     );
+    if (!passwordMatch) {
+      throw new APIError('Incorrect old password', httpStatus.UNAUTHORIZED);
+    } else {
+      hashedPassword = await bcrypt.hash(newPassword, 10);
+    }
+  }
+
+  const update = {
+    ...(email && { email }),
+    ...(avatar && { avatar }),
+    ...(coverPhoto && { coverPhoto }),
+    ...(hashedPassword && { password: hashedPassword }),
+    ...(address && { address }),
+  };
+
+  try {
+    const updatedUser = await UserModel.findByIdAndUpdate(userId, update, {
+      new: true,
+    });
     const cleanUser = updatedUser.clean();
-    return cleanUser;
+    return {
+      message: 'User updated successfully',
+      user: cleanUser,
+    };
   } catch (error) {
     if (error instanceof APIError) throw error;
     else {

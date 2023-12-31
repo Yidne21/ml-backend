@@ -6,7 +6,7 @@ import {
 
 const router = express.Router();
 
-router.get('/filter', filterPharmacyController);
+router.get('/', filterPharmacyController);
 router.get('/:pharmacyId', parmacyDetailController);
 
 export default router;

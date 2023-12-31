@@ -12,7 +12,7 @@ const client = require('twilio')(
 export const sendOTP = async (req, res, next) => {
   const { phoneNumber } = req.body;
   try {
-    const otpResponse = await client.verify
+    const otpResponse = await client.verify.v2
       .services(environments.twilioServiceId)
       .verifications.create({ to: `+251${phoneNumber}`, channel: 'sms' });
     res.status(httpStatus.OK).json(otpResponse);
@@ -25,7 +25,7 @@ export const sendOTP = async (req, res, next) => {
 export const verifyOTP = async (req, res, next) => {
   const { phoneNumber, code } = req.body;
   try {
-    const otpResponse = await client.verify
+    const otpResponse = await client.verify.v2
       .services(environments.twilioServiceId)
       .verificationChecks.create({ to: `+251${phoneNumber}`, code });
     res.status(httpStatus.OK).json(otpResponse);
@@ -38,7 +38,6 @@ export const signUpUserController = async (req, res, next) => {
   const { name, phoneNumber, password, role } = req.body;
 
   const creatUserParams = { name, phoneNumber, password, role };
-  console.log('-----------1--------');
   try {
     const user = await User.signUpUser(creatUserParams);
     res.status(httpStatus.OK).json(user);
@@ -50,7 +49,6 @@ export const signUpUserController = async (req, res, next) => {
 export const userDetailController = async (req, res, next) => {
   const { userId } = req.params;
 
-  console.log('-----------1--------');
   try {
     const user = await User.userDetail(userId);
     res.status(httpStatus.OK).json(user);
@@ -62,7 +60,6 @@ export const userDetailController = async (req, res, next) => {
 export const deleteUserByIdController = async (req, res, next) => {
   const { userId } = req.params;
 
-  console.log('-----------1--------');
   try {
     const message = await User.deleteUser(userId);
     res.status(httpStatus.OK).json(message);
@@ -73,14 +70,22 @@ export const deleteUserByIdController = async (req, res, next) => {
 
 export const updateUserController = async (req, res, next) => {
   const { userId } = req.params;
-  const { email, name, phoneNumber } = req.body;
+  const { email, avatar, coverPhoto, newPassword, oldPassword, address } =
+    req.body;
+
+  console.log(req.body);
 
   const userParams = {
     userId,
-    name,
     email,
-    phoneNumber,
+    avatar,
+    coverPhoto,
+    newPassword,
+    address,
+    oldPassword,
   };
+
+  console.log(userParams);
   try {
     const updatedUser = await User.updateUser(userParams);
     res.status(httpStatus.OK).json(updatedUser);

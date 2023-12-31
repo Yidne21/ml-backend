@@ -3,13 +3,16 @@ import path from 'path';
 // Initiate app root
 global.appRoot = path.resolve(path.resolve());
 import passport from 'passport';
+import cors from 'cors';
 import * as environments from './config/environments';
 import connectToDb from './config/mongoose';
 import app from './config/express';
 import passportInit from './config/passport';
-// import insertDummyData from './utils/seedDummyData';
 
+// import insertDummyData from './utils/seedDummyData';
 // Init passport
+
+app.use(cors());
 passportInit(passport);
 
 const start = async () => {

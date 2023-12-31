@@ -6,8 +6,18 @@ const userSchema = new mongoose.Schema(
     phoneNumber: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     email: { type: String },
-    address: { type: String },
-    profilePicture: { type: String },
+    address: {
+      type: String,
+    },
+    avatar: {
+      type: String,
+      default: 'https://fakeimg.pl/150x150/bdbdbd/ffffff?text=avatar&font=noto',
+    },
+    coverPhoto: {
+      type: String,
+      default:
+        'https://fakeimg.pl/400x200/bdbdbd/ffffff?text=Cover+Photo&font=noto',
+    },
     location: {
       type: {
         type: String,

@@ -15,6 +15,8 @@ const insertDummyData = async () => {
       phoneNumber: faker.phone.number(),
       password: faker.internet.password(),
       email: faker.internet.email(),
+      avatar: faker.image.avatar(),
+      coverPhoto: faker.image.url(),
       location: {
         type: 'Point',
         coordinates: [
@@ -80,6 +82,11 @@ const insertDummyData = async () => {
       manufacturedDate: faker.date.past(),
       expiredDate: faker.date.future(),
       needPrescription: faker.datatype.boolean(),
+      drugPhoto: [
+        'https://fakeimg.pl/150x150/bdbdbd/ffffff?text=Drug+Photo&font=noto',
+        faker.image.urlLoremFlickr({ category: 'medicin' }),
+        faker.image.urlLoremFlickr({ category: 'medicin' }),
+      ],
     };
 
     const drug = await Drug.create(drugData);

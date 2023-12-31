@@ -10,6 +10,7 @@ const envSchema = Joi.object({
     .allow('development', 'test', 'production')
     .default('development'),
   MONGO_URL: Joi.string().required().description('MongoDb connection URL'),
+  MONGO_ATLAS_URL: Joi.string().required().description('MongoDb Atlas URL'),
   MONGO_TEST_URL: Joi.string().required().description('Mongo Test DB URL'),
   PORT: Joi.number().default(5000),
   JWT_KEY: Joi.string().required(),
@@ -27,7 +28,7 @@ if (error) {
 export const nodeEnv = value.NODE_ENV;
 export const port = value.PORT;
 export const mongoUrl =
-  value.NODE_ENV === 'test' ? value.MONGO_TEST_URL : value.MONGO_URL;
+  value.NODE_ENV === 'test' ? value.MONGO_URL : value.MONGO_ATLAS_URL;
 export const jwtKey = value.JWT_KEY;
 export const jwtRefreshKey = value.JWT_REFRESH_KEY;
 export const appEmailAddress = value.APP_EMAIL_ADDRESS;

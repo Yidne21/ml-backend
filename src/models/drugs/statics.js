@@ -147,7 +147,7 @@ export async function filterDrug({
 
     return drugs;
   } catch (error) {
-    console.error('Error in filterPharmacy:', error);
+    console.error('Error in filter drug:', error);
     if (error instanceof APIError) throw error;
     else {
       throw new APIError(

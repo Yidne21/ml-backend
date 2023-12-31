@@ -56,6 +56,7 @@ export async function filterPharmacy({
                     $expr: {
                       $and: [
                         { $eq: ['$pharmacyId', '$$pharmacyId'] },
+                        // { $eq: ['$name', drugName] },
                         {
                           $regexMatch: {
                             input: '$name',
@@ -70,14 +71,13 @@ export async function filterPharmacy({
               as: 'drug',
             },
           },
-        ]
-      : []),
-    ...(drugName
-      ? [
           {
             $match: {
               drug: { $ne: [] },
             },
+          },
+          {
+            $unwind: { path: '$drug', preserveNullAndEmptyArrays: true },
           },
         ]
       : []),
@@ -89,8 +89,8 @@ export async function filterPharmacy({
         location: 1,
         logo: 1,
         'drug._id': 1,
-        'drug.stockLevel': 1,
         'drug.name': 1,
+        'drug.stockLevel': 1,
       },
     },
     {
