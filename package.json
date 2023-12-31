@@ -7,7 +7,7 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "start": "nodemon src/index.js"
+    "start": "nodemon src/index.js --exec babel-node -e js"
   },
   "engines": {
     "node": ">=14"
