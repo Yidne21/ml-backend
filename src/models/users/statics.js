@@ -1,7 +1,6 @@
 import httpStatus from 'http-status';
 import bcrypt from 'bcrypt';
 import mongoose from 'mongoose';
-import { th } from '@faker-js/faker';
 import APIError from '../../errors/APIError';
 import modelNames from '../../utils/constants';
 import {
@@ -35,7 +34,6 @@ export async function signUpUser({ name, phoneNumber, password, role }) {
 
     return newUser.clean();
   } catch (error) {
-    console.log(error);
     if (error instanceof APIError) throw error;
     else {
       throw new APIError(

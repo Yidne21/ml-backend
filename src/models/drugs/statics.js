@@ -147,7 +147,6 @@ export async function filterDrug({
 
     return drugs;
   } catch (error) {
-    console.error('Error in filter drug:', error);
     if (error instanceof APIError) throw error;
     else {
       throw new APIError(
@@ -185,7 +184,7 @@ export async function drugDetail(drugId) {
         },
       },
       {
-        $limit: 1, // Limit to one document (optional)
+        $limit: 1,
       },
     ]);
 
@@ -195,7 +194,6 @@ export async function drugDetail(drugId) {
 
     return drug[0];
   } catch (error) {
-    console.error('Error in getDrugDetail:', error);
     if (error instanceof APIError) throw error;
     else {
       throw new APIError(

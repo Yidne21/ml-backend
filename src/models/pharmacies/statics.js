@@ -140,7 +140,6 @@ export async function filterPharmacy({
 
     return nearbyPharmacies[0];
   } catch (error) {
-    console.error('Error in filterPharmacy:', error);
     if (error instanceof APIError) throw error;
     else {
       throw new APIError(
@@ -244,7 +243,6 @@ export async function getPharmacyDetail(pharmacyId) {
 
     return pharmacy[0];
   } catch (error) {
-    console.error('Error in getPharmacyDetail:', error);
     if (error instanceof APIError) throw error;
     else {
       throw new APIError(

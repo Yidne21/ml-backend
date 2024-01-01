@@ -17,7 +17,6 @@ export const sendOTP = async (req, res, next) => {
       .verifications.create({ to: `+251${phoneNumber}`, channel: 'sms' });
     res.status(httpStatus.OK).json(otpResponse);
   } catch (error) {
-    console.log(error);
     next(error);
   }
 };
@@ -72,9 +71,6 @@ export const updateUserController = async (req, res, next) => {
   const { userId } = req.params;
   const { email, avatar, coverPhoto, newPassword, oldPassword, address } =
     req.body;
-
-  console.log(req.body);
-
   const userParams = {
     userId,
     email,
@@ -85,7 +81,6 @@ export const updateUserController = async (req, res, next) => {
     oldPassword,
   };
 
-  console.log(userParams);
   try {
     const updatedUser = await User.updateUser(userParams);
     res.status(httpStatus.OK).json(updatedUser);
