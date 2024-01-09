@@ -14,6 +14,7 @@ import {
   updateUserController,
   loginUserController,
   refreshTokenController,
+  resetPasswordController,
   sendOTP,
   verifyOTP,
 } from '../controllers/user';
@@ -54,6 +55,8 @@ router.delete(
   parseValidationResult,
   deleteUserByIdController
 );
+
+router.post('/reset-password', parseValidationResult, resetPasswordController);
 
 router.post('/login', parseValidationResult, loginUserController);
 

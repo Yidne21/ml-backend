@@ -2,6 +2,7 @@
 import httpStatus from 'http-status';
 import User from '../models/users';
 import * as environments from '../config/environments';
+import APIError from '../errors/APIError';
 
 const client = require('twilio')(
   environments.twilioAccountSid,
@@ -11,7 +12,13 @@ const client = require('twilio')(
 
 export const sendOTP = async (req, res, next) => {
   const { phoneNumber } = req.body;
+
   try {
+    const existingUser = await User.find({ phoneNumber: `+251${phoneNumber}` });
+    if (!existingUser || existingUser.length === 0) {
+      throw new APIError("Phone number doesn't exist", httpStatus.BAD_REQUEST);
+    }
+
     const otpResponse = await client.verify.v2
       .services(environments.twilioServiceId)
       .verifications.create({ to: `+251${phoneNumber}`, channel: 'sms' });
@@ -28,6 +35,19 @@ export const verifyOTP = async (req, res, next) => {
       .services(environments.twilioServiceId)
       .verificationChecks.create({ to: `+251${phoneNumber}`, code });
     res.status(httpStatus.OK).json(otpResponse);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const resetPasswordController = async (req, res, next) => {
+  const { phoneNumber, newPassword } = req.body;
+
+  const params = { phoneNumber, newPassword };
+
+  try {
+    const message = await User.resetPassword(params);
+    res.status(httpStatus.OK).json(message);
   } catch (error) {
     next(error);
   }

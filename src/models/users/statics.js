@@ -140,10 +140,9 @@ export async function updateUser({
       existingUser.password
     );
     if (!passwordMatch) {
-      throw new APIError('Incorrect old password', httpStatus.UNAUTHORIZED);
-    } else {
-      hashedPassword = await bcrypt.hash(newPassword, 10);
+      throw new APIError('Old password is incorrect', httpStatus.UNAUTHORIZED);
     }
+    hashedPassword = await bcrypt.hash(newPassword, 10);
   }
 
   const update = {
@@ -162,6 +161,42 @@ export async function updateUser({
     return {
       message: 'User updated successfully',
       user: cleanUser,
+    };
+  } catch (error) {
+    if (error instanceof APIError) throw error;
+    else {
+      throw new APIError(
+        'Internal error',
+        httpStatus.INTERNAL_SERVER_ERROR,
+        true
+      );
+    }
+  }
+}
+
+export async function resetPassword({ phoneNumber, newPassword }) {
+  const UserModel = this.model(modelNames.user);
+
+  let hashedPassword;
+  if (newPassword) {
+    hashedPassword = await bcrypt.hash(newPassword, 10);
+  }
+
+  try {
+    const user = await UserModel.findOneAndUpdate(
+      { phoneNumber },
+      { password: hashedPassword },
+      {
+        new: true,
+      }
+    );
+
+    if (!user) {
+      throw new APIError('User not found', httpStatus.NOT_FOUND);
+    }
+
+    return {
+      message: 'password reset successfully',
     };
   } catch (error) {
     if (error instanceof APIError) throw error;
