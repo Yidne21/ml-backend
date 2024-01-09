@@ -12,7 +12,7 @@ const client = require('twilio')(
 export const sendOTP = async (req, res, next) => {
   const { phoneNumber } = req.body;
   try {
-    const otpResponse = await client.verify.v2
+    const otpResponse = await client.verify
       .services(environments.twilioServiceId)
       .verifications.create({ to: `+251${phoneNumber}`, channel: 'sms' });
     res.status(httpStatus.OK).json(otpResponse);
@@ -24,7 +24,7 @@ export const sendOTP = async (req, res, next) => {
 export const verifyOTP = async (req, res, next) => {
   const { phoneNumber, code } = req.body;
   try {
-    const otpResponse = await client.verify.v2
+    const otpResponse = await client.verify
       .services(environments.twilioServiceId)
       .verificationChecks.create({ to: `+251${phoneNumber}`, code });
     res.status(httpStatus.OK).json(otpResponse);
