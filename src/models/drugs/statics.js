@@ -98,6 +98,7 @@ export async function filterDrug({
         price: 1,
         expiredDate: 1,
         pharmacy: 1,
+        drugPhoto: 1,
       },
     },
     {
@@ -145,7 +146,7 @@ export async function filterDrug({
   try {
     const drugs = await DrugModel.aggregate(mainPipeline);
 
-    return drugs;
+    return drugs[0];
   } catch (error) {
     if (error instanceof APIError) throw error;
     else {
