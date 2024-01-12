@@ -182,6 +182,7 @@ export async function drugDetail(drugId) {
           expiredDate: 1,
           stockLevel: 1,
           needPrescription: 1,
+          drugPhoto: 1,
         },
       },
       {

@@ -187,7 +187,7 @@ export async function getPharmacyDetail(pharmacyId) {
                   {
                     $project: {
                       name: 1,
-                      profilePicture: 1,
+                      avatar: 1,
                     },
                   },
                 ],
