@@ -1,4 +1,3 @@
-import { string } from 'joi';
 import mongoose from 'mongoose';
 
 const drugSchema = new mongoose.Schema(

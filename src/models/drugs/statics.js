@@ -169,6 +169,29 @@ export async function drugDetail(drugId) {
         },
       },
       {
+        $lookup: {
+          from: 'pharmacies',
+          let: { pharmacyId: '$pharmacyId' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $eq: ['$_id', '$$pharmacyId'],
+                },
+              },
+            },
+            {
+              $project: {
+                _id: 1,
+                name: 1,
+                location: 1,
+              },
+            },
+          ],
+          as: 'pharmacy',
+        },
+      },
+      {
         $project: {
           name: 1,
           price: 1,
@@ -183,6 +206,7 @@ export async function drugDetail(drugId) {
           stockLevel: 1,
           needPrescription: 1,
           drugPhoto: 1,
+          pharmacyName: '$pharmacy.name',
         },
       },
       {
