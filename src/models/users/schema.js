@@ -27,9 +27,33 @@ const userSchema = new mongoose.Schema(
         type: [Number],
       },
     },
+    account: [
+      {
+        accountHolderName: { type: String },
+        accountNumber: { type: String },
+        bankName: { type: String },
+        branchName: { type: String },
+        accountType: { type: String },
+      },
+    ],
+    deliveryAddress: [
+      {
+        address: { type: String },
+        phoneNumber: { type: String },
+        location: {
+          type: {
+            type: String,
+            enum: ['Point'],
+          },
+          coordinates: {
+            type: [Number],
+          },
+        },
+      },
+    ],
     role: {
       type: String,
-      enum: ['admin', 'pharmaciest', 'customer'],
+      enum: ['admin', 'pharmaciest', 'customer', 'superadmin'],
       required: true,
     },
   },
