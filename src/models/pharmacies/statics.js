@@ -140,6 +140,7 @@ export async function filterPharmacy({
 
     return nearbyPharmacies[0];
   } catch (error) {
+    console.log(error);
     if (error instanceof APIError) throw error;
     else {
       throw new APIError(

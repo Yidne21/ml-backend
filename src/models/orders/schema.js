@@ -12,35 +12,33 @@ const orderSchema = new mongoose.Schema(
       required: true,
       ref: 'User',
     },
-    deliveryAddress: [
-      {
-        address: { type: String },
-        location: {
-          type: {
-            type: String,
-            enum: ['Point'],
-            required: true,
-          },
-          coordinates: {
-            type: [Number],
-          },
+    deliveryAddress: {
+      address: { type: String },
+      phoneNumber: { type: String },
+      location: {
+        type: {
+          type: String,
+          enum: ['Point'],
+        },
+        coordinates: {
+          type: [Number],
         },
       },
-    ],
+    },
     drugId: {
       type: mongoose.Types.ObjectId,
       required: true,
       ref: 'Drug',
     },
     transactionId: {
-      type: String,
+      type: mongoose.Types.ObjectId,
       required: true,
-    },
-    paymentMethod: {
-      type: String,
-      required: true,
+      ref: 'Transaction',
     },
     deliveredAt: {
+      type: Date,
+    },
+    deliveryDate: {
       type: Date,
     },
     quantity: {
