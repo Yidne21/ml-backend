@@ -12,18 +12,20 @@ const client = require('twilio')(
 
 export const sendOTP = async (req, res, next) => {
   const { phoneNumber } = req.body;
+  console.log(phoneNumber);
 
   try {
-    const existingUser = await User.find({ phoneNumber: `+251${phoneNumber}` });
+    const existingUser = await User.find({ phoneNumber });
     if (!existingUser || existingUser.length === 0) {
       throw new APIError("Phone number doesn't exist", httpStatus.BAD_REQUEST);
     }
 
     const otpResponse = await client.verify.v2
       .services(environments.twilioServiceId)
-      .verifications.create({ to: `+251${phoneNumber}`, channel: 'sms' });
+      .verifications.create({ to: phoneNumber, channel: 'sms' });
     res.status(httpStatus.OK).json(otpResponse);
   } catch (error) {
+    console.log(error);
     next(error);
   }
 };
@@ -33,7 +35,7 @@ export const verifyOTP = async (req, res, next) => {
   try {
     const otpResponse = await client.verify.v2
       .services(environments.twilioServiceId)
-      .verificationChecks.create({ to: `+251${phoneNumber}`, code });
+      .verificationChecks.create({ to: phoneNumber, code });
     res.status(httpStatus.OK).json(otpResponse);
   } catch (error) {
     next(error);
