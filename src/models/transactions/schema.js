@@ -8,15 +8,19 @@ const transactionSchema = new mongoose.Schema(
       required: true,
       ref: 'User',
     },
-    senderAccountId: {
-      type: mongoose.Types.ObjectId,
-      required: true,
-      ref: 'User.account',
+    senderAccount: {
+      accountHolderName: { type: String },
+      accountNumber: { type: String },
+      bankName: { type: String },
+      branchName: { type: String },
+      accountType: { type: String },
     },
-    receiverAccountId: {
-      type: mongoose.Types.ObjectId,
-      required: true,
-      ref: 'User.account',
+    receiverAccount: {
+      accountHolderName: { type: String },
+      accountNumber: { type: String },
+      bankName: { type: String },
+      branchName: { type: String },
+      accountType: { type: String },
     },
     reason: { type: String },
   },

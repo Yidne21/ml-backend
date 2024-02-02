@@ -204,9 +204,12 @@ const insertDummyData = async () => {
       role: 'pharmaciest',
     }).select('_id');
 
-    const customerID = await User.find({
+    const customerIDs = await User.find({
       role: 'customer',
     }).select('_id');
+
+    const superAdminIDs = await User.find({ role: 'superAdmin' }).select('_id');
+    console.log('superAdminIDs:', superAdminIDs);
 
     // Insert dummy data for Pharmacy
     const pharmacyData = {
@@ -315,9 +318,13 @@ const insertDummyData = async () => {
     const drugId = await Drug.find().select('_id');
 
     // Insert dummy data for Order
+    const customerid = faker.helpers.arrayElement(customerIDs);
+    const deliveryAddress = await User.findOne({ _id: customerid }).select(
+      'deliveryAddress'
+    );
     const orderData = {
       orderedTo: faker.helpers.arrayElement(pharmacyId),
-      orderedBy: faker.helpers.arrayElement(customerID),
+      orderedBy: customerid,
       drugId: faker.helpers.arrayElement(drugId),
       quantity: faker.number.int({ min: 1, max: 5 }),
       status: faker.helpers.arrayElement([
@@ -325,21 +332,76 @@ const insertDummyData = async () => {
         'delivered',
         'aborted',
       ]),
+      deliveryAddress: faker.helpers.arrayElement(
+        deliveryAddress.deliveryAddress
+      ),
+      deliveryDate: faker.date.future(),
     };
 
-    const orderedDrug = await Drug.findOne({ _id: orderData.drugId });
     if (orderData.status === 'delivered') {
-      orderData.deliveredAt = faker.date.past();
+      const orderedDrug = await Drug.findOne({ _id: orderData.drugId });
+      orderData.deliveredAt = Date.now();
       orderData.profit =
         orderData.quantity * (orderedDrug.price - orderedDrug.cost);
+      const superAdminId = faker.helpers.arrayElement(superAdminIDs);
+      const senderAccounts = await User.findOne({
+        _id: superAdminId,
+      }).select('account');
+      const receiverAccounts = await User.findOne({
+        _id: orderData.orderedTo,
+      }).select('account');
+
+      const transactionData = {
+        sender: superAdminId,
+        receiver: orderData.orderedTo,
+        senderAccount: faker.helpers.arrayElement(senderAccounts.account),
+        receiverAccount: faker.helpers.arrayElement(receiverAccounts.account),
+        reason: 'order Payment to pharmacies',
+      };
+      const transaction = await Transaction.create(transactionData);
+      console.log('Inserted dummy data for Transaction:', transaction);
+      orderData.transactionId = transaction._id;
     }
 
     if (orderData.status === 'aborted') {
-      orderData.abortedAt = faker.date.past();
+      orderData.abortedAt = Date.now();
+      const superAdminId = faker.helpers.arrayElement(superAdminIDs);
+      const senderAccounts = await User.findOne({
+        _id: superAdminId,
+      }).select('account');
+      const receiverAccounts = await User.findOne({
+        _id: orderData.orderedBy,
+      }).select('account');
+      const transactionData = {
+        sender: orderData.orderedBy,
+        receiver: superAdminId,
+        senderAccount: faker.helpers.arrayElement(senderAccounts.account),
+        receiverAccount: faker.helpers.arrayElement(receiverAccounts.account),
+        reason: 'refund for aborted order',
+      };
+      const transaction = await Transaction.create(transactionData);
+      console.log('Inserted dummy data for Transaction:', transaction);
+      orderData.transactionId = transaction._id;
     }
 
     if (orderData.status === 'inprogress') {
-      const transactionData = {};
+      const senderAccounts = await User.findOne({
+        _id: orderData.orderedBy,
+      }).select('account');
+      const superAdminId = faker.helpers.arrayElement(superAdminIDs);
+      const receiverAccounts = await User.findOne({
+        _id: superAdminId,
+      }).select('account');
+      const transactionData = {
+        sender: orderData.orderedBy,
+        receiver: superAdminId,
+        senderAccount: faker.helpers.arrayElement(senderAccounts.account),
+        receiverAccount: faker.helpers.arrayElement(receiverAccounts.account),
+        reason: 'Order Payment',
+      };
+      const transaction = await Transaction.create(transactionData);
+      console.log('Inserted dummy data for Transaction:', transaction);
+      orderData.transactionId = transaction._id;
     }
 
     const order = await Order.create(orderData);
@@ -347,7 +409,7 @@ const insertDummyData = async () => {
 
     // Insert dummy data for Review
     const reviewData = {
-      reviewedBy: faker.helpers.arrayElement(customerID),
+      reviewedBy: faker.helpers.arrayElement(customerIDs),
       pharmacyId: faker.helpers.arrayElement(pharmacyId),
       rating: faker.number.float({ min: 0, max: 5 }),
       feedback: faker.lorem.paragraph(),
@@ -355,6 +417,15 @@ const insertDummyData = async () => {
 
     const review = await Review.create(reviewData);
     console.log('Inserted dummy data for Review:', review);
+
+    // Insert dummy data for Feedback
+    const feedbackData = {
+      userId: faker.helpers.arrayElement(customerIDs.concat(pharmaciestID)),
+      title: faker.lorem.sentence(),
+      content: faker.lorem.paragraph(),
+    };
+    const feedback = await Feedback.create(feedbackData);
+    console.log('Inserted dummy data for Feedback:', feedback);
     console.log('Disconnected from MongoDB');
   } catch (error) {
     console.error('Error inserting dummy data:', error);
