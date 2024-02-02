@@ -38,6 +38,13 @@ const orderSchema = new mongoose.Schema(
     deliveredAt: {
       type: Date,
     },
+    abortedAt: {
+      type: Date,
+    },
+    orderedAt: {
+      type: Date,
+      default: Date.now,
+    },
     deliveryDate: {
       type: Date,
     },

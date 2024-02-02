@@ -6,6 +6,8 @@ import Order from '../models/orders';
 import Pharmacy from '../models/pharmacies';
 import Review from '../models/reviews';
 import User from '../models/users';
+import Transaction from '../models/transactions';
+import Feedback from '../models/feedbacks';
 
 const insertDummyData = async () => {
   try {
@@ -24,8 +26,177 @@ const insertDummyData = async () => {
           faker.location.latitude({ max: 14.277, min: 4.05 }),
         ],
       },
-      role: faker.helpers.arrayElement(['admin', 'pharmaciest', 'customer']),
+      role: faker.helpers.arrayElement([
+        'admin',
+        'pharmaciest',
+        'customer',
+        'superAdmin',
+      ]),
     };
+
+    const addresses = [
+      '1000, Addis Ababa-Addis Ababa Zone 1, Addis Ababa',
+      '1000, Addis Ababa-Addis Ababa Zone 1, Addis Ababa Stadium',
+      '1000, Addis Ababa-Addis Ababa Zone 1, Bole International Airport',
+      '1000, Addis Ababa-Addis Ababa Zone 2, Alem Gena, Addis Ababa Liddetta Airport',
+      '1000, Addis Ababa-Addis Ababa Zone 2, Alem Gena, Mebrat Hayel Stadium',
+      '1000, Oromia-Semen Shewa, Eydu',
+      '1000, Oromia-Semen Shewa, Gebre Guracha',
+      '1000, Oromia-Semen Shewa, Golje Giyorgis Bete Kiristyan',
+      "1000, Oromia-Semen Shewa, Muke T'uri",
+      '1000, Oromia-Semen Shewa, Robe',
+      '1000, Oromia-Semen Shewa, Sembo',
+      '1000, Oromia-Semen Shewa, Sendafa',
+      '1000, Oromia-Semen Shewa, Sheno',
+      '1000, Oromia-Semen Shewa, Sululta',
+      '1000, Oromia-Semen Shewa, Tulu Milki',
+      '1150, Addis Ababa-Addis Ababa Zone 2, Alem Gena',
+      "1230, Addis Ababa-Addis Ababa Zone 6, Ak'ak'i Besek'a",
+      '2040, Oromia-Arssi, Abomsa',
+      '2040, Oromia-Arssi, Adele',
+      '2040, Oromia-Arssi, Bekeksa',
+      '2040, Oromia-Arssi, Carri',
+      '2040, Oromia-Arssi, Dino',
+      '2040, Oromia-Arssi, Gololcha',
+      '2040, Oromia-Arssi, Mechara',
+      '2040, Oromia-Arssi, Seru',
+      '2040, Oromia-Arssi, Shek Husen',
+      "2040, Oromia-Arssi, Tinsa'E Birhan",
+      '2120, Oromia-Arssi, Asasa',
+      "2120, Oromia-Arssi, Bek'oji",
+      '2120, Oromia-Arssi, Bilbilo',
+      '2120, Oromia-Arssi, Buccio',
+      '2120, Oromia-Arssi, Kofele',
+      '2120, Oromia-Arssi, Sire (2)',
+      '2140, Oromia-Arssi, Agere Sisay',
+      '2140, Oromia-Arssi, Dera',
+      '2140, Oromia-Arssi, Hamda Diksis',
+      '2140, Oromia-Arssi, Huruta',
+      '2140, Oromia-Arssi, Robi',
+      '2140, Oromia-Arssi, Sire',
+      '3000, Dire Dawa-Dire Dawa, Dire Dawa',
+      '3000, Dire Dawa-Dire Dawa, Dire Dawa Stadium',
+      '3020, Dire Dawa-Dire Dawa, Dire Dawa, Aba Tenna Dejazmatch Yilma Airport',
+      '3020, Dire Dawa-Dire Dawa, Melka Jebti',
+      '3040, Somali-Gode, Balbalaiar',
+      '3040, Somali-Gode, Denan',
+      '3040, Somali-Gode, Dibugur',
+      '3040, Somali-Gode, Gabro',
+      '3040, Somali-Gode, Gelhalali',
+      '3040, Somali-Gode, Gode',
+      '3040, Somali-Gode, Gode',
+      '3040, Somali-Gode, Ididole',
+      '3040, Somali-Gode, Ididole, Gode Airport',
+      '3040, Somali-Gode, Imi',
+      '3040, Somali-Gode, Megwin',
+      '3040, Somali-Gode, Melka Bafeta',
+      '3040, Somali-Gode, Melka Teka',
+      '3040, Somali-Gode, Obdamer',
+      '3060, Somali-Korahe, Giadabele',
+      "3060, Somali-Korahe, K'ebri Dehar",
+      "3060, Somali-Korahe, K'ebri Dehar, Kabri Dar Airport",
+      "3060, Somali-Korahe, K'orahe",
+      '3060, Somali-Korahe, Shilabe',
+      '3060, Somali-Korahe, Uarandab',
+      '3080, Somali-Afder, Bargheile',
+      '3080, Somali-Afder, Busle',
+      "3080, Somali-Afder, El Bi'oba",
+      "3080, Somali-Afder, El K'oran",
+      '3080, Somali-Afder, Ferfer',
+      '3080, Somali-Afder, Godder',
+      "3080, Somali-Afder, K'elafo",
+      '3080, Somali-Afder, Kunyo',
+      '3080, Somali-Afder, Mustahil',
+      '3080, Somali-Afder, Sulsul',
+      '3120, Somali-Warder, Balleh Ad',
+      '3120, Somali-Warder, Domo',
+      '3120, Somali-Warder, Dudub',
+      '3120, Somali-Warder, Gashamo',
+      '3120, Somali-Warder, Godegude',
+      '3120, Somali-Warder, Gudis',
+      '3120, Somali-Warder, Harshin',
+      '3120, Somali-Warder, Kebri Beyah',
+      '3120, Somali-Warder, Kebri Beyah, Kebri Beyah Airport',
+      '3120, Somali-Warder, Warder',
+      '3120, Somali-Warder, Warder Airport',
+      '3140, Somali-Degahbur, Birkot',
+      '3140, Somali-Degahbur, Degahbur',
+      '3140, Somali-Degahbur, Degahbur Airport',
+      '3140, Somali-Degahbur, Dolo Odo',
+      '3140, Somali-Degahbur, Dolo Odo Airport',
+      '3140, Somali-Degahbur, Filtu',
+      '3140, Somali-Degahbur, Filtu Airport',
+      '3140, Somali-Degahbur, Godegude',
+      '3140, Somali-Degahbur, Gudis',
+      '3140, Somali-Degahbur, Harshin',
+      '3140, Somali-Degahbur, Kebri Beyah',
+      '3140, Somali-Degahbur, Kebri Beyah Airport',
+      '3140, Somali-Degahbur, Warder',
+      '3140, Somali-Degahbur, Warder Airport',
+    ];
+
+    if (userData.role === 'customer') {
+      userData.deliveryAddress = {
+        address: faker.helpers.arrayElement(addresses),
+        phoneNumber: faker.phone.number(),
+        location: {
+          type: 'Point',
+          coordinates: [
+            faker.location.longitude({ max: 42.8, min: 34.53333 }),
+            faker.location.latitude({ max: 14.277, min: 4.05 }),
+          ],
+        },
+      };
+    }
+
+    if (
+      userData.role === 'customer' ||
+      userData.role === 'pharmaciest' ||
+      userData.role === 'superAdmin'
+    ) {
+      userData.account = {
+        accountHolder: faker.person.fullName(),
+        accountNumber: faker.finance.accountNumber(),
+        bankName: faker.helpers.arrayElement([
+          'CBE',
+          'Awash',
+          'Dashen',
+          'BoA',
+          'NIB',
+          'Wegagen',
+          'Zemen',
+          'telebirr',
+          'helloCash',
+          'CBE Birr',
+        ]),
+        branch: faker.helpers.arrayElement([
+          'Addis Ababa',
+          'Dire Dawa',
+          'Adama',
+          'Mekelle',
+          'Bahir Dar',
+          'Gonder',
+          'Hawassa',
+          'Jimma',
+          'Dessie',
+          'Jijiga',
+          'Shashemene',
+          'Arba Minch',
+          'Gambela',
+        ]),
+        accountType: 'bank',
+      };
+    }
+    if (
+      userData.bankName === 'telebirr' ||
+      userData.bankName === 'helloCash' ||
+      userData.bankName === 'CBE Birr' ||
+      userData.bankName === 'BoA'
+    ) {
+      userData.accountNumber = faker.phone.phoneNumber();
+      userData.accountType = 'wallet';
+    }
+
     const user = await User.create(userData);
     console.log('Inserted dummy data for User:', user);
 
@@ -63,6 +234,7 @@ const insertDummyData = async () => {
 
     const pharmacy = await Pharmacy.create(pharmacyData);
     console.log('Inserted dummy data for Pharmacy:', pharmacy);
+
     const categories = [
       'analgesics',
       'antibiotics',
@@ -148,14 +320,6 @@ const insertDummyData = async () => {
       orderedBy: faker.helpers.arrayElement(customerID),
       drugId: faker.helpers.arrayElement(drugId),
       quantity: faker.number.int({ min: 1, max: 5 }),
-      transactionId: faker.string.alphanumeric({
-        length: { min: 10, max: 11 },
-      }),
-      paymentMethod: faker.helpers.arrayElement([
-        'chapa',
-        'telbirr',
-        'helloCash',
-      ]),
       status: faker.helpers.arrayElement([
         'inprogress',
         'delivered',
@@ -168,6 +332,14 @@ const insertDummyData = async () => {
       orderData.deliveredAt = faker.date.past();
       orderData.profit =
         orderData.quantity * (orderedDrug.price - orderedDrug.cost);
+    }
+
+    if (orderData.status === 'aborted') {
+      orderData.abortedAt = faker.date.past();
+    }
+
+    if (orderData.status === 'inprogress') {
+      const transactionData = {};
     }
 
     const order = await Order.create(orderData);
