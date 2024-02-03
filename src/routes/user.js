@@ -18,7 +18,7 @@ import {
   sendOTP,
   verifyOTP,
 } from '../controllers/user';
-import { authenticateJwt } from '../controllers/middlewares';
+import { authenticateJwt } from '../middlewares/middlewares';
 
 const router = express.Router();
 

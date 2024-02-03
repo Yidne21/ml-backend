@@ -2,11 +2,19 @@ import express from 'express';
 import userRoutes from '../routes/user';
 import pharmacyRoutes from '../routes/pharmacy';
 import drugRoutes from '../routes/drug';
+import orderRoutes from '../routes/order';
+import transactionRoutes from '../routes/transaction';
+import feedbackRoutes from '../routes/feedback';
+import reviewRoutes from '../routes/review';
 
 const router = express.Router();
 
 router.use('/user', userRoutes);
 router.use('/pharmacy', pharmacyRoutes);
 router.use('/drug', drugRoutes);
+router.use('/order', orderRoutes);
+router.use('/transaction', transactionRoutes);
+router.use('/feedback', feedbackRoutes);
+router.use('/review', reviewRoutes);
 
 export default router;
