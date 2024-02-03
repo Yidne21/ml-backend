@@ -6,7 +6,7 @@ import {
 
 const router = express.Router();
 
-router.get('/:id', transactionDetailController);
+router.get('/:transactionId', transactionDetailController);
 router.get('/', filterTransactionController);
 
 export default router;

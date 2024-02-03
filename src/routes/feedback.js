@@ -10,9 +10,9 @@ import {
 const router = express.Router();
 
 router.post('/', createFeedbackController);
-router.get('/:id', feedbackDetailController);
+router.get('/:feedbackId', feedbackDetailController);
 router.get('/', filterFeedbackController);
-router.delete('/:id', deleteFeedbackController);
-router.put('/:id', updateFeedbackController);
+router.delete('/:feedbackId', deleteFeedbackController);
+router.put('/:feedbackId', updateFeedbackController);
 
 export default router;

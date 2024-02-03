@@ -10,9 +10,9 @@ import {
 const router = express.Router();
 
 router.post('/', createOrderController);
-router.get('/:id', orderDetailController);
+router.get('/:orderId', orderDetailController);
 router.get('/', filterOrderController);
-router.put('/:id/confirm-delivery', confirmOrderDeliveryController);
-router.put('/:id/cancel', cancelOrderController);
+router.put('/:orderId/confirm-delivery', confirmOrderDeliveryController);
+router.put('/:orderId/cancel', cancelOrderController);
 
 export default router;

@@ -10,9 +10,9 @@ import {
 const router = express.Router();
 
 router.post('/', createReviewController);
-router.get('/:id', reviewDetailController);
+router.get('/:reviewId', reviewDetailController);
 router.get('/', filterReviewController);
-router.put('/:id', updateReviewController);
-router.delete('/:id', deleteReviewController);
+router.put('/:reviewId', updateReviewController);
+router.delete('/:reviewId', deleteReviewController);
 
 export default router;
