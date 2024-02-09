@@ -56,9 +56,9 @@ export const resetPasswordController = async (req, res, next) => {
 };
 
 export const signUpUserController = async (req, res, next) => {
-  const { name, phoneNumber, password, role } = req.body;
+  const { name, phoneNumber, password, role, email } = req.body;
 
-  const creatUserParams = { name, phoneNumber, password, role };
+  const creatUserParams = { name, phoneNumber, password, role, email };
   try {
     const user = await User.signUpUser(creatUserParams);
     res.status(httpStatus.OK).json(user);
@@ -136,6 +136,41 @@ export const refreshTokenController = async (req, res, next) => {
   try {
     const accessToken = await User.refreshToken(refreshToken);
     res.status(httpStatus.OK).json(accessToken);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const registerPharmacistController = async (req, res, next) => {
+  const {
+    name,
+    phoneNumber,
+    password,
+    email,
+    pharmaciestLicense,
+    pharmacyName,
+    pharmacyLocation,
+    pharmacyEmail,
+    pharmacyPhoneNumber,
+    pharmacyLicense,
+  } = req.body;
+
+  const data = {
+    name,
+    phoneNumber,
+    password,
+    role: 'pharmacist',
+    email,
+    pharmaciestLicense,
+    pharmacyName,
+    pharmacyLocation,
+    pharmacyEmail,
+    pharmacyPhoneNumber,
+    pharmacyLicense,
+  };
+  try {
+    const user = await User.registerPharmacist(data);
+    res.status(httpStatus.OK).json(user);
   } catch (error) {
     next(error);
   }

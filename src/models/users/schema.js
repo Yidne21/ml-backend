@@ -51,9 +51,10 @@ const userSchema = new mongoose.Schema(
         },
       },
     ],
+    pharmaciestLicense: { type: String },
     role: {
       type: String,
-      enum: ['admin', 'pharmaciest', 'customer', 'superAdmin'],
+      enum: ['admin', 'pharmacist', 'customer', 'superAdmin'],
       required: true,
     },
   },

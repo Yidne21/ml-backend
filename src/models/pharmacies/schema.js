@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 const pharmacySchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
-    phoneNumber: { type: String, required: true, unique: true },
+    phoneNumber: { type: String, unique: true },
     email: { type: String, required: true, unique: true },
     location: {
       type: {
@@ -16,7 +16,7 @@ const pharmacySchema = new mongoose.Schema(
         required: true,
       },
     },
-    pharmaciestId: {
+    pharmacistId: {
       type: mongoose.Types.ObjectId,
       required: true,
       ref: 'User',
@@ -32,6 +32,7 @@ const pharmacySchema = new mongoose.Schema(
       twitter: { type: String },
       telegram: { type: String },
     },
+    pharmacyLicense: { type: String, required: true },
   },
   { timestamps: true }
 );

@@ -8,8 +8,10 @@ import {
   generateJwtRefreshToken,
   verifyRefreshToken,
 } from '../../utils/index';
+import { getMailer } from '../../config/nodemailer';
+import { appEmailAddress } from '../../config/environments';
 
-export async function signUpUser({ name, phoneNumber, password, role }) {
+export async function signUpUser({ name, phoneNumber, password, role, email }) {
   const hashedpassword = await bcrypt.hash(password, 10);
   const UserModel = this.model(modelNames.user);
 
@@ -18,15 +20,29 @@ export async function signUpUser({ name, phoneNumber, password, role }) {
     phoneNumber,
     role,
     password: hashedpassword,
+    email,
   };
 
-  const existingUser = await UserModel.find({ phoneNumber });
-  if (existingUser.length > 0) {
-    throw new APIError(
-      `This ${phoneNumber} phone number is already used try another`,
-      httpStatus.CLIENT_ERROR
-    );
+  if (phoneNumber) {
+    const existingUser = await UserModel.find({ phoneNumber });
+    if (existingUser.length > 0) {
+      throw new APIError(
+        `This ${phoneNumber} phone number is already used try another`,
+        httpStatus.CLIENT_ERROR
+      );
+    }
   }
+
+  if (email) {
+    const existingEmail = await UserModel.find({ email });
+    if (existingEmail.length > 0) {
+      throw new APIError(
+        `This ${email} email is already used try another`,
+        httpStatus.CLIENT_ERROR
+      );
+    }
+  }
+
   const newUser = new UserModel(user);
 
   try {
@@ -281,6 +297,96 @@ export async function refreshToken(token) {
     else {
       throw new APIError(
         'Internal error',
+        httpStatus.INTERNAL_SERVER_ERROR,
+        true
+      );
+    }
+  }
+}
+
+export async function registerPharmacist(data) {
+  const {
+    name,
+    phoneNumber,
+    password,
+    email,
+    pharmaciestLicense,
+    pharmacyName,
+    pharmacyLocation,
+    pharmacyEmail,
+    pharmacyPhoneNumber,
+    pharmacyLicense,
+  } = data;
+
+  const hashedpassword = await bcrypt.hash(password, 10);
+  const UserModel = this.model(modelNames.user);
+  const PharmacyModel = this.model(modelNames.pharmacy);
+
+  const user = {
+    name,
+    phoneNumber,
+    password: hashedpassword,
+    role: 'pharmacist',
+    email,
+    pharmaciestLicense,
+  };
+
+  if (email) {
+    const existingEmail = await UserModel.find({ email });
+    if (existingEmail.length > 0) {
+      throw new APIError(
+        `This ${email} email is already used try another`,
+        httpStatus.CLIENT_ERROR
+      );
+    }
+  }
+
+  try {
+    const pharmacist = await UserModel.create(user);
+    pharmacist.clean();
+
+    const emailContent = {
+      to: email,
+      from: appEmailAddress,
+      subject: 'Pharmacist Registration',
+      text: `Hello ${name}, you have been registered as a pharmacist successfully`,
+    };
+
+    try {
+      const mailer = await getMailer();
+      mailer.sendMail(emailContent);
+      console.log('email sent');
+    } catch (error) {
+      console.log('error sending email', error);
+    }
+
+    if (!pharmacist) {
+      throw new APIError('Internal Error', httpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    const [lat, lng] = pharmacyLocation.split(',');
+
+    const pharmacy = {
+      name: pharmacyName,
+      location: {
+        type: 'Point',
+        coordinates: [parseFloat(lat), parseFloat(lng)],
+      },
+      email: pharmacyEmail,
+      phoneNumber: pharmacyPhoneNumber,
+      pharmacyLicense,
+      pharmacistId: pharmacist._id,
+    };
+
+    const newPharmacy = await PharmacyModel.create(pharmacy);
+
+    return newPharmacy;
+  } catch (error) {
+    console.log('error', error);
+    if (error instanceof APIError) throw error;
+    else {
+      throw new APIError(
+        'Internal Error',
         httpStatus.INTERNAL_SERVER_ERROR,
         true
       );

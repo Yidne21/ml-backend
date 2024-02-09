@@ -37,3 +37,7 @@ export const appName = value.APP_NAME;
 export const twilioAuthToken = value.TWILIO_AUTH_TOKEN;
 export const twilioAccountSid = value.TWILIO_ACCOUNT_SID;
 export const twilioServiceId = value.TWILIO_SERVICE_ID;
+export const mailgunUserName = value.MAILGUN_USER_NAME;
+export const mailgunPassword = value.MAILGUN_PASSWORD;
+export const mailgunHost = value.MAILGUN_HOST;
+export const mailgunPort = value.MAILGUN_PORT;
