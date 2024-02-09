@@ -1,16 +1,14 @@
 node_modules
 
 .env
-
-# logs
 logs
 *.log
 npm-debug.log*
 
 .nyc_output
 
-# babel build
 build
-todos.todo
+todos.todos
 TODO
 TODO.md
+```
