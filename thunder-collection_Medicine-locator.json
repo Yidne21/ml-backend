@@ -1,0 +1,338 @@
+{
+    "client": "Thunder Client",
+    "collectionName": "Medicine-locator",
+    "dateExported": "2024-01-11T17:23:15.535Z",
+    "version": "1.1",
+    "folders": [
+        {
+            "_id": "83e02068-a6fb-45fe-9c08-3ad28ade497f",
+            "name": "user",
+            "containerId": "",
+            "created": "2023-12-15T08:51:40.642Z",
+            "sortNum": 10000
+        },
+        {
+            "_id": "b7ada91f-a699-4ade-ba2c-35e350fc6be4",
+            "name": "drug",
+            "containerId": "",
+            "created": "2023-12-15T08:51:53.639Z",
+            "sortNum": 20000
+        },
+        {
+            "_id": "62085c80-8f72-4424-b2d2-178f6af07651",
+            "name": "pharmacy",
+            "containerId": "",
+            "created": "2023-12-15T08:52:02.926Z",
+            "sortNum": 30000
+        },
+        {
+            "_id": "43dabb18-5b37-4b27-8de5-99a9d3dbdf6d",
+            "name": "review",
+            "containerId": "",
+            "created": "2023-12-15T08:52:14.863Z",
+            "sortNum": 40000
+        },
+        {
+            "_id": "9f771ff7-52e1-4be7-be47-f805a396d399",
+            "name": "order",
+            "containerId": "",
+            "created": "2023-12-15T08:53:04.187Z",
+            "sortNum": 50000
+        }
+    ],
+    "requests": [
+        {
+            "_id": "cd9db783-8e76-4b21-8e67-0f878ed0f5bb",
+            "colId": "d81f0296-9302-409b-a966-d164c860ff19",
+            "containerId": "83e02068-a6fb-45fe-9c08-3ad28ade497f",
+            "name": "verifyOtp",
+            "url": "https://medicin-locator-service.onrender.com/api/user/verify-otp",
+            "method": "POST",
+            "sortNum": 10000,
+            "created": "2023-12-15T08:53:47.679Z",
+            "modified": "2024-01-09T08:27:46.719Z",
+            "headers": [],
+            "params": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"phoneNumber\": \"938536801\",\n  \"code\": \"567876\"\n}",
+                "form": []
+            },
+            "tests": []
+        },
+        {
+            "_id": "88923197-5dec-4763-aa97-e4e41e58cc9e",
+            "colId": "d81f0296-9302-409b-a966-d164c860ff19",
+            "containerId": "83e02068-a6fb-45fe-9c08-3ad28ade497f",
+            "name": "sendOtp",
+            "url": "https://medicin-locator-service.onrender.com/api/user/send-otp",
+            "method": "POST",
+            "sortNum": 20000,
+            "created": "2023-12-15T08:53:57.896Z",
+            "modified": "2024-01-09T08:21:14.734Z",
+            "headers": [],
+            "params": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"phoneNumber\": \"938536801\"\n}",
+                "form": []
+            },
+            "tests": []
+        },
+        {
+            "_id": "87622618-593c-44d3-b450-226c76bf1afe",
+            "colId": "d81f0296-9302-409b-a966-d164c860ff19",
+            "containerId": "83e02068-a6fb-45fe-9c08-3ad28ade497f",
+            "name": "user refreshToken",
+            "url": "http://localhost:5000/api/user/refresh-token",
+            "method": "POST",
+            "sortNum": 30000,
+            "created": "2023-12-15T08:54:08.708Z",
+            "modified": "2023-12-17T11:46:18.320Z",
+            "headers": [
+                {
+                    "name": "X-Refresh-Token",
+                    "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NTdlZGU3Mzk3MzhlZDdlZjkyOTgyYTMiLCJpYXQiOjE3MDI4MTMzNjAsImV4cCI6MTcwNTQwNTM2MH0.408kFY9k5SHKFq6ej-onl7XWSmrT1XBHYlFiKc_ps3E"
+                }
+            ],
+            "params": [],
+            "tests": []
+        },
+        {
+            "_id": "bd9b0a4d-29a3-439f-84b9-a0978cc621c7",
+            "colId": "d81f0296-9302-409b-a966-d164c860ff19",
+            "containerId": "83e02068-a6fb-45fe-9c08-3ad28ade497f",
+            "name": "user Login",
+            "url": "https://medicin-locator-service.onrender.com/api/user/login",
+            "method": "POST",
+            "sortNum": 40000,
+            "created": "2023-12-15T08:54:21.800Z",
+            "modified": "2024-01-09T12:22:38.876Z",
+            "headers": [],
+            "params": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"phoneNumber\": \"+251938536801\",\n  \"password\": \"123\"\n}",
+                "form": []
+            },
+            "tests": []
+        },
+        {
+            "_id": "250b7d31-ee59-428c-84c8-cd1abf2ff3ff",
+            "colId": "d81f0296-9302-409b-a966-d164c860ff19",
+            "containerId": "83e02068-a6fb-45fe-9c08-3ad28ade497f",
+            "name": "User create",
+            "url": "http://localhost:5000/api/user/create",
+            "method": "POST",
+            "sortNum": 50000,
+            "created": "2023-12-15T08:54:40.977Z",
+            "modified": "2023-12-29T19:45:34.384Z",
+            "headers": [],
+            "params": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"name\": \"Yidne\",\n  \"phoneNumber\": \"09995368988\",\n  \"role\": \"customer\",\n  \"password\": \"1234\"\n}",
+                "form": []
+            },
+            "tests": []
+        },
+        {
+            "_id": "124a18a6-b71e-4a75-9634-8fed1414a6dc",
+            "colId": "d81f0296-9302-409b-a966-d164c860ff19",
+            "containerId": "83e02068-a6fb-45fe-9c08-3ad28ade497f",
+            "name": "getSingle user",
+            "url": "medicin-locator-service.onrender.com/api/user/65912f4bf08aa8195e56e7e1",
+            "method": "GET",
+            "sortNum": 60000,
+            "created": "2023-12-15T08:54:46.691Z",
+            "modified": "2024-01-03T08:52:05.085Z",
+            "headers": [],
+            "params": [],
+            "tests": []
+        },
+        {
+            "_id": "1686aab2-e881-405d-a55a-597b84988caa",
+            "colId": "d81f0296-9302-409b-a966-d164c860ff19",
+            "containerId": "83e02068-a6fb-45fe-9c08-3ad28ade497f",
+            "name": "updateUser",
+            "url": "http://localhost:5000/api/user/65913019b22a391c3345aa11",
+            "method": "PUT",
+            "sortNum": 70000,
+            "created": "2023-12-15T08:54:53.349Z",
+            "modified": "2024-01-01T12:33:43.966Z",
+            "headers": [],
+            "params": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"newPassword\": \"123\",\n  \"oldPassword\": \"1235\"\n}",
+                "form": []
+            },
+            "tests": []
+        },
+        {
+            "_id": "bff21acf-181c-4e4b-8bb8-4225103c349a",
+            "colId": "d81f0296-9302-409b-a966-d164c860ff19",
+            "containerId": "83e02068-a6fb-45fe-9c08-3ad28ade497f",
+            "name": "get all user",
+            "url": "http://localhost:5000/api/user/all",
+            "method": "GET",
+            "sortNum": 80000,
+            "created": "2023-12-15T08:55:03.211Z",
+            "modified": "2023-12-15T08:55:03.211Z",
+            "headers": [],
+            "params": [],
+            "tests": []
+        },
+        {
+            "_id": "2709383e-20b1-4ffc-8ee4-1d74028fba66",
+            "colId": "d81f0296-9302-409b-a966-d164c860ff19",
+            "containerId": "83e02068-a6fb-45fe-9c08-3ad28ade497f",
+            "name": "delete user",
+            "url": "http://localhost:5000/api/user/6527c2d10f3f145e12f29f83",
+            "method": "DELETE",
+            "sortNum": 90000,
+            "created": "2023-12-15T08:55:11.206Z",
+            "modified": "2023-12-15T08:55:11.206Z",
+            "headers": [],
+            "params": [],
+            "tests": []
+        },
+        {
+            "_id": "46643193-b031-473d-a73c-fdad34023e67",
+            "colId": "d81f0296-9302-409b-a966-d164c860ff19",
+            "containerId": "62085c80-8f72-4424-b2d2-178f6af07651",
+            "name": "filterPharmacy",
+            "url": "medicin-locator-service.onrender.com/api/pharmacy?location=7.6123, 38.9557&fromStore=true",
+            "method": "GET",
+            "sortNum": 110000,
+            "created": "2023-12-15T08:56:49.372Z",
+            "modified": "2024-01-05T07:13:09.391Z",
+            "headers": [],
+            "params": [
+                {
+                    "name": "name",
+                    "value": "Roberts - Doyle",
+                    "isDisabled": true,
+                    "isPath": false
+                },
+                {
+                    "name": "location",
+                    "value": "7.6123, 38.9557",
+                    "isPath": false
+                },
+                {
+                    "name": "drugName",
+                    "value": "s",
+                    "isDisabled": true,
+                    "isPath": false
+                },
+                {
+                    "name": "limit",
+                    "value": "5",
+                    "isDisabled": true,
+                    "isPath": false
+                },
+                {
+                    "name": "page",
+                    "value": "2",
+                    "isDisabled": true,
+                    "isPath": false
+                },
+                {
+                    "name": "fromStore",
+                    "value": "true",
+                    "isPath": false
+                }
+            ],
+            "tests": []
+        },
+        {
+            "_id": "68d55017-5f2c-4607-8a15-f86433857db8",
+            "colId": "d81f0296-9302-409b-a966-d164c860ff19",
+            "containerId": "62085c80-8f72-4424-b2d2-178f6af07651",
+            "name": "pharmacyDetail",
+            "url": "http://localhost:5000/api/pharmacy/657711b99f521e451a499338",
+            "method": "GET",
+            "sortNum": 120000,
+            "created": "2023-12-16T11:16:48.126Z",
+            "modified": "2023-12-16T15:57:07.096Z",
+            "headers": [],
+            "params": [],
+            "tests": []
+        },
+        {
+            "_id": "3d5bbb2d-7379-4280-b07e-d11414d060b8",
+            "colId": "d81f0296-9302-409b-a966-d164c860ff19",
+            "containerId": "b7ada91f-a699-4ade-ba2c-35e350fc6be4",
+            "name": "filterDrug",
+            "url": "medicin-locator-service.onrender.com/api/drug/?location=7.6123, 38.9557&limit=5&page=3",
+            "method": "GET",
+            "sortNum": 130000,
+            "created": "2023-12-16T19:30:59.132Z",
+            "modified": "2023-12-31T13:00:37.373Z",
+            "headers": [],
+            "params": [
+                {
+                    "name": "location",
+                    "value": "7.6123, 38.9557",
+                    "isPath": false
+                },
+                {
+                    "name": "drugName",
+                    "value": "Gorgeous",
+                    "isDisabled": true,
+                    "isPath": false
+                },
+                {
+                    "name": "maxPrice",
+                    "value": "70000",
+                    "isDisabled": true,
+                    "isPath": false
+                },
+                {
+                    "name": "minPrice",
+                    "value": "60000",
+                    "isDisabled": true,
+                    "isPath": false
+                },
+                {
+                    "name": "category",
+                    "value": "Clothing",
+                    "isDisabled": true,
+                    "isPath": false
+                },
+                {
+                    "name": "name",
+                    "value": "Hartmann - Lueilwitz",
+                    "isDisabled": true,
+                    "isPath": false
+                },
+                {
+                    "name": "limit",
+                    "value": "5",
+                    "isPath": false
+                },
+                {
+                    "name": "page",
+                    "value": "3",
+                    "isPath": false
+                }
+            ],
+            "tests": []
+        },
+        {
+            "_id": "ed958cfe-f497-4e0d-be22-cd0d33fa5403",
+            "colId": "d81f0296-9302-409b-a966-d164c860ff19",
+            "containerId": "b7ada91f-a699-4ade-ba2c-35e350fc6be4",
+            "name": "drugDetail",
+            "url": "http://localhost:5000/api/drug/657711b99f521e451a499394",
+            "method": "GET",
+            "sortNum": 140000,
+            "created": "2023-12-17T08:28:49.743Z",
+            "modified": "2023-12-17T08:30:27.332Z",
+            "headers": [],
+            "params": [],
+            "tests": []
+        }
+    ]
+}
