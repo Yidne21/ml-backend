@@ -175,3 +175,40 @@ export const registerPharmacistController = async (req, res, next) => {
     next(error);
   }
 };
+
+export const activateAccountController = async (req, res, next) => {
+  const { email, token } = req.body;
+
+  try {
+    const user = await User.validateActivationToken(token, email);
+    res.status(httpStatus.OK).json(user);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const forgotPasswordController = async (req, res, next) => {
+  const { email } = req.body;
+
+  try {
+    const message = await User.forgotPassword(email);
+    res.status(httpStatus.OK).json(message);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const resetPasswordWithEmailController = async (req, res, next) => {
+  const { email, token, newPassword } = req.body;
+
+  try {
+    const message = await User.resetPasswordWithEmail(
+      email,
+      token,
+      newPassword
+    );
+    res.status(httpStatus.OK).json(message);
+  } catch (error) {
+    next(error);
+  }
+};

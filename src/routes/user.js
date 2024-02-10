@@ -18,6 +18,9 @@ import {
   sendOTP,
   verifyOTP,
   registerPharmacistController,
+  activateAccountController,
+  forgotPasswordController,
+  resetPasswordWithEmailController,
 } from '../controllers/user';
 import { authenticateJwt } from '../middlewares/middlewares';
 
@@ -64,5 +67,22 @@ router.post('/login', parseValidationResult, loginUserController);
 router.post('/refresh-token', parseValidationResult, refreshTokenController);
 
 router.post('/pharmacist', parseValidationResult, registerPharmacistController);
+router.post(
+  '/activate-account',
+  parseValidationResult,
+  activateAccountController
+);
+
+router.post(
+  '/forgot-password',
+  parseValidationResult,
+  forgotPasswordController
+);
+
+router.post(
+  '/reset-passwordWithEmail',
+  parseValidationResult,
+  resetPasswordWithEmailController
+);
 
 export default router;

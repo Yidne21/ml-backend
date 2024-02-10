@@ -41,3 +41,4 @@ export const mailgunUserName = value.MAILGUN_USER_NAME;
 export const mailgunPassword = value.MAILGUN_PASSWORD;
 export const mailgunHost = value.MAILGUN_HOST;
 export const mailgunPort = value.MAILGUN_PORT;
+export const secretKey = value.SECRET_KEY;

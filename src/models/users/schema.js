@@ -52,6 +52,7 @@ const userSchema = new mongoose.Schema(
       },
     ],
     pharmaciestLicense: { type: String },
+    emailVerified: { type: Boolean },
     role: {
       type: String,
       enum: ['admin', 'pharmacist', 'customer', 'superAdmin'],

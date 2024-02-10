@@ -1,15 +1,20 @@
 import httpStatus from 'http-status';
 import bcrypt from 'bcrypt';
 import mongoose from 'mongoose';
+import jwt from 'jsonwebtoken';
 import APIError from '../../errors/APIError';
 import modelNames from '../../utils/constants';
 import {
   generateJwtAccessToken,
   generateJwtRefreshToken,
   verifyRefreshToken,
-} from '../../utils/index';
+  generateHashedPassword,
+  generatePasswordResetUrl,
+  generateAccountActivationUrl,
+} from '../../utils';
 import { getMailer } from '../../config/nodemailer';
-import { appEmailAddress } from '../../config/environments';
+import { appEmailAddress, secretKey } from '../../config/environments';
+import { ForgotPassword, ActivateAccount } from '../../utils/mailTemplate';
 
 export async function signUpUser({ name, phoneNumber, password, role, email }) {
   const hashedpassword = await bcrypt.hash(password, 10);
@@ -322,15 +327,6 @@ export async function registerPharmacist(data) {
   const UserModel = this.model(modelNames.user);
   const PharmacyModel = this.model(modelNames.pharmacy);
 
-  const user = {
-    name,
-    phoneNumber,
-    password: hashedpassword,
-    role: 'pharmacist',
-    email,
-    pharmaciestLicense,
-  };
-
   if (email) {
     const existingEmail = await UserModel.find({ email });
     if (existingEmail.length > 0) {
@@ -341,15 +337,33 @@ export async function registerPharmacist(data) {
     }
   }
 
+  const user = {
+    name,
+    phoneNumber,
+    password: hashedpassword,
+    role: 'pharmacist',
+    email,
+    pharmaciestLicense,
+    emailVerified: false,
+  };
+
   try {
     const pharmacist = await UserModel.create(user);
     pharmacist.clean();
 
+    const activateAccountUrl = generateAccountActivationUrl(
+      hashedpassword,
+      pharmacist._id,
+      email
+    );
+
+    const accountActivationEmailTemplate = ActivateAccount(activateAccountUrl);
+
     const emailContent = {
       to: email,
-      from: appEmailAddress,
-      subject: 'Pharmacist Registration',
-      text: `Hello ${name}, you have been registered as a pharmacist successfully`,
+      from: `Medicine Locator <${appEmailAddress}`,
+      subject: 'Activate Account',
+      html: accountActivationEmailTemplate,
     };
 
     try {
@@ -378,9 +392,12 @@ export async function registerPharmacist(data) {
       pharmacistId: pharmacist._id,
     };
 
-    const newPharmacy = await PharmacyModel.create(pharmacy);
+    await PharmacyModel.create(pharmacy);
 
-    return newPharmacy;
+    return {
+      message: 'Pharmacist registered successfully',
+      activateAccountUrl,
+    };
   } catch (error) {
     console.log('error', error);
     if (error instanceof APIError) throw error;
@@ -391,5 +408,100 @@ export async function registerPharmacist(data) {
         true
       );
     }
+  }
+}
+
+export async function validateActivationToken(token, email) {
+  const tokenOwner = await this.findOne({ email }).exec();
+  if (!tokenOwner) {
+    throw new APIError('Not found', httpStatus.NOT_FOUND);
+  }
+
+  try {
+    const decoded = jwt.verify(token, tokenOwner.password);
+    if (decoded._id === `${tokenOwner._id}`) {
+      tokenOwner.emailVerified = true;
+      await tokenOwner.save();
+      return tokenOwner.clean();
+    }
+
+    throw new APIError('Unauthorized', httpStatus.UNAUTHORIZED);
+  } catch (error) {
+    throw new APIError('Unauthorized', httpStatus.UNAUTHORIZED);
+  }
+}
+
+export async function forgotPassword(email) {
+  try {
+    const tokenOwner = await this.findOne({ email }).exec();
+
+    if (!tokenOwner) {
+      throw new APIError('User not found!', httpStatus.NOT_FOUND);
+    }
+
+    const resetPasswordUrl = generatePasswordResetUrl(
+      secretKey,
+      tokenOwner._id,
+      tokenOwner.email
+    );
+
+    const forgetPasswordEmailTemplate = ForgotPassword(resetPasswordUrl);
+
+    const emailContent = {
+      to: tokenOwner.email,
+      from: `Medicine Locator <${appEmailAddress}`,
+      subject: 'Reset Password',
+      html: forgetPasswordEmailTemplate,
+    };
+
+    try {
+      const mailer = await getMailer();
+      mailer.sendMail(emailContent);
+      console.log('email sent');
+    } catch (error) {
+      console.log('error sending email', error);
+    }
+
+    return {
+      message: 'Password reset email is sent successfully',
+      resetPasswordUrl,
+    };
+  } catch (error) {
+    if (error instanceof APIError) throw error;
+    else {
+      throw new APIError(
+        'Internal error',
+        httpStatus.INTERNAL_SERVER_ERROR,
+        true
+      );
+    }
+  }
+}
+
+export async function resetPasswordWithEmail(email, token, newPassword) {
+  const tokenOwner = await this.findOne({ email }).exec();
+  if (!tokenOwner) {
+    throw new APIError('Not found', httpStatus.NOT_FOUND);
+  }
+
+  try {
+    const decoded = jwt.verify(token, secretKey);
+    if (decoded._id === `${tokenOwner._id}`) {
+      tokenOwner.password = await generateHashedPassword(newPassword);
+    } else {
+      throw new APIError(
+        'You are not authorized to change other users password',
+        httpStatus.UNAUTHORIZED
+      );
+    }
+
+    await tokenOwner.save();
+
+    return {
+      message: 'Password changed successfully',
+      user: tokenOwner.clean(),
+    };
+  } catch (error) {
+    throw new APIError('Unauthorized', httpStatus.UNAUTHORIZED);
   }
 }

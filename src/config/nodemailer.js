@@ -7,8 +7,6 @@ import {
   mailgunUserName,
 } from './environments';
 
-console.log(mailgunHost, mailgunPassword, mailgunPort, mailgunUserName);
-
 const getMailer = async () => {
   const config = {
     host: mailgunHost,
