@@ -33,3 +33,102 @@ export const drugDetailController = async (req, res, next) => {
     next(error);
   }
 };
+
+export const createDrugController = async (req, res, next) => {
+  const { pharmacyId } = req.user;
+  const {
+    name,
+    price,
+    cost,
+    drugPhoto,
+    recivedFrom,
+    category,
+    ingredients,
+    instruction,
+    sideEffects,
+    strengthAndDosage,
+    manufacturedDate,
+    expiredDate,
+    stockLevel,
+    minStockLevel,
+    needPrescription,
+  } = req.body;
+
+  const drugData = {
+    name,
+    price,
+    cost,
+    drugPhoto,
+    pharmacyId,
+    recivedFrom,
+    category,
+    ingredients,
+    instruction,
+    sideEffects,
+    strengthAndDosage,
+    manufacturedDate,
+    expiredDate,
+    stockLevel,
+    minStockLevel,
+    needPrescription,
+  };
+  try {
+    const drug = await Drug.createDrug(drugData);
+    res.status(httpStatus.CREATED).json(drug);
+  } catch (error) {
+    next(error);
+  }
+};
+export const updateDrugController = async (req, res, next) => {
+  const { drugId } = req.params;
+  const {
+    name,
+    price,
+    cost,
+    drugPhoto,
+    recivedFrom,
+    category,
+    ingredients,
+    instruction,
+    sideEffects,
+    strengthAndDosage,
+    manufacturedDate,
+    expiredDate,
+    stockLevel,
+    minStockLevel,
+    needPrescription,
+  } = req.body;
+
+  const drugData = {
+    name,
+    price,
+    cost,
+    drugPhoto,
+    recivedFrom,
+    category,
+    ingredients,
+    instruction,
+    sideEffects,
+    strengthAndDosage,
+    manufacturedDate,
+    expiredDate,
+    stockLevel,
+    minStockLevel,
+    needPrescription,
+  };
+  try {
+    const drug = await Drug.updateDrug(drugId, drugData);
+    res.status(httpStatus.OK).json(drug);
+  } catch (error) {
+    next(error);
+  }
+};
+export const deleteDrugController = async (req, res, next) => {
+  const { drugId } = req.params;
+  try {
+    const message = await Drug.deleteDrug(drugId);
+    res.status(httpStatus.OK).json(message);
+  } catch (error) {
+    next(error);
+  }
+};
