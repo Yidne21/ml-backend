@@ -230,3 +230,62 @@ export async function drugDetail(drugId) {
     }
   }
 }
+
+export async function createDrug(drugData) {
+  const drugModel = this.model(modelNames.drug);
+  try {
+    const drug = await drugModel.create(drugData);
+    return drug;
+  } catch (error) {
+    if (error instanceof APIError) throw error;
+    else {
+      throw new APIError(
+        'Internal Error',
+        httpStatus.INTERNAL_SERVER_ERROR,
+        true
+      );
+    }
+  }
+}
+
+export async function updateDrug(drugId, drugData) {
+  const drugModel = this.model(modelNames.drug);
+  try {
+    const drug = await drugModel.findByIdAndUpdate(drugId, drugData, {
+      new: true,
+    });
+    if (!drug) {
+      throw new APIError('drug not found', httpStatus.NOT_FOUND, true);
+    }
+    return drug;
+  } catch (error) {
+    if (error instanceof APIError) throw error;
+    else {
+      throw new APIError(
+        'Internal Error',
+        httpStatus.INTERNAL_SERVER_ERROR,
+        true
+      );
+    }
+  }
+}
+
+export async function deleteDrug(drugId) {
+  const drugModel = this.model(modelNames.drug);
+  try {
+    const drug = await drugModel.findByIdAndDelete(drugId);
+    if (!drug) {
+      throw new APIError('drug not found', httpStatus.NOT_FOUND, true);
+    }
+    return drug;
+  } catch (error) {
+    if (error instanceof APIError) throw error;
+    else {
+      throw new APIError(
+        'Internal Error',
+        httpStatus.INTERNAL_SERVER_ERROR,
+        true
+      );
+    }
+  }
+}
