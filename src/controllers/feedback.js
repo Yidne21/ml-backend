@@ -2,8 +2,8 @@ import httpStatus from 'http-status';
 import Feedback from '../models/feedbacks';
 
 export const createFeedbackController = async (req, res, next) => {
-  const userId = req.user;
-  const { title, content } = req.body;
+  // const userId = req.user;
+  const { title, content, userId } = req.body;
   const feedbackData = { userId, title, content };
   try {
     const feedback = await Feedback.createFeedback(feedbackData);
@@ -22,8 +22,26 @@ export const feedbackDetailController = async (req, res, next) => {
   }
 };
 export const filterFeedbackController = async (req, res, next) => {
-  const { userRole, createdAt, title, userEmail, userName } = req.query;
-  const filter = { userRole, createdAt, title, userEmail, userName };
+  const {
+    userRole,
+    sortOrder,
+    sortBy,
+    title,
+    userEmail,
+    userName,
+    page,
+    limit,
+  } = req.query;
+  const filter = {
+    userRole,
+    sortOrder,
+    sortBy,
+    title,
+    userEmail,
+    userName,
+    page,
+    limit,
+  };
   try {
     const feedbacks = await Feedback.filterFeedback(filter);
     res.status(httpStatus.OK).json(feedbacks);

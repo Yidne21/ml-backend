@@ -5,7 +5,8 @@ import modelNames from '../../utils/constants';
 
 export async function filterFeedback({
   userRole,
-  createdAt,
+  sortOrder,
+  sortBy,
   title,
   userEmail,
   userName,
@@ -13,67 +14,227 @@ export async function filterFeedback({
   limit = 10,
 }) {
   const FeedbackModel = this.model(modelNames.feedback);
-  const filter = {};
-  if (userRole) filter.userRole = userRole;
-  if (createdAt) filter.createdAt = createdAt;
-  if (title) filter.title = title;
-  if (userEmail) filter.userEmail = userEmail;
-  if (userName) filter.userName = userName;
+  try {
+    const feedbacks = await FeedbackModel.aggregate([
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'userId',
+          foreignField: '_id',
+          as: 'user',
+        },
+      },
+      {
+        $unwind: {
+          path: '$user',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $match: {
+          ...(userRole ? { 'user.role': userRole } : {}),
+          ...(title ? { title: { $regex: new RegExp(title, 'i') } } : {}),
+          ...(userEmail
+            ? { 'user.email': { $regex: new RegExp(userEmail, 'i') } }
+            : {}),
+          ...(userName
+            ? { 'user.name': { $regex: new RegExp(userName, 'i') } }
+            : {}),
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          title: 1,
+          content: 1,
+          user: {
+            _id: 1,
+            name: 1,
+            email: 1,
+            role: 1,
+          },
+          createdAt: 1,
+        },
+      },
+      {
+        $sort: {
+          [sortBy || 'createdAt']: sortOrder === 'asc' ? 1 : -1,
+        },
+      },
+      {
+        $facet: {
+          paginationInfo: [
+            { $count: 'totalDocuments' },
+            {
+              $addFields: {
+                totalDocuments: { $ifNull: ['$totalDocuments', 0] },
+                totalPages: {
+                  $ceil: {
+                    $divide: [
+                      { $ifNull: ['$totalDocuments', 1] },
+                      parseInt(limit, 10),
+                    ],
+                  },
+                },
+              },
+            },
+            {
+              $project: {
+                totalDocuments: 1,
+                totalPages: 1,
+              },
+            },
+          ],
+          results: [
+            { $skip: (parseInt(page, 10) - 1) * parseInt(limit, 10) },
+            { $limit: parseInt(limit, 10) },
+          ],
+        },
+      },
+      {
+        $unwind: { path: '$paginationInfo', preserveNullAndEmptyArrays: true },
+      },
+      {
+        $project: {
+          totalDocuments: { $ifNull: ['$paginationInfo.totalDocuments', 0] },
+          totalPages: { $ifNull: ['$paginationInfo.totalPages', 0] },
+          feedbacks: '$results',
+        },
+      },
+    ]);
 
-  const feedbacks = await FeedbackModel.find(filter)
-    .limit(limit)
-    .skip(limit * (page - 1))
-    .sort({ createdAt: -1 })
-    .populate('userId', 'name email')
-    .exec();
-
-  return feedbacks;
+    return feedbacks[0];
+  } catch (error) {
+    if (error instanceof APIError) throw error;
+    else {
+      throw new APIError(
+        'Internal Error',
+        httpStatus.INTERNAL_SERVER_ERROR,
+        true
+      );
+    }
+  }
 }
 
 export async function getFeedbackById(feedbackId) {
   const FeedbackModel = this.model(modelNames.feedback);
-  const feedback = await FeedbackModel.findById(feedbackId);
-  if (!feedback) {
-    throw new APIError({
-      message: 'Feedback not found',
-      status: httpStatus.NOT_FOUND,
-    });
+  try {
+    const feedback = await FeedbackModel.aggregate([
+      {
+        $match: {
+          _id: mongoose.Types.ObjectId(feedbackId),
+        },
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'userId',
+          foreignField: '_id',
+          as: 'user',
+        },
+      },
+      {
+        $unwind: {
+          path: '$user',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          title: 1,
+          content: 1,
+          user: {
+            _id: 1,
+            name: 1,
+            email: 1,
+          },
+          createdAt: 1,
+        },
+      },
+    ]);
+
+    console.log(feedback);
+    if (!feedback[0]) {
+      throw new APIError('Feedback not found', httpStatus.NOT_FOUND, true);
+    }
+    return feedback[0];
+  } catch (error) {
+    if (error instanceof APIError) throw error;
+    else {
+      throw new APIError(
+        'Internal Error',
+        httpStatus.INTERNAL_SERVER_ERROR,
+        true
+      );
+    }
   }
-  return feedback;
 }
 
 export async function createFeedback(feedbackData) {
   const FeedbackModel = this.model(modelNames.feedback);
-  const feedback = await FeedbackModel.create(feedbackData);
-  return feedback;
+  try {
+    const feedback = await FeedbackModel.create(feedbackData);
+    return feedback;
+  } catch (error) {
+    if (error instanceof APIError) throw error;
+    else {
+      throw new APIError(
+        'Internal Error',
+        httpStatus.INTERNAL_SERVER_ERROR,
+        true
+      );
+    }
+  }
 }
 
 export async function deleteFeedback(feedbackId) {
   const FeedbackModel = this.model(modelNames.feedback);
-  const feedback = await FeedbackModel.findByIdAndDelete(feedbackId);
-  if (!feedback) {
-    throw new APIError({
-      message: 'Feedback not found',
-      status: httpStatus.NOT_FOUND,
-    });
+  try {
+    const feedback = await FeedbackModel.findByIdAndDelete(feedbackId);
+    if (!feedback) {
+      throw new APIError('Feedback not found', httpStatus.NOT_FOUND, true);
+    }
+    return feedback;
+  } catch (error) {
+    if (error instanceof APIError) throw error;
+    else {
+      throw new APIError(
+        'Internal Error',
+        httpStatus.INTERNAL_SERVER_ERROR,
+        true
+      );
+    }
   }
-  return feedback;
 }
-
 export async function updateFeedback(feedbackId, feedbackData) {
   const FeedbackModel = this.model(modelNames.feedback);
-  const feedback = await FeedbackModel.findByIdAndUpdate(
-    feedbackId,
-    feedbackData,
-    {
-      new: true,
-    }
-  );
-  if (!feedback) {
-    throw new APIError({
-      message: 'Feedback not found',
-      status: httpStatus.NOT_FOUND,
-    });
+  const currentFeedback = await FeedbackModel.findById(feedbackId);
+  if (!currentFeedback) {
+    throw new APIError('Feedback not found', httpStatus.NOT_FOUND, true);
   }
-  return feedback;
+
+  const updateFields = {
+    title: feedbackData.title || currentFeedback.title,
+    content: feedbackData.content || currentFeedback.content,
+  };
+  try {
+    const feedback = await FeedbackModel.findByIdAndUpdate(
+      feedbackId,
+      updateFields,
+      {
+        new: true,
+      }
+    );
+    return feedback;
+  } catch (error) {
+    if (error instanceof APIError) throw error;
+    else {
+      throw new APIError(
+        'Internal Error',
+        httpStatus.INTERNAL_SERVER_ERROR,
+        true
+      );
+    }
+  }
 }
