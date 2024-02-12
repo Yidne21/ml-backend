@@ -2,10 +2,12 @@ import httpStatus from 'http-status';
 import mongoose from 'mongoose';
 import APIError from '../../errors/APIError';
 import modelNames from '../../utils/constants';
+import { paginationPipeline } from '../../utils/index';
 
 export async function filterReview({
   pharmacyId,
-  userId,
+  sortBy,
+  sortOrder,
   pharmacyName,
   pharmacyEmail,
   userName,
@@ -14,23 +16,78 @@ export async function filterReview({
   limit = 10,
 }) {
   const ReviewModel = this.model(modelNames.review);
-  const filter = {};
-  if (pharmacyId) filter.pharmacyId = pharmacyId;
-  if (userId) filter.userId = userId;
-  if (pharmacyName) filter.pharmacyName = pharmacyName;
-  if (pharmacyEmail) filter.pharmacyEmail = pharmacyEmail;
-  if (userName) filter.userName = userName;
-  if (userEmail) filter.userEmail = userEmail;
 
   try {
-    const reviews = await ReviewModel.find(filter)
-      .limit(limit)
-      .skip(limit * (page - 1))
-      .sort({ createdAt: -1 })
-      .populate('userId', 'name email')
-      .exec();
+    const reviews = await ReviewModel.aggregate([
+      {
+        $match: {
+          ...(pharmacyId && {
+            pharmacyId: mongoose.Types.ObjectId(pharmacyId),
+          }),
+        },
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'reviewedBy',
+          foreignField: '_id',
+          as: 'user',
+        },
+      },
+      {
+        $unwind: '$user',
+      },
+      {
+        $lookup: {
+          from: 'pharmacies',
+          localField: 'pharmacyId',
+          foreignField: '_id',
+          as: 'pharmacy',
+        },
+      },
+      {
+        $unwind: '$pharmacy',
+      },
+      {
+        $match: {
+          ...(pharmacyName && {
+            'pharmacy.name': { $regex: pharmacyName, $options: 'i' },
+          }),
+          ...(pharmacyEmail && {
+            'pharmacy.email': { $regex: pharmacyEmail, $options: 'i' },
+          }),
+          ...(userName && {
+            'user.name': { $regex: userName, $options: 'i' },
+          }),
+          ...(userEmail && {
+            'user.email': { $regex: userEmail, $options: 'i' },
+          }),
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          rating: 1,
+          feedback: 1,
+          reviewedBy: 1,
+          pharmacyId: 1,
+          'user.name': 1,
+          'user.email': 1,
+          'pharmacy.name': 1,
+          'pharmacy.email': 1,
+          createdAt: 1,
+          updatedAt: 1,
+        },
+      },
+      {
+        $sort: {
+          [sortBy || 'createdAt']: sortOrder === 'desc' ? -1 : 1,
+        },
+      },
+      ...paginationPipeline(page, limit),
+    ]);
 
-    return reviews;
+    return reviews[0];
   } catch (error) {
     if (error instanceof APIError) throw error;
     else {
@@ -66,11 +123,59 @@ export async function getReviewById(reviewId) {
     throw new APIError('Invalid review id', httpStatus.BAD_REQUEST, true);
   }
   try {
-    const review = await ReviewModel.findById(reviewId).exec();
-    if (!review) {
+    const reviewExists = await ReviewModel.find({ _id: reviewId });
+    if (!reviewExists) {
       throw new APIError('Review not found', httpStatus.NOT_FOUND, true);
     }
-    return review;
+
+    const review = await ReviewModel.aggregate([
+      {
+        $match: {
+          _id: mongoose.Types.ObjectId(reviewId),
+        },
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'reviewedBy',
+          foreignField: '_id',
+          as: 'user',
+        },
+      },
+      {
+        $unwind: '$user',
+      },
+      {
+        $lookup: {
+          from: 'pharmacies',
+          localField: 'pharmacyId',
+          foreignField: '_id',
+          as: 'pharmacy',
+        },
+      },
+      {
+        $unwind: '$pharmacy',
+      },
+      {
+        $project: {
+          _id: 1,
+          rating: 1,
+          feedback: 1,
+          reviewedBy: 1,
+          pharmacyId: 1,
+          'user.name': 1,
+          'user.email': 1,
+          'pharmacy.name': 1,
+          'pharmacy.email': 1,
+          createdAt: 1,
+          updatedAt: 1,
+        },
+      },
+    ]);
+    if (!review[0]) {
+      throw new APIError('Review not found', httpStatus.NOT_FOUND, true);
+    }
+    return review[0];
   } catch (error) {
     if (error instanceof APIError) throw error;
     else {
@@ -85,10 +190,23 @@ export async function getReviewById(reviewId) {
 
 export async function updateReview(reviewId, reviewData) {
   const ReviewModel = this.model(modelNames.review);
+  const currentReview = await ReviewModel.findById(reviewId);
+  if (!currentReview) {
+    throw new APIError('Review not found', httpStatus.NOT_FOUND, true);
+  }
+
+  const updatedFields = {
+    rating: reviewData.rating || currentReview.rating,
+    feedback: reviewData.feedback || currentReview.feedback,
+  };
   try {
-    const review = await ReviewModel.findByIdAndUpdate(reviewId, reviewData, {
-      new: true,
-    });
+    const review = await ReviewModel.findByIdAndUpdate(
+      reviewId,
+      updatedFields,
+      {
+        new: true,
+      }
+    );
     if (!review) {
       throw new APIError('Review not found', httpStatus.NOT_FOUND, true);
     }
