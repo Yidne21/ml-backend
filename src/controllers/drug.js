@@ -35,7 +35,7 @@ export const drugDetailController = async (req, res, next) => {
 };
 
 export const createDrugController = async (req, res, next) => {
-  const { pharmacyId } = req.user;
+  // const { pharmacyId } = req.user;
   const {
     name,
     price,
@@ -52,6 +52,7 @@ export const createDrugController = async (req, res, next) => {
     stockLevel,
     minStockLevel,
     needPrescription,
+    pharmacyId,
   } = req.body;
 
   const drugData = {

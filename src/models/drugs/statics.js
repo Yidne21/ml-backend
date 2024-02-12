@@ -250,8 +250,33 @@ export async function createDrug(drugData) {
 
 export async function updateDrug(drugId, drugData) {
   const drugModel = this.model(modelNames.drug);
+
+  const currentDrug = await drugModel.findById(drugId);
+  if (!currentDrug) {
+    throw new APIError('drug not found', httpStatus.NOT_FOUND, true);
+  }
+
+  const updatedFields = {
+    name: drugData.name || currentDrug.name,
+    price: drugData.price || currentDrug.price,
+    cost: drugData.cost || currentDrug.cost,
+    drugPhoto: drugData.drugPhoto || currentDrug.drugPhoto,
+    recivedFrom: drugData.recivedFrom || currentDrug.recivedFrom,
+    category: drugData.category || currentDrug.category,
+    ingredients: drugData.ingredients || currentDrug.ingredients,
+    instruction: drugData.instruction || currentDrug.instruction,
+    sideEffects: drugData.sideEffects || currentDrug.sideEffects,
+    strengthAndDosage:
+      drugData.strengthAndDosage || currentDrug.strengthAndDosage,
+    manufacturedDate: currentDrug.manufacturedDate,
+    expiredDate: currentDrug.expiredDate,
+    stockLevel: drugData.stockLevel || currentDrug.stockLevel,
+    minStockLevel: drugData.minStockLevel || currentDrug.minStockLevel,
+    needPrescription: drugData.needPrescription || currentDrug.needPrescription,
+  };
+
   try {
-    const drug = await drugModel.findByIdAndUpdate(drugId, drugData, {
+    const drug = await drugModel.findByIdAndUpdate(drugId, updatedFields, {
       new: true,
     });
     if (!drug) {
