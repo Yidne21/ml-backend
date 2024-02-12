@@ -2,6 +2,7 @@ import httpStatus from 'http-status';
 import mongoose from 'mongoose';
 import APIError from '../../errors/APIError';
 import modelNames from '../../utils/constants';
+import { paginationPipeline } from '../../utils/index';
 
 export async function filterPharmacy({
   name,
@@ -93,46 +94,7 @@ export async function filterPharmacy({
         'drug.stockLevel': 1,
       },
     },
-    {
-      $facet: {
-        paginationInfo: [
-          { $count: 'totalDocuments' },
-          {
-            $addFields: {
-              totalDocuments: { $ifNull: ['$totalDocuments', 0] },
-              totalPages: {
-                $ceil: {
-                  $divide: [
-                    { $ifNull: ['$totalDocuments', 1] },
-                    parseInt(limit, 10),
-                  ],
-                },
-              },
-            },
-          },
-          {
-            $project: {
-              totalDocuments: 1,
-              totalPages: 1,
-            },
-          },
-        ],
-        results: [
-          { $skip: (parseInt(page, 10) - 1) * parseInt(limit, 10) },
-          { $limit: parseInt(limit, 10) },
-        ],
-      },
-    },
-    {
-      $unwind: { path: '$paginationInfo', preserveNullAndEmptyArrays: true },
-    },
-    {
-      $project: {
-        totalDocuments: { $ifNull: ['$paginationInfo.totalDocuments', 0] },
-        totalPages: { $ifNull: ['$paginationInfo.totalPages', 0] },
-        pharmacies: '$results',
-      },
-    },
+    ...paginationPipeline(page, limit),
   ];
 
   try {
@@ -140,7 +102,6 @@ export async function filterPharmacy({
 
     return nearbyPharmacies[0];
   } catch (error) {
-    console.log(error);
     if (error instanceof APIError) throw error;
     else {
       throw new APIError(

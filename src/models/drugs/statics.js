@@ -2,6 +2,7 @@ import httpStatus from 'http-status';
 import mongoose from 'mongoose';
 import APIError from '../../errors/APIError';
 import modelNames from '../../utils/constants';
+import { paginationPipeline } from '../../utils';
 
 export async function filterDrug({
   maxPrice,
@@ -101,46 +102,7 @@ export async function filterDrug({
         drugPhoto: 1,
       },
     },
-    {
-      $facet: {
-        paginationInfo: [
-          { $count: 'totalDocuments' },
-          {
-            $addFields: {
-              totalDocuments: { $ifNull: ['$totalDocuments', 0] },
-              totalPages: {
-                $ceil: {
-                  $divide: [
-                    { $ifNull: ['$totalDocuments', 1] },
-                    parseInt(limit, 10),
-                  ],
-                },
-              },
-            },
-          },
-          {
-            $project: {
-              totalDocuments: 1,
-              totalPages: 1,
-            },
-          },
-        ],
-        results: [
-          { $skip: (parseInt(page, 10) - 1) * parseInt(limit, 10) },
-          { $limit: parseInt(limit, 10) },
-        ],
-      },
-    },
-    {
-      $unwind: { path: '$paginationInfo', preserveNullAndEmptyArrays: true },
-    },
-    {
-      $project: {
-        totalDocuments: { $ifNull: ['$paginationInfo.totalDocuments', 0] },
-        totalPages: { $ifNull: ['$paginationInfo.totalPages', 0] },
-        drugs: '$results',
-      },
-    },
+    ...paginationPipeline(page, limit),
   ];
 
   try {
