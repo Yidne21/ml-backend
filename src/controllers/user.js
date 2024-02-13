@@ -112,8 +112,20 @@ export const updateUserController = async (req, res, next) => {
 };
 
 export const getAllUserController = async (req, res, next) => {
+  const { role, name, email, phoneNumber, sortBy, sortOrder, limit, page } =
+    req.query;
+  const filter = {
+    role,
+    name,
+    email,
+    phoneNumber,
+    sortBy,
+    sortOrder,
+    limit,
+    page,
+  };
   try {
-    const users = await User.getAllUser();
+    const users = await User.getAllUser(filter);
     res.status(httpStatus.OK).json(users);
   } catch (error) {
     next(error);

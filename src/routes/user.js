@@ -37,7 +37,7 @@ router.post(
   signUpUserController
 );
 
-router.get('/all', getAllUserController);
+router.get('/', getAllUserController);
 
 router.put(
   '/:userId',

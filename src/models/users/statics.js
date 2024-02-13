@@ -11,6 +11,7 @@ import {
   generateHashedPassword,
   generatePasswordResetUrl,
   generateAccountActivationUrl,
+  paginationPipeline,
 } from '../../utils';
 import { getMailer } from '../../config/nodemailer';
 import { appEmailAddress, secretKey } from '../../config/environments';
@@ -231,20 +232,44 @@ export async function resetPassword({ phoneNumber, newPassword }) {
   }
 }
 
-export async function getAllUser() {
+export async function getAllUser({
+  role,
+  name,
+  email,
+  phoneNumber,
+  sortBy,
+  sortOrder,
+  limit = 10,
+  page = 1,
+}) {
   const UserModel = this.model(modelNames.user);
   try {
     const users = await UserModel.aggregate([
+      {
+        $match: {
+          ...(role && { role }),
+          ...(name && { name: { $regex: name, $options: 'i' } }),
+          ...(email && { email: { $regex: email, $options: 'i' } }),
+          ...(phoneNumber && { phoneNumber }),
+        },
+      },
       {
         $project: {
           name: 1,
           phoneNumber: 1,
           role: 1,
+          email: 1,
         },
       },
+      {
+        $sort: {
+          [sortBy || 'createdAt']: sortOrder === 'asc' ? 1 : -1,
+        },
+      },
+      ...paginationPipeline(page, limit),
     ]);
 
-    return users;
+    return users[0];
   } catch (error) {
     if (error instanceof APIError) throw error;
     else {
