@@ -16,14 +16,21 @@ export const filterTransactionController = async (req, res, next) => {
     receiverName,
     accountHolderName,
     accountNumber,
-    reason,
     sortBy,
     sortOrder,
-    createdAt,
     page,
     limit,
   } = req.query;
-  const filter = { senderName, receiverName, page, limit };
+  const filter = {
+    senderName,
+    receiverName,
+    accountHolderName,
+    accountNumber,
+    sortBy,
+    sortOrder,
+    page,
+    limit,
+  };
   try {
     const transactions = await Transaction.filterTransaction(filter);
     return res.status(httpStatus.OK).json(transactions);
