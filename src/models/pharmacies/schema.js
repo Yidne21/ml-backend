@@ -34,6 +34,9 @@ const pharmacySchema = new mongoose.Schema(
     },
     pharmacyLicense: { type: String, required: true },
   },
+  {
+    deliverPricePerKm: { type: Number, default: 0 },
+  },
   { timestamps: true }
 );
 

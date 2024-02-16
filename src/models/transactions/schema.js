@@ -22,6 +22,7 @@ const transactionSchema = new mongoose.Schema(
       branchName: { type: String },
       accountType: { type: String },
     },
+    amount: { type: Number, required: true },
     reason: { type: String },
   },
   { timestamps: true }

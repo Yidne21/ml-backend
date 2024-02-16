@@ -31,11 +31,11 @@ export async function filterReview({
           from: 'users',
           localField: 'reviewedBy',
           foreignField: '_id',
-          as: 'user',
+          as: 'customer',
         },
       },
       {
-        $unwind: '$user',
+        $unwind: '$customer',
       },
       {
         $lookup: {
@@ -57,10 +57,10 @@ export async function filterReview({
             'pharmacy.email': { $regex: pharmacyEmail, $options: 'i' },
           }),
           ...(userName && {
-            'user.name': { $regex: userName, $options: 'i' },
+            'customer.name': { $regex: userName, $options: 'i' },
           }),
           ...(userEmail && {
-            'user.email': { $regex: userEmail, $options: 'i' },
+            'customer.email': { $regex: userEmail, $options: 'i' },
           }),
         },
       },
@@ -71,8 +71,8 @@ export async function filterReview({
           feedback: 1,
           reviewedBy: 1,
           pharmacyId: 1,
-          'user.name': 1,
-          'user.email': 1,
+          'customer.name': 1,
+          'customer.email': 1,
           'pharmacy.name': 1,
           'pharmacy.email': 1,
           createdAt: 1,
