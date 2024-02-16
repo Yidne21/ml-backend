@@ -51,7 +51,6 @@ const orderSchema = new mongoose.Schema(
     quantity: {
       type: Number,
     },
-    profit: { type: Number },
     status: {
       type: String,
       enum: ['inprogress', 'delivered', 'aborted'],
