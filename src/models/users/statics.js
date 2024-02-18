@@ -283,28 +283,57 @@ export async function getAllUser({
 }
 
 export async function loginUser(data) {
-  const { phoneNumber, password } = data;
-  const user = await this.findOne({ phoneNumber }).exec();
-  const doesntMatchError = new APIError(
-    "Email or Password doesn't match",
-    httpStatus.UNAUTHORIZED,
-    true
-  );
-  if (!user) {
-    throw doesntMatchError;
-  }
+  const { phoneNumber, password, email } = data;
 
-  const passwordMatch = await bcrypt.compare(password, user.password);
-  if (passwordMatch) {
-    const token = generateJwtAccessToken(user._id);
-    const newRefreshToken = generateJwtRefreshToken(user._id);
-    const cleanUser = user.clean();
-    cleanUser.accessToken = token;
-    cleanUser.refreshToken = newRefreshToken;
-    return cleanUser;
-  }
+  let user;
 
-  throw doesntMatchError;
+  try {
+    if (phoneNumber) {
+      user = await this.findOne({ phoneNumber }).exec();
+      if (!user) {
+        throw new APIError(
+          "phoneNumber or Password doesn't match",
+          httpStatus.UNAUTHORIZED,
+          true
+        );
+      }
+    }
+
+    if (email) {
+      user = await this.findOne({
+        email,
+        role: 'pharmacist' || 'admin' || 'superAdmin',
+      }).exec();
+      if (!user) {
+        throw new APIError(
+          "phoneNumber or Password doesn't match",
+          httpStatus.UNAUTHORIZED,
+          true
+        );
+      }
+    }
+
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    if (passwordMatch) {
+      const token = generateJwtAccessToken(user._id);
+      const newRefreshToken = generateJwtRefreshToken(user._id);
+      const cleanUser = user.clean();
+      cleanUser.accessToken = token;
+      cleanUser.refreshToken = newRefreshToken;
+      return cleanUser;
+    }
+
+    throw new APIError('Invalid credentials', httpStatus.UNAUTHORIZED, true);
+  } catch (error) {
+    if (error instanceof APIError) throw error;
+    else {
+      throw new APIError(
+        'Internal error',
+        httpStatus.INTERNAL_SERVER_ERROR,
+        true
+      );
+    }
+  }
 }
 
 export async function refreshToken(token) {

@@ -133,8 +133,8 @@ export const getAllUserController = async (req, res, next) => {
 };
 
 export const loginUserController = async (req, res, next) => {
-  const { phoneNumber, password } = req.body;
-  const data = { phoneNumber, password };
+  const { phoneNumber, password, email } = req.body;
+  const data = { phoneNumber, password, email };
   try {
     const user = await User.loginUser(data);
     res.status(httpStatus.OK).json(user);
