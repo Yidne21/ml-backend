@@ -8,6 +8,10 @@ const transactionSchema = new mongoose.Schema(
       required: true,
       ref: 'User',
     },
+    orderId: {
+      type: mongoose.Types.ObjectId,
+      ref: 'Order',
+    },
     senderAccount: {
       accountHolderName: { type: String },
       accountNumber: { type: String },
@@ -24,6 +28,12 @@ const transactionSchema = new mongoose.Schema(
     },
     amount: { type: Number, required: true },
     reason: { type: String },
+    status: {
+      type: String,
+      enum: ['pending', 'completed', 'failed', 'refunded'],
+      default: 'pending',
+      required: true,
+    },
   },
   { timestamps: true }
 );
