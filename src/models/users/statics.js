@@ -284,6 +284,7 @@ export async function getAllUser({
 
 export async function loginUser(data) {
   const { phoneNumber, password, email } = data;
+  console.log('data', data);
 
   let user;
 
@@ -306,7 +307,7 @@ export async function loginUser(data) {
       }).exec();
       if (!user) {
         throw new APIError(
-          "phoneNumber or Password doesn't match",
+          "email or Password doesn't match",
           httpStatus.UNAUTHORIZED,
           true
         );
