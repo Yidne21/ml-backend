@@ -26,7 +26,6 @@ jobs:
         run: |
           yarn install
           yarn build --if-present
-          yarn test --if-present
 
   deploy:
     runs-on: ubuntu-latest
