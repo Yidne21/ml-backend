@@ -14,21 +14,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Set up Node.js version
         uses: actions/setup-node@v3
         with:
           node-version: '18.x'
 
-      - name: yarn install, and build
+      - name: npm install and build
         run: |
-          yarn
-          yarn build
-          
+          yarn install
+          yarn run build
+
       - name: Zip artifact for deployment
-        run: zip -r release.zip ./src/* package.json yarn.lock babel.config.json
+        run: zip release.zip ./build/*
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v3
