@@ -8,7 +8,7 @@
   "private": true,
   "scripts": {
     "start": "nodemon src/index.js --exec babel-node -e js",
-    "start:prod": "yarn install && node src/index.js",
+    "start:prod": "yarn build && NODE_ENV=production node build/index.js",
     "clean": "rm -rf build && mkdir build",
     "build-babel": "babel -d ./build ./src -s",
     "build": "yarn clean && yarn build-babel",
