@@ -11,7 +11,7 @@
     "start:prod": "yarn build && node build/index.js",
     "clean": "rm -rf build && mkdir build",
     "build-babel": "babel -d ./build ./src -s",
-    "build": "yarn install && yarn build-babel",
+    "build": "yarn clean && yarn build-babel",
     "lint": "eslint . --ext .js --color -f table",
     "test": "NODE_ENV=test mocha __tests__ --require @babel/register --recursive",
     "coverage": "nyc yarn test",
