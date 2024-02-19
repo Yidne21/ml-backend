@@ -37,6 +37,11 @@ app.use(cors());
 
 app.use('/api', routes);
 
+// Default app domain/route
+app.get('/', (req, res) => {
+  res.send('<h1>Welcome to the Medicine Locator API!</h1>');
+});
+
 // 404 - endpoint not found
 app.use((req, res, next) => {
   const notFoundError = new APIError(
