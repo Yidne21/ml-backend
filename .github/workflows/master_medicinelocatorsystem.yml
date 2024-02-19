@@ -54,5 +54,5 @@ jobs:
         with:
           app-name: 'medicinelocatorsystem'
           slot-name: 'Production'
-          package: $(System.ArtifactsDirectory)/node-app/release.zip
+          package: ./node-app/release.zip
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_E4487C253AE54710A5E97D84B233A9E0 }}
