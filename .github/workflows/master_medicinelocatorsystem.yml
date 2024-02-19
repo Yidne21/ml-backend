@@ -24,11 +24,11 @@ jobs:
 
       - name: yarn install, and build
         run: |
-          yarn install
+          yarn
           yarn build
           
       - name: Zip artifact for deployment
-        run: zip release.zip ./src* -r
+        run: zip release.zip ./src/* -r
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v3
