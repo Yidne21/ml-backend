@@ -42,7 +42,6 @@ export const filterTransactionController = async (req, res, next) => {
     return next(error);
   }
 };
-
 export const chapaTransactionController = async (req, res, next) => {
   const {
     account_name,
@@ -85,7 +84,7 @@ export const chapaTransactionController = async (req, res, next) => {
   try {
     console.log(transaction);
     // const message = await Transaction.chapaTransaction(transaction);
-    return res.status(httpStatus.OK);
+    return res.sendStatus(200); // Return 200 status code in the HTTP header
   } catch (error) {
     return next(error);
   }
