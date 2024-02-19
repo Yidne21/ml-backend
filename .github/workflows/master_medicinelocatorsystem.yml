@@ -27,7 +27,7 @@ jobs:
           yarn run build
 
       - name: Zip artifact for deployment
-        run: zip release.zip ./build/*
+        run: zip release.zip ./build/* package.json yarn.lock babel.config.json
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v3
