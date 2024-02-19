@@ -27,7 +27,7 @@ jobs:
           yarn run build
 
       - name: Zip artifact for deployment
-        run: zip release.zip ./build/* package.json yarn.lock babel.config.json
+        run: zip -r release.zip ./build/* package.json yarn.lock babel.config.json
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v3
@@ -47,9 +47,6 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: node-app
-
-      - name: Unzip artifact for deployment
-        run: unzip release.zip
       
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
@@ -57,5 +54,5 @@ jobs:
         with:
           app-name: 'medicinelocatorsystem'
           slot-name: 'Production'
-          package: .
+          package: $(System.ArtifactsDirectory)/node-app/release.zip
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_E4487C253AE54710A5E97D84B233A9E0 }}
