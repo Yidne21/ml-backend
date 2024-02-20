@@ -28,7 +28,7 @@ if (error) {
 export const nodeEnv = value.NODE_ENV;
 export const port = value.PORT;
 export const mongoUrl =
-  value.NODE_ENV === 'test' ? value.MONGO_URL : value.MONGO_ATLAS_URL;
+  value.NODE_ENV === 'development' ? value.MONGO_URL : value.MONGO_ATLAS_URL;
 export const jwtKey = value.JWT_KEY;
 export const jwtRefreshKey = value.JWT_REFRESH_KEY;
 export const appEmailAddress = value.APP_EMAIL_ADDRESS;

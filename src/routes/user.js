@@ -48,6 +48,7 @@ router.put(
 
 router.get(
   '/:userId',
+  authenticateJwt,
   // getUserValidator(),
   parseValidationResult,
   userDetailController

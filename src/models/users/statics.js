@@ -67,23 +67,26 @@ export async function signUpUser({ name, phoneNumber, password, role, email }) {
   }
 }
 
-export async function userDetail(userId) {
+export async function userDetail(userId, role) {
   const UserModel = this.model(modelNames.user);
 
   try {
-    const existingUser = await UserModel.find({
-      _id: mongoose.Types.ObjectId(userId),
-    });
-
-    if (existingUser.length === 0) {
-      throw new APIError('user not found', httpStatus.NOT_FOUND);
-    }
     const user = await UserModel.aggregate([
       {
         $match: {
           _id: new mongoose.Types.ObjectId(userId),
         },
       },
+      ...(role === 'pharmacist' && [
+        {
+          $lookup: {
+            from: 'pharmacies',
+            localField: '_id',
+            foreignField: 'pharmacistId',
+            as: 'pharmacies',
+          },
+        },
+      ]),
       {
         $project: {
           name: 1,
@@ -93,6 +96,7 @@ export async function userDetail(userId) {
           address: 1,
           location: 1,
           coverPhoto: 1,
+          pharmacies: 1,
         },
       },
     ]);
