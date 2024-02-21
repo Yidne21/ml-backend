@@ -29,3 +29,13 @@ export const parmacyDetailController = async (req, res, next) => {
     next(error);
   }
 };
+
+export const getMyPharmacyController = async (req, res, next) => {
+  const { _id } = req.user;
+  try {
+    const pharmacy = await Pharmacy.getMyPharmacy(_id);
+    res.status(httpStatus.OK).json(pharmacy);
+  } catch (error) {
+    next(error);
+  }
+};
