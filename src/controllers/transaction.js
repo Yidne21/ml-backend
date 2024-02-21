@@ -85,7 +85,7 @@ export const chapaTransactionController = async (req, res, next) => {
   try {
     console.log(transaction);
     // const message = await Transaction.chapaTransaction(transaction);
-    return res.status(httpStatus.OK);
+    return res.sendStatus(200);
   } catch (error) {
     return next(error);
   }
