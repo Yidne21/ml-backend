@@ -82,8 +82,6 @@ export const chapaTransactionController = async (req, res, next) => {
     updated_at,
   };
   try {
-    console.log(transaction);
-    // const message = await Transaction.chapaTransaction(transaction);
     return res.sendStatus(200); // Return 200 status code in the HTTP header
   } catch (error) {
     return next(error);
