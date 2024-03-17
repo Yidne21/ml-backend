@@ -9,7 +9,6 @@
   "scripts": {
     "start": "nodemon src/index.js --exec babel-node -e js",
     "start:prod": "yarn build && node build/index.js",
-    "start:render": "node src/index.js --exec babel-node -e js",
     "clean": "rm -rf build && mkdir build",
     "build-babel": "babel -d ./build ./src -s",
     "build": "yarn clean && yarn build-babel",

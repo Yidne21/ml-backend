@@ -215,3 +215,36 @@ export async function getPharmacyDetail(pharmacyId) {
     }
   }
 }
+
+export async function getMyPharmacy(_id) {
+  const PharmacyModel = this.model(modelNames.pharmacy);
+  try {
+    const myPharmacies = await PharmacyModel.aggregate([
+      {
+        $match: {
+          pharmacistId: mongoose.Types.ObjectId(_id),
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          name: 1,
+          location: 1,
+          logo: 1,
+          email: 1,
+        },
+      },
+    ]);
+
+    return myPharmacies;
+  } catch (error) {
+    if (error instanceof APIError) throw error;
+    else {
+      throw new APIError(
+        'Internal Error',
+        httpStatus.INTERNAL_SERVER_ERROR,
+        true
+      );
+    }
+  }
+}
