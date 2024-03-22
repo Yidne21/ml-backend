@@ -11,16 +11,9 @@ const drugSchema = new mongoose.Schema(
       required: true,
       ref: 'Pharmacy',
     },
-    recivedFrom: {
-      type: String,
-      required: true,
-    },
     category: {
       type: String,
       required: true,
-    },
-    ingredients: {
-      type: [String],
     },
     instruction: {
       type: String,
@@ -32,14 +25,6 @@ const drugSchema = new mongoose.Schema(
     },
     strengthAndDosage: {
       type: String,
-      required: true,
-    },
-    manufacturedDate: {
-      type: Date,
-      required: true,
-    },
-    expiredDate: {
-      type: Date,
       required: true,
     },
     stockLevel: { type: Number, required: true },
