@@ -6,6 +6,8 @@ const modelNames = {
   order: 'Orders',
   transaction: 'Transactions',
   feedback: 'Feedbacks',
+  cart: 'Carts',
+  stock: 'Stocks',
 };
 
 export default modelNames;
