@@ -46,3 +46,4 @@ export const chapaBaseUrl = value.CHAPA_BASE_URL;
 export const chapaPublicKey = value.CHPA_PUBLIC_KEY;
 export const chapaSecretKey = value.CHAPA_SECRET_KEY;
 export const chapaEncryptionKey = value.CHPA_ENCRYPTION_KEY;
+export const webhookKey = value.CHAPA_WEBHOOK_KEY;

@@ -2,10 +2,9 @@ import mongoose from 'mongoose';
 
 const transactionSchema = new mongoose.Schema(
   {
-    sender: { type: mongoose.Types.ObjectId, required: true, ref: 'User' },
+    sender: { type: mongoose.Types.ObjectId, ref: 'User' },
     receiver: {
       type: mongoose.Types.ObjectId,
-      required: true,
       ref: 'User',
     },
     orderId: {
@@ -27,10 +26,16 @@ const transactionSchema = new mongoose.Schema(
       accountType: { type: String },
     },
     amount: { type: Number, required: true },
-    reason: { type: String },
+    tx_ref: { type: String, required: true },
+    reason: {
+      type: String,
+      enum: ['order-payment', 'pharmacy-payment', 'refund'],
+      default: 'order-payment',
+      required: true,
+    },
     status: {
       type: String,
-      enum: ['pending', 'completed', 'failed', 'refunded'],
+      enum: ['pending', 'completed', 'failed'],
       default: 'pending',
       required: true,
     },

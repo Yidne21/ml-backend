@@ -1,6 +1,5 @@
 import httpStatus from 'http-status';
 import Order from '../models/orders';
-import { getListOfBanks } from '../utils/chapa';
 
 export const createOrderController = async (req, res, next) => {
   const { orderTo, orderedBy, deliveryAddress, drugId, deliveryDate } =
@@ -84,15 +83,6 @@ export const cancelOrderController = async (req, res, next) => {
   try {
     const message = await Order.cancelOrder(orderId, bankDetails);
     res.status(httpStatus.OK).json(message);
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const getBanksController = async (req, res, next) => {
-  try {
-    const banks = await getListOfBanks();
-    res.status(httpStatus.OK).json(banks);
   } catch (error) {
     next(error);
   }

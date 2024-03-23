@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import httpStatus from 'http-status';
+import crypto from 'crypto';
 import { jwtKey, jwtRefreshKey, appDomain } from '../config/environments';
 import APIError from '../errors/APIError';
 

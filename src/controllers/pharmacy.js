@@ -39,3 +39,21 @@ export const getMyPharmacyController = async (req, res, next) => {
     next(error);
   }
 };
+
+export const updatePharmacyController = async (req, res, next) => {
+  const { _id } = req.user;
+  const { pharmacyId } = req.params;
+  const { logo, address, phoneNumber } = req.body;
+  const pharmacyParams = {
+    _id,
+    logo,
+    address,
+    phoneNumber,
+  };
+  try {
+    const updatedPharmacy = await Pharmacy.updatePharmacy(pharmacyParams);
+    res.status(httpStatus.OK).json(updatedPharmacy);
+  } catch (error) {
+    next(error);
+  }
+};

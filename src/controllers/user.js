@@ -181,6 +181,8 @@ export const registerPharmacistController = async (req, res, next) => {
     pharmacyPhoneNumber,
     pharmacyLicense,
   };
+
+  console.log(data);
   try {
     const user = await User.registerPharmacist(data);
     res.status(httpStatus.OK).json(user);
