@@ -6,6 +6,7 @@ import orderRoutes from '../routes/order';
 import transactionRoutes from '../routes/transaction';
 import feedbackRoutes from '../routes/feedback';
 import reviewRoutes from '../routes/review';
+import threadRoutes from '../routes/threadRoute';
 
 const router = express.Router();
 
@@ -16,5 +17,6 @@ router.use('/order', orderRoutes);
 router.use('/transaction', transactionRoutes);
 router.use('/feedback', feedbackRoutes);
 router.use('/review', reviewRoutes);
+router.use('/threadRoutes');
 
 export default router;
