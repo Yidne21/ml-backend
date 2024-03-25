@@ -17,6 +17,6 @@ router.use('/order', orderRoutes);
 router.use('/transaction', transactionRoutes);
 router.use('/feedback', feedbackRoutes);
 router.use('/review', reviewRoutes);
-router.use('/threadRoutes');
+router.use('/threadExample', threadRoutes);
 
 export default router;
