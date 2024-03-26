@@ -42,7 +42,6 @@ export const filterTransactionController = async (req, res, next) => {
     return next(error);
   }
 };
-
 export const chapaTransactionController = async (req, res, next) => {
   const {
     account_name,

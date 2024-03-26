@@ -60,16 +60,20 @@
             "colId": "7beab7f1-e873-4f47-89ee-ca82266d024a",
             "containerId": "dff501b8-6bc1-4bb8-b512-f871fb689073",
             "name": "signUpPharmacist",
+
             "url": "localhost:5000/api/user/pharmacist",
             "method": "POST",
             "sortNum": 1250,
             "created": "2024-02-19T14:54:14.824Z",
             "modified": "2024-02-25T16:56:22.966Z",
+
             "headers": [],
             "params": [],
             "body": {
                 "type": "json",
+
                 "raw": "{\n  \"name\": \"John Doe\",\n  \"phoneNumber\": \"0911045-456-7890\",\n  \"password\": \"securePassword123\",\n  \"email\": \"yid1nebanfgtrga@gmail.com\",\n  \"pharmaciestLicense\": \"PH123456\",\n  \"pharmacyName\": \"HealhthyMeds\",\n  \"pharmacyLocation\": \"12.33,34.99\",\n  \"pharmacyEmail\": \"y8kidne12345@healthymedspharmacy.com\",\n  \"pharmacyPhoneNumber\": \"1968890168-6658-32105\",\n  \"pharmacyLicense\": \"PLode789012\"\n}\n",
+
                 "form": []
             },
             "tests": []
@@ -207,16 +211,20 @@
             "colId": "7beab7f1-e873-4f47-89ee-ca82266d024a",
             "containerId": "dff501b8-6bc1-4bb8-b512-f871fb689073",
             "name": "user Login",
+
             "url": "localhost:5000/api/user/login",
             "method": "POST",
             "sortNum": 40000,
             "created": "2024-02-19T14:54:14.811Z",
             "modified": "2024-02-21T07:02:54.668Z",
+
             "headers": [],
             "params": [],
             "body": {
                 "type": "json",
+
                 "raw": "{\n  \"password\": \"securePassword123\",\n  \"email\": \"yidnebantrga@gmail.com\"\n}",
+
                 "form": []
             },
             "tests": []
@@ -226,16 +234,18 @@
             "colId": "7beab7f1-e873-4f47-89ee-ca82266d024a",
             "containerId": "dff501b8-6bc1-4bb8-b512-f871fb689073",
             "name": "User create",
-            "url": "http://localhost:5000/api/user/create",
+            "url": "medicin-locator-service.onrender.com/api/user/create",
             "method": "POST",
             "sortNum": 50000,
+
             "created": "2024-02-19T14:54:14.812Z",
             "modified": "2024-02-19T14:54:14.812Z",
+
             "headers": [],
             "params": [],
             "body": {
                 "type": "json",
-                "raw": "{\n  \"name\": \"Yidne\",\n  \"phoneNumber\": \"09995368988\",\n  \"role\": \"customer\",\n  \"password\": \"1234\"\n}",
+                "raw": "{\n  \"name\": \"Yidne\",\n  \"email\": \"kebede232@gmail.com\",\n  \"role\": \"customer\",\n  \"password\": \"1234\"\n}",
                 "form": []
             },
             "tests": []
@@ -245,11 +255,13 @@
             "colId": "7beab7f1-e873-4f47-89ee-ca82266d024a",
             "containerId": "dff501b8-6bc1-4bb8-b512-f871fb689073",
             "name": "getSingle user",
+
             "url": "https://medicinelocatorsystem.azurewebsites.net/api/user/gfdgsd",
             "method": "GET",
             "sortNum": 60000,
             "created": "2024-02-19T14:54:14.813Z",
             "modified": "2024-02-20T19:58:15.871Z",
+
             "headers": [],
             "params": [],
             "body": {
@@ -268,16 +280,18 @@
             "colId": "7beab7f1-e873-4f47-89ee-ca82266d024a",
             "containerId": "dff501b8-6bc1-4bb8-b512-f871fb689073",
             "name": "updateUser",
-            "url": "http://localhost:5000/api/user/65913019b22a391c3345aa11",
+            "url": "http://localhost:5000/api/user/65f695dfde09bf1f57ed169a",
             "method": "PUT",
             "sortNum": 70000,
+
             "created": "2024-02-19T14:54:14.814Z",
             "modified": "2024-02-19T14:54:14.814Z",
+
             "headers": [],
             "params": [],
             "body": {
                 "type": "json",
-                "raw": "{\n  \"newPassword\": \"123\",\n  \"oldPassword\": \"1235\"\n}",
+                "raw": "{\n  \"avatar\": \"https://fakeimg.pl/150x150/bdbdbd/ffffff?text=avatar&font=noto\",\n  \"email\": \"abebe124@gmail.com\"\n}",
                 "form": []
             },
             "tests": []
@@ -811,8 +825,10 @@
             "url": "https://medicinelocatorsystem.azurewebsites.net/api/transaction/?sortBy=receiver.name&sortOrder=asc&page=5&limit=4",
             "method": "GET",
             "sortNum": 280000,
+
             "created": "2024-02-19T14:54:14.838Z",
             "modified": "2024-02-19T14:55:15.134Z",
+
             "headers": [],
             "params": [
                 {
@@ -1018,6 +1034,145 @@
             "modified": "2024-03-26T09:10:25.056Z",
             "headers": [],
             "params": [],
+            "tests": []
+        },
+        {
+            "_id": "1c7c5fa1-5dc8-4fb9-b3cf-6ed080a63d85",
+            "colId": "47f1763d-cdb2-44ba-ad85-c66c0b3e39fc",
+            "containerId": "c1edbc76-e5dc-4612-99cc-13045c8aa0ab",
+            "name": "getBank",
+            "url": "localhost:5000/api/order/chapa/banks",
+            "method": "GET",
+            "sortNum": 310000,
+            "created": "2024-02-15T13:05:55.462Z",
+            "modified": "2024-02-15T17:50:48.493Z",
+            "headers": [],
+            "params": [],
+            "tests": []
+        },
+        {
+            "_id": "14430cc4-893e-4ffe-932f-5cef8104b9dc",
+            "colId": "47f1763d-cdb2-44ba-ad85-c66c0b3e39fc",
+            "containerId": "c1edbc76-e5dc-4612-99cc-13045c8aa0ab",
+            "name": "cancelOrder",
+            "url": "localhost:5000/api/order/675435ghjgjerte8753874/cancel",
+            "method": "PUT",
+            "sortNum": 320000,
+            "created": "2024-02-15T17:40:15.421Z",
+            "modified": "2024-02-15T17:41:49.149Z",
+            "headers": [],
+            "params": [],
+            "tests": []
+        },
+        {
+            "_id": "912167d9-30ec-4d8c-894d-9bb888c44eb1",
+            "colId": "47f1763d-cdb2-44ba-ad85-c66c0b3e39fc",
+            "containerId": "c1edbc76-e5dc-4612-99cc-13045c8aa0ab",
+            "name": "filterOrders",
+            "url": "localhost:5000/api/order/?status=inprogress&page=3&limit=4",
+            "method": "GET",
+            "sortNum": 330000,
+            "created": "2024-02-15T19:19:38.924Z",
+            "modified": "2024-02-16T09:43:11.735Z",
+            "headers": [],
+            "params": [
+                {
+                    "name": "customerId",
+                    "value": "65bd30afa117221fa91aa170",
+                    "isDisabled": true,
+                    "isPath": false
+                },
+                {
+                    "name": "pharmacyId",
+                    "value": "65bd306fd1a63b1d769c110f",
+                    "isDisabled": true,
+                    "isPath": false
+                },
+                {
+                    "name": "customerName",
+                    "value": "Margarita",
+                    "isDisabled": true,
+                    "isPath": false
+                },
+                {
+                    "name": "customerEmail",
+                    "value": "",
+                    "isDisabled": true,
+                    "isPath": false
+                },
+                {
+                    "name": "pharmacyName",
+                    "value": "",
+                    "isDisabled": true,
+                    "isPath": false
+                },
+                {
+                    "name": "pharmacyEmail",
+                    "value": "",
+                    "isDisabled": true,
+                    "isPath": false
+                },
+                {
+                    "name": "sortBy,",
+                    "value": "",
+                    "isDisabled": true,
+                    "isPath": false
+                },
+                {
+                    "name": "sortOrder",
+                    "value": "",
+                    "isDisabled": true,
+                    "isPath": false
+                },
+                {
+                    "name": "status",
+                    "value": "inprogress",
+                    "isPath": false
+                },
+                {
+                    "name": "page",
+                    "value": "3",
+                    "isPath": false
+                },
+                {
+                    "name": "limit",
+                    "value": "4",
+                    "isPath": false
+                }
+            ],
+            "tests": []
+        },
+        {
+            "_id": "8c94ac66-0367-4a58-86fc-75a5866cf9ec",
+            "colId": "47f1763d-cdb2-44ba-ad85-c66c0b3e39fc",
+            "containerId": "c1edbc76-e5dc-4612-99cc-13045c8aa0ab",
+            "name": "orderDetail",
+            "url": "localhost:5000/api/order/65bd30b3a117221fa91aa390",
+            "method": "GET",
+            "sortNum": 340000,
+            "created": "2024-02-16T09:44:46.019Z",
+            "modified": "2024-02-16T12:55:41.418Z",
+            "headers": [],
+            "params": [],
+            "tests": []
+        },
+        {
+            "_id": "6a95c395-843b-4801-add4-70cbb4b4f659",
+            "colId": "47f1763d-cdb2-44ba-ad85-c66c0b3e39fc",
+            "containerId": "892073cc-9654-4de2-bb87-cd0a9a601016",
+            "name": "initiatePayment",
+            "url": "https://medicin-locator-service.onrender.com/api/transaction/chapa/initiatePayment",
+            "method": "POST",
+            "sortNum": 350000,
+            "created": "2024-02-18T11:58:32.302Z",
+            "modified": "2024-02-18T13:06:52.816Z",
+            "headers": [],
+            "params": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"amount\": \"500\",\n  \"phone_number\": \"0900123456\"\n}",
+                "form": []
+            },
             "tests": []
         }
     ]

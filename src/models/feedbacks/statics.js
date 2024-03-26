@@ -116,7 +116,6 @@ export async function getFeedbackById(feedbackId) {
       },
     ]);
 
-    console.log(feedback);
     if (!feedback[0]) {
       throw new APIError('Feedback not found', httpStatus.NOT_FOUND, true);
     }
