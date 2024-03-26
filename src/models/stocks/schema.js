@@ -7,7 +7,9 @@ const stockSchema = new mongoose.Schema(
       required: true,
       ref: 'Drug',
     },
-    recivedFrom: {
+    price: { type: String, required: true },
+    cost: { type: String, required: true },
+    recievedFrom: {
       type: String,
       required: true,
     },

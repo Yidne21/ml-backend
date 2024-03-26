@@ -2,19 +2,33 @@ import httpStatus from 'http-status';
 import Drug from '../models/drugs';
 
 export const filterDrugController = async (req, res, next) => {
-  const { page, limit, name, drugName, maxPrice, minPrice, category } =
-    req.query;
-  const location = req.query.location.split(',').map(Number);
+  const {
+    page,
+    limit,
+    name,
+    drugName,
+    maxPrice,
+    minPrice,
+    category,
+    pharmacyId,
+    location,
+  } = req.query;
+  let coordinates;
+
+  if (location) {
+    coordinates = location.split(',').map(Number);
+  }
 
   const filterParams = {
     page: parseInt(page, 10) || 1,
     limit: parseInt(limit, 10) || 10,
     name,
-    location,
+    coordinates,
     drugName,
     maxPrice,
     minPrice,
     category,
+    pharmacyId,
   };
   try {
     const drugs = await Drug.filterDrug(filterParams);
@@ -26,6 +40,8 @@ export const filterDrugController = async (req, res, next) => {
 
 export const drugDetailController = async (req, res, next) => {
   const { drugId } = req.params;
+  // const { pharmacistId } = req.user;
+  // const { pharmacyId } = req.body;
   try {
     const drug = await Drug.drugDetail(drugId);
     res.status(httpStatus.OK).json(drug);
@@ -36,42 +52,30 @@ export const drugDetailController = async (req, res, next) => {
 
 export const createDrugController = async (req, res, next) => {
   // const { pharmacyId } = req.user;
+  const { pharmacyId } = req.params;
   const {
     name,
-    price,
-    cost,
     drugPhoto,
-    recivedFrom,
-    category,
-    ingredients,
     instruction,
     sideEffects,
-    strengthAndDosage,
-    manufacturedDate,
-    expiredDate,
-    stockLevel,
+    strength,
+    dosage,
     minStockLevel,
     needPrescription,
-    pharmacyId,
+    category,
   } = req.body;
 
   const drugData = {
     name,
-    price,
-    cost,
     drugPhoto,
     pharmacyId,
-    recivedFrom,
-    category,
-    ingredients,
     instruction,
     sideEffects,
-    strengthAndDosage,
-    manufacturedDate,
-    expiredDate,
-    stockLevel,
+    strength,
+    dosage,
     minStockLevel,
     needPrescription,
+    category,
   };
   try {
     const drug = await Drug.createDrug(drugData);
@@ -84,38 +88,27 @@ export const updateDrugController = async (req, res, next) => {
   const { drugId } = req.params;
   const {
     name,
-    price,
-    cost,
+
     drugPhoto,
-    recivedFrom,
     category,
-    ingredients,
     instruction,
     sideEffects,
-    strengthAndDosage,
-    manufacturedDate,
-    expiredDate,
-    stockLevel,
+    strength,
+    dosage,
     minStockLevel,
     needPrescription,
   } = req.body;
 
   const drugData = {
     name,
-    price,
-    cost,
     drugPhoto,
-    recivedFrom,
     category,
-    ingredients,
     instruction,
     sideEffects,
-    strengthAndDosage,
-    manufacturedDate,
-    expiredDate,
-    stockLevel,
     minStockLevel,
     needPrescription,
+    strength,
+    dosage,
   };
   try {
     const drug = await Drug.updateDrug(drugId, drugData);

@@ -3,8 +3,6 @@ import mongoose from 'mongoose';
 const drugSchema = new mongoose.Schema(
   {
     name: { type: String },
-    price: { type: Number, required: true },
-    cost: { type: Number, required: true },
     drugPhoto: [{ type: String }],
     pharmacyId: {
       type: mongoose.Types.ObjectId,
@@ -23,11 +21,15 @@ const drugSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    strengthAndDosage: {
+    strength: {
       type: String,
       required: true,
     },
-    stockLevel: { type: Number, required: true },
+    dosage: {
+      type: String,
+      required: true,
+    },
+    stockLevel: { type: Number, default: 0 },
     minStockLevel: { type: Number, required: true },
     needPrescription: { type: Boolean, required: true, default: false },
   },
