@@ -126,3 +126,13 @@ export const deleteDrugController = async (req, res, next) => {
     next(error);
   }
 };
+
+export const getDrugNamesController = async (req, res, next) => {
+  const { pharmacyId } = req.params;
+  try {
+    const drugs = await Drug.getDrugNames(pharmacyId);
+    res.status(httpStatus.OK).json(drugs);
+  } catch (error) {
+    next(error);
+  }
+};

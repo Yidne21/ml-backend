@@ -145,6 +145,35 @@ export async function filterDrug({
   }
 }
 
+export async function getDrugNames(pharmacyId) {
+  const drugModel = this.model(modelNames.drug);
+  try {
+    const drugs = await drugModel.aggregate([
+      {
+        $match: {
+          pharmacyId: mongoose.Types.ObjectId(pharmacyId),
+        },
+      },
+      {
+        $project: {
+          name: 1,
+        },
+      },
+    ]);
+
+    return drugs;
+  } catch (error) {
+    if (error instanceof APIError) throw error;
+    else {
+      throw new APIError(
+        'Internal Error',
+        httpStatus.INTERNAL_SERVER_ERROR,
+        true
+      );
+    }
+  }
+}
+
 export async function drugDetail(drugId) {
   const drugModel = this.model(modelNames.drug);
   try {
