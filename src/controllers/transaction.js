@@ -54,11 +54,6 @@ export const chapaTransactionController = async (req, res, next) => {
     .update(JSON.stringify(req.body))
     .digest('hex');
   try {
-<<<<<<< HEAD
-    console.log(transaction);
-    // const message = await Transaction.chapaTransaction(transaction);
-    return res.sendStatus(200);
-=======
     if (hash === req.headers['x-chapa-signature']) {
       console.log('Transaction is valid');
       const {
@@ -104,7 +99,6 @@ export const chapaTransactionController = async (req, res, next) => {
       return res.sendStatus(200);
     }
     return res.sendStatus(401);
->>>>>>> 7a7d500 (pulling from remote)
   } catch (error) {
     return next(error);
   }
