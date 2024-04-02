@@ -2,12 +2,12 @@ import { Worker } from 'worker_threads';
 import httpStatus from 'http-status';
 import Order from '../models/orders';
 
-function chunkify(drugs, n) {
-  const drugChunks = [];
+function chunkify(orders, n) {
+  const orderChunks = [];
   for (let i = n; i > 0; i -= 1) {
-    drugChunks.push(drugs.splice(0, Math.ceil(drugs.length / i)));
+    orderChunks.push(orders.splice(0, Math.ceil(orders.length / i)));
   }
-  return drugChunks;
+  return orderChunks;
 }
 
 async function updateOrders(orders, conCurrentWorker, status) {

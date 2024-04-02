@@ -2,12 +2,14 @@ import httpStatus from 'http-status';
 import { Worker } from 'worker_threads';
 import Transaction from '../models/transactions';
 
-function chunkify(drugs, n) {
-  const drugChunks = [];
+function chunkify(transactions, n) {
+  const transactionChunks = [];
   for (let i = n; i > 0; i -= 1) {
-    drugChunks.push(drugs.splice(0, Math.ceil(drugs.length / i)));
+    transactionChunks.push(
+      transactions.splice(0, Math.ceil(transactions.length / i))
+    );
   }
-  return drugChunks;
+  return transactionChunks;
 }
 
 async function updateTransactions(transactions, conCurrentWorker, status) {
