@@ -16,7 +16,7 @@ async function updateStock(drugs, conCurrentWorker, amount) {
   const updatedDrugs = [];
 
   chunks.forEach((drugChunk, workerNo) => {
-    const worker = new Worker('./src/utils/worker.js.mjs', {
+    const worker = new Worker('./src/utils/updateStockThread.mjs', {
       workerData: {
         drugChunk: drugChunk.map((drug) => ({
           ...drug,

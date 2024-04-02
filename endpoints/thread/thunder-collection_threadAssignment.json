@@ -1,0 +1,131 @@
+{
+    "client": "Thunder Client",
+    "collectionName": "threadAssignment",
+    "dateExported": "2024-04-02T18:21:18.707Z",
+    "version": "1.1",
+    "folders": [
+        {
+            "_id": "c9e55c67-339f-4029-b4bf-e035f43c6863",
+            "name": "thread",
+            "containerId": "",
+            "created": "2024-04-02T18:20:41.532Z",
+            "sortNum": 10000
+        }
+    ],
+    "requests": [
+        {
+            "_id": "4604069f-baca-4d85-ab89-b813cd26efd5",
+            "colId": "650866a6-e669-453b-9790-affbd7b38cf2",
+            "containerId": "c9e55c67-339f-4029-b4bf-e035f43c6863",
+            "name": "updateStockWithThread",
+            "url": "http://localhost:5000/api/threadExample/updateStock-withThread",
+            "method": "PUT",
+            "sortNum": 410000,
+            "created": "2024-04-02T18:20:41.535Z",
+            "modified": "2024-04-02T18:20:41.535Z",
+            "headers": [],
+            "params": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"amount\": 1000\n}",
+                "form": []
+            },
+            "tests": []
+        },
+        {
+            "_id": "2352bc35-6591-4782-8cff-30a1f8c942b7",
+            "colId": "650866a6-e669-453b-9790-affbd7b38cf2",
+            "containerId": "c9e55c67-339f-4029-b4bf-e035f43c6863",
+            "name": "updateStock",
+            "url": "http://localhost:5000/api/threadExample/updateStock-withOutThread",
+            "method": "PUT",
+            "sortNum": 420000,
+            "created": "2024-04-02T18:20:41.535Z",
+            "modified": "2024-04-02T18:20:41.535Z",
+            "headers": [],
+            "params": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"amount\": 1000\n}",
+                "form": []
+            },
+            "tests": []
+        },
+        {
+            "_id": "42419530-5ca7-4e94-b53c-dc7fba374aa0",
+            "colId": "650866a6-e669-453b-9790-affbd7b38cf2",
+            "containerId": "c9e55c67-339f-4029-b4bf-e035f43c6863",
+            "name": "updateOrderStatusWithThread",
+            "url": "http://localhost:5000/api/threadExample/updateOrderStatus-withThread",
+            "method": "PUT",
+            "sortNum": 430000,
+            "created": "2024-04-02T18:20:41.535Z",
+            "modified": "2024-04-02T18:20:41.535Z",
+            "headers": [],
+            "params": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"orderIds\": [\"65d6500e7804b2e4f54ae4cd\", \"65d6500e7804b2e4f54ae4cb\", \"65d6500e7804b2e4f54ae4c9\", \"65d6500e7804b2e4f54ae4c7\"],\n  \"status\": \"aborted\"\n}",
+                "form": []
+            },
+            "tests": []
+        },
+        {
+            "_id": "3d42396c-432a-49b4-87c9-742af8508674",
+            "colId": "650866a6-e669-453b-9790-affbd7b38cf2",
+            "containerId": "c9e55c67-339f-4029-b4bf-e035f43c6863",
+            "name": "updateOrderStatus",
+            "url": "http://localhost:5000/api/threadExample/updateOrderStatus-withOutThread",
+            "method": "PUT",
+            "sortNum": 440000,
+            "created": "2024-04-02T18:20:41.535Z",
+            "modified": "2024-04-02T18:20:41.535Z",
+            "headers": [],
+            "params": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"orderIds\": [\"65d6500e7804b2e4f54ae4cd\", \"65d6500e7804b2e4f54ae4cb\", \"65d6500e7804b2e4f54ae4c9\", \"65d6500e7804b2e4f54ae4c7\"],\n  \"status\": \"pending\"\n}",
+                "form": []
+            },
+            "tests": []
+        },
+        {
+            "_id": "f52a8e25-d489-4209-b163-32a3a92a25a4",
+            "colId": "650866a6-e669-453b-9790-affbd7b38cf2",
+            "containerId": "c9e55c67-339f-4029-b4bf-e035f43c6863",
+            "name": "updateTansacStatusWithThread",
+            "url": "http://localhost:5000/api/threadExample/updateTransactionStatus-withThread",
+            "method": "PUT",
+            "sortNum": 450000,
+            "created": "2024-04-02T18:20:41.535Z",
+            "modified": "2024-04-02T18:20:41.535Z",
+            "headers": [],
+            "params": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"transactionIds\": [\"65d6500e7804b2e4f54ae48b\", \"65d6500e7804b2e4f54ae4a7\", \"65d6500e7804b2e4f54ae4a5\", \"65d6500e7804b2e4f54ae485\", \"65d6500e7804b2e4f54ae48f\"],\n  \"status\": \"refunded\"\n} ",
+                "form": []
+            },
+            "tests": []
+        },
+        {
+            "_id": "b625093c-764d-45e8-ae4e-6c097ab2941f",
+            "colId": "650866a6-e669-453b-9790-affbd7b38cf2",
+            "containerId": "c9e55c67-339f-4029-b4bf-e035f43c6863",
+            "name": "updateThransactionStatus",
+            "url": "http://localhost:5000/api/threadExample/updateTransactionStatus-withOutThread",
+            "method": "PUT",
+            "sortNum": 460000,
+            "created": "2024-04-02T18:20:41.535Z",
+            "modified": "2024-04-02T18:20:41.535Z",
+            "headers": [],
+            "params": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"transactionIds\": [\"65d6500e7804b2e4f54ae48b\", \"65d6500e7804b2e4f54ae4a7\", \"65d6500e7804b2e4f54ae4a5\", \"65d6500e7804b2e4f54ae485\", \"65d6500e7804b2e4f54ae48f\"],\n  \"status\": \"completed\"\n} ",
+                "form": []
+            },
+            "tests": []
+        }
+    ]
+}
