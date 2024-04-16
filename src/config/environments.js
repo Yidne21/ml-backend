@@ -47,3 +47,7 @@ export const chapaPublicKey = value.CHPA_PUBLIC_KEY;
 export const chapaSecretKey = value.CHAPA_SECRET_KEY;
 export const chapaEncryptionKey = value.CHPA_ENCRYPTION_KEY;
 export const webhookKey = value.CHAPA_WEBHOOK_KEY;
+export const cloudName = value.CLOUD_NAME;
+export const cloudApiKey = value.API_KEY_CLOUD;
+export const cloudApiSecret = value.API_SECRET_CLOUD;
+export const cloudEnv = value.API_ENV_CLOUD;
