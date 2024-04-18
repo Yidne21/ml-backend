@@ -289,7 +289,6 @@ export async function getAllUser({
 
 export async function loginUser(data) {
   const { phoneNumber, password, email } = data;
-  console.log('data', data);
 
   let user;
 
@@ -408,7 +407,6 @@ export async function registerPharmacist(data) {
       role: 'pharmacist',
       email,
       pharmaciestLicense,
-      emailVerified: false,
     };
 
     const pharmacist = await UserModel.create(user);

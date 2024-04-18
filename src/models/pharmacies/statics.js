@@ -255,10 +255,11 @@ export async function getMyPharmacy(_id) {
 export async function addPharmacy(pharmacyParams) {
   const PharmacyModel = this.model(modelNames.pharmacy);
   try {
-    const pharmacy = PharmacyModel.create(pharmacyParams);
+    const pharmacy = await PharmacyModel.create(pharmacyParams);
 
     return { message: 'Your pharmacy is ready to review', pharmacy };
   } catch (error) {
+    console.log(error);
     if (error instanceof APIError) throw error;
     else {
       throw new APIError(

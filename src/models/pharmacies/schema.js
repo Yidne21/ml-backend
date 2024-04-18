@@ -33,9 +33,12 @@ const pharmacySchema = new mongoose.Schema(
       telegram: { type: String },
     },
     pharmacyLicense: { type: String, required: true },
-  },
-  {
     deliverPricePerKm: { type: Number, default: 0 },
+    status: {
+      type: String,
+      default: 'pending',
+      enum: ['pending', 'approved', 'rejected'],
+    },
   },
   { timestamps: true }
 );
