@@ -8,6 +8,7 @@ import winstonLogger from './winston';
 import * as environments from './environments';
 import APIError from '../errors/APIError';
 import routes from './routes';
+import { cloudinaryConfig } from './cloudinary';
 
 const app = express();
 
@@ -17,6 +18,7 @@ const app = express();
 // }
 
 app.use(morgan('dev'));
+app.use(cloudinaryConfig);
 
 winstonLogger.stream = {
   write: (message) => {

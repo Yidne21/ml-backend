@@ -1,9 +1,14 @@
-import { v2 as cloudinary } from 'cloudinary';
-import { cloudEnv } from './environments';
+import { config, uploader } from 'cloudinary';
+import { cloudApiKey, cloudApiSecret, cloudName } from './environments';
 
-cloudinary.config({
-  secure: true,
-  cloudEnv,
-});
+const cloudinaryConfig = (req, res, next) => {
+  config({
+    secure: true,
+    cloud_name: cloudName,
+    api_key: cloudApiKey,
+    api_secret: cloudApiSecret,
+  });
+  next();
+};
 
-export default cloudinary;
+export { cloudinaryConfig, uploader };

@@ -1,38 +1,46 @@
-import cloudinary from '../config/cloudinary';
+import DataURIParser from 'datauri/parser';
+import { uploader } from '../config/cloudinary';
 
-export const uploadImage = async (imagePath) => {
-  // Use the uploaded file's name as the asset's public ID and
-  // allow overwriting the asset with new versions
-  const options = {
-    use_filename: true,
-    unique_filename: false,
-    overwrite: true,
-  };
-
+const uploadFiles = async (files, folderName) => {
+  const parser = new DataURIParser();
   try {
-    // Upload the image
-    const result = await cloudinary.uploader.upload(imagePath, options);
-    console.log(result);
-    return result.public_id;
+    // Map over each file and upload it to Cloudinary
+    const uploadPromises = files.map((file) => {
+      // Convert the file buffer to a data URI
+      const fileDataUri = parser.format(file.mimetype, file.buffer).content;
+      // Upload the file to Cloudinary
+
+      return uploader.upload(fileDataUri, {
+        asset_folder: folderName,
+        public_id: `${file.originalname}pharmacy`,
+        overwrite: true,
+        resource_type: 'auto',
+      });
+    });
+
+    // Wait for all uploads to complete and return the secure URLs
+    return await Promise.all(uploadPromises);
   } catch (error) {
-    console.error(error);
     throw new Error(error);
   }
 };
 
-export const getAssetInfo = async (publicId) => {
-  // Return colors in the response
-  const options = {
-    colors: true,
-  };
-
+export const uploadFile = async (file, folderName) => {
+  const parser = new DataURIParser();
   try {
-    // Get details about the asset
-    const result = await cloudinary.api.resource(publicId, options);
-    console.log(result);
-    return result.colors;
+    const fileDataUri = parser.format(file.mimetype, file.buffer).content;
+
+    const result = await uploader.upload(fileDataUri, {
+      asset_folder: folderName,
+      public_id: file.originalname,
+      overwrite: true,
+      resource_type: 'auto',
+    });
+
+    return result.secure_url;
   } catch (error) {
-    console.error(error);
     throw new Error(error);
   }
 };
+
+export default uploadFiles;
