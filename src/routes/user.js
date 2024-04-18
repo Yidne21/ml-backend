@@ -23,6 +23,7 @@ import {
   resetPasswordWithEmailController,
 } from '../controllers/user';
 import { authenticateJwt } from '../middlewares/middlewares';
+import multerUploads from '../middlewares/multer';
 
 const router = express.Router();
 
@@ -67,7 +68,12 @@ router.post('/login', parseValidationResult, loginUserController);
 
 router.post('/refresh-token', parseValidationResult, refreshTokenController);
 
-router.post('/pharmacist', parseValidationResult, registerPharmacistController);
+router.post(
+  '/pharmacist',
+  parseValidationResult,
+  multerUploads.array('files', 2),
+  registerPharmacistController
+);
 router.post(
   '/activate-account',
   parseValidationResult,

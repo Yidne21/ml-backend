@@ -160,31 +160,34 @@ export const registerPharmacistController = async (req, res, next) => {
     phoneNumber,
     password,
     email,
-    pharmaciestLicense,
     pharmacyName,
     pharmacyLocation,
     pharmacyEmail,
     pharmacyPhoneNumber,
-    pharmacyLicense,
   } = req.body;
 
-  const data = {
-    name,
-    phoneNumber,
-    password,
-    role: 'pharmacist',
-    email,
-    pharmaciestLicense,
-    pharmacyName,
-    pharmacyLocation,
-    pharmacyEmail,
-    pharmacyPhoneNumber,
-    pharmacyLicense,
-  };
-
-  console.log(data);
   try {
+    if (!req.files || req.files.length < 2) {
+      throw new Error('Please upload at least two files');
+    }
+
+    const data = {
+      name,
+      phoneNumber,
+      password,
+      role: 'pharmacist',
+      email,
+      pharmacyName,
+      pharmacyLocation,
+      pharmacyEmail,
+      pharmacyPhoneNumber,
+      files: req.files,
+    };
+
+    console.log(data);
+
     const user = await User.registerPharmacist(data);
+
     res.status(httpStatus.OK).json(user);
   } catch (error) {
     next(error);

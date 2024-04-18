@@ -16,6 +16,7 @@ import {
 import { getMailer } from '../../config/nodemailer';
 import { appEmailAddress, secretKey } from '../../config/environments';
 import { ForgotPassword, ActivateAccount } from '../../utils/mailTemplate';
+import { uploadFile } from '../../utils/cloudinary';
 
 export async function signUpUser({ name, phoneNumber, password, role, email }) {
   const hashedpassword = await bcrypt.hash(password, 10);
@@ -374,14 +375,15 @@ export async function registerPharmacist(data) {
     phoneNumber,
     password,
     email,
-    pharmaciestLicense,
     pharmacyName,
     pharmacyLocation,
     pharmacyEmail,
     pharmacyPhoneNumber,
-    pharmacyLicense,
+    files,
   } = data;
 
+  const session = await mongoose.startSession();
+  session.startTransaction();
   const hashedpassword = await bcrypt.hash(password, 10);
   const UserModel = this.model(modelNames.user);
   const PharmacyModel = this.model(modelNames.pharmacy);
@@ -396,17 +398,19 @@ export async function registerPharmacist(data) {
     }
   }
 
-  const user = {
-    name,
-    phoneNumber,
-    password: hashedpassword,
-    role: 'pharmacist',
-    email,
-    pharmaciestLicense,
-    emailVerified: false,
-  };
-
   try {
+    const pharmaciestLicense = await uploadFile(files[0], 'pharmaciestLicense');
+
+    const user = {
+      name,
+      phoneNumber,
+      password: hashedpassword,
+      role: 'pharmacist',
+      email,
+      pharmaciestLicense,
+      emailVerified: false,
+    };
+
     const pharmacist = await UserModel.create(user);
     pharmacist.clean();
 
@@ -428,9 +432,8 @@ export async function registerPharmacist(data) {
     try {
       const mailer = await getMailer();
       mailer.sendMail(emailContent);
-      console.log('email sent');
     } catch (error) {
-      console.log('error sending email', error);
+      throw new Error('Error sending email');
     }
 
     if (!pharmacist) {
@@ -438,6 +441,8 @@ export async function registerPharmacist(data) {
     }
 
     const [lat, lng] = pharmacyLocation.split(',');
+
+    const pharmacyLicense = await uploadFile(files[1], 'pharmacyLicense');
 
     const pharmacy = {
       name: pharmacyName,
@@ -453,13 +458,21 @@ export async function registerPharmacist(data) {
 
     await PharmacyModel.create(pharmacy);
 
+    await session.commitTransaction();
+
     return {
       message: 'Pharmacist registered successfully',
-      activateAccountUrl,
     };
   } catch (error) {
-    console.log('error', error);
-    if (error instanceof APIError) throw error;
+    if (error.code === 11000 && error.keyPattern.email) {
+      // Handle duplicate key error for email field
+      await session.abortTransaction();
+      session.endSession();
+      throw new APIError(
+        `Email ${data.email} is already in use`,
+        httpStatus.CONFLICT
+      );
+    } else if (error instanceof APIError) throw error;
     else {
       throw new APIError(
         'Internal Error',
@@ -467,6 +480,8 @@ export async function registerPharmacist(data) {
         true
       );
     }
+  } finally {
+    session.endSession();
   }
 }
 

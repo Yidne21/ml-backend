@@ -184,6 +184,7 @@ export async function getPharmacyDetail(pharmacyId) {
           name: 1,
           'location.coordinates': 1,
           cover: 1,
+          about: 1,
           socialMedia: 1,
           address: 1,
           email: 1,
@@ -192,6 +193,8 @@ export async function getPharmacyDetail(pharmacyId) {
           logo: 1,
           avgRating: { $round: ['$avgRating', 2] },
           reviews: 1,
+          deliverPricePerKm: 1,
+          pharmacyLicense: 1,
         },
       },
       {
@@ -237,6 +240,24 @@ export async function getMyPharmacy(_id) {
     ]);
 
     return myPharmacies;
+  } catch (error) {
+    if (error instanceof APIError) throw error;
+    else {
+      throw new APIError(
+        'Internal Error',
+        httpStatus.INTERNAL_SERVER_ERROR,
+        true
+      );
+    }
+  }
+}
+
+export async function addPharmacy(pharmacyParams) {
+  const PharmacyModel = this.model(modelNames.pharmacy);
+  try {
+    const pharmacy = PharmacyModel.create(pharmacyParams);
+
+    return { message: 'Your pharmacy is ready to review', pharmacy };
   } catch (error) {
     if (error instanceof APIError) throw error;
     else {
