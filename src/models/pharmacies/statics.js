@@ -235,6 +235,7 @@ export async function getMyPharmacy(_id) {
           location: 1,
           logo: 1,
           email: 1,
+          status: 1,
         },
       },
     ]);
