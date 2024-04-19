@@ -22,7 +22,7 @@ import {
   forgotPasswordController,
   resetPasswordWithEmailController,
 } from '../controllers/user';
-import { authenticateJwt } from '../middlewares/middlewares';
+import { authenticateJwt } from '../middlewares';
 import multerUploads from '../middlewares/multer';
 
 const router = express.Router();

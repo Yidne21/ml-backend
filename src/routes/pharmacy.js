@@ -7,7 +7,7 @@ import {
 } from '../controllers/pharmacy';
 import parseValidationResult from '../validators/errors.parser';
 
-import { authenticateJwt } from '../middlewares/middlewares';
+import { authenticateJwt } from '../middlewares';
 
 const router = express.Router();
 

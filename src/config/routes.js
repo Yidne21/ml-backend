@@ -7,6 +7,7 @@ import transactionRoutes from '../routes/transaction';
 import feedbackRoutes from '../routes/feedback';
 import reviewRoutes from '../routes/review';
 import fileRoutes from '../routes/uploadFile';
+import notificationRoutes from '../routes/notification';
 
 const router = express.Router();
 
@@ -18,5 +19,6 @@ router.use('/transaction', transactionRoutes);
 router.use('/feedback', feedbackRoutes);
 router.use('/review', reviewRoutes);
 router.use('/file', fileRoutes);
+router.use('/notification', notificationRoutes);
 
 export default router;

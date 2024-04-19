@@ -8,6 +8,7 @@ const modelNames = {
   feedback: 'Feedbacks',
   cart: 'Carts',
   stock: 'Stocks',
+  notification: 'Notifications',
 };
 
 export default modelNames;
