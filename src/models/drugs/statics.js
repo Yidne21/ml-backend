@@ -362,3 +362,20 @@ export async function deleteDrug(drugId) {
     session.endSession();
   }
 }
+
+export async function getDrugCategories() {
+  const drugModel = this.model(modelNames.drug);
+  try {
+    const categories = await drugModel.distinct('category');
+    return categories;
+  } catch (error) {
+    if (error instanceof APIError) throw error;
+    else {
+      throw new APIError(
+        'Internal Error',
+        httpStatus.INTERNAL_SERVER_ERROR,
+        true
+      );
+    }
+  }
+}

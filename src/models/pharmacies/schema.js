@@ -40,6 +40,13 @@ const pharmacySchema = new mongoose.Schema(
       default: 'pending',
       enum: ['pending', 'approved', 'rejected'],
     },
+    account: {
+      accountHolderName: { type: String },
+      accountNumber: { type: String },
+      bankName: { type: String },
+      branchName: { type: String },
+      accountType: { type: String },
+    },
   },
   { timestamps: true }
 );

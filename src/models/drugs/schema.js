@@ -33,6 +33,8 @@ const drugSchema = new mongoose.Schema(
     minStockLevel: { type: Number, required: true },
     needPrescription: { type: Boolean, required: true, default: false },
     batchNumber: { type: Number, required: true },
+    totalSale: { type: Number, required: true, default: 0 },
+    profit: { type: Number, required: true, default: 0 },
   },
   { timestamps: true }
 );

@@ -136,3 +136,12 @@ export const getDrugNamesController = async (req, res, next) => {
     next(error);
   }
 };
+
+export const getDrugCategoriesController = async (req, res, next) => {
+  try {
+    const drugs = await Drug.getDrugCategories();
+    res.status(httpStatus.OK).json(drugs);
+  } catch (error) {
+    next(error);
+  }
+};
