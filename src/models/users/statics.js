@@ -289,11 +289,12 @@ export async function getAllUser({
 
 export async function loginUser(data) {
   const { phoneNumber, password, email } = data;
+  console.log(email, phoneNumber);
 
   let user;
 
   try {
-    if (phoneNumber) {
+    if (phoneNumber !== undefined) {
       user = await this.findOne({ phoneNumber }).exec();
       if (!user) {
         throw new APIError(
@@ -309,6 +310,9 @@ export async function loginUser(data) {
         email,
         role: 'pharmacist' || 'admin' || 'superAdmin',
       }).exec();
+
+      console.log(user);
+
       if (!user) {
         throw new APIError(
           "email or Password doesn't match",
@@ -319,6 +323,7 @@ export async function loginUser(data) {
     }
 
     const passwordMatch = await bcrypt.compare(password, user.password);
+    console.log(passwordMatch);
     if (passwordMatch) {
       const token = generateJwtAccessToken(user._id);
       const newRefreshToken = generateJwtRefreshToken(user._id);
