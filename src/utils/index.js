@@ -5,7 +5,7 @@ import crypto from 'crypto';
 import { jwtKey, jwtRefreshKey, appDomain } from '../config/environments';
 import APIError from '../errors/APIError';
 
-const generateJwtAccessToken = (userId, expiresIn = '24d') => {
+const generateJwtAccessToken = (userId, expiresIn = '30d') => {
   const token = jwt.sign({ _id: userId }, jwtKey, { expiresIn });
   return token;
 };
