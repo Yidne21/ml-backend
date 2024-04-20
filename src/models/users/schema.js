@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 const userSchema = new mongoose.Schema(
   {
     name: { type: String },
-    phoneNumber: { type: String, required: true, unique: true },
+    phoneNumber: { type: String },
     password: { type: String, required: true },
     email: { type: String },
     address: {
@@ -27,15 +27,6 @@ const userSchema = new mongoose.Schema(
         type: [Number],
       },
     },
-    account: [
-      {
-        accountHolderName: { type: String },
-        accountNumber: { type: String },
-        bankName: { type: String },
-        branchName: { type: String },
-        accountType: { type: String },
-      },
-    ],
     deliveryAddress: [
       {
         address: { type: String },
