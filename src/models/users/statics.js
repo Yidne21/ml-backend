@@ -12,8 +12,8 @@ import {
   generatePasswordResetUrl,
   generateAccountActivationUrl,
   paginationPipeline,
+  sendEmail,
 } from '../../utils';
-import { getMailer } from '../../config/nodemailer';
 import { appEmailAddress, secretKey } from '../../config/environments';
 import { ForgotPassword, ActivateAccount } from '../../utils/mailTemplate';
 import { uploadFile } from '../../utils/cloudinary';
@@ -28,26 +28,15 @@ export async function signUpUser({ name, phoneNumber, password, role, email }) {
     role,
     password: hashedpassword,
     email,
+    emailVerified: true,
   };
 
-  if (phoneNumber) {
-    const existingUser = await UserModel.find({ phoneNumber });
-    if (existingUser.length > 0) {
-      throw new APIError(
-        `This ${phoneNumber} phone number is already used try another`,
-        httpStatus.CLIENT_ERROR
-      );
-    }
-  }
-
-  if (email) {
-    const existingEmail = await UserModel.find({ email });
-    if (existingEmail.length > 0) {
-      throw new APIError(
-        `This ${email} email is already used try another`,
-        httpStatus.CLIENT_ERROR
-      );
-    }
+  const existingEmail = await UserModel.find({ email });
+  if (existingEmail.length > 0) {
+    throw new APIError(
+      `This ${email} email is already used try another`,
+      httpStatus.CLIENT_ERROR
+    );
   }
 
   const newUser = new UserModel(user);
@@ -145,7 +134,7 @@ export async function deleteUser(id) {
 
 export async function updateUser({
   userId,
-  email,
+  phoneNumber,
   avatar,
   coverPhoto,
   newPassword,
@@ -173,7 +162,7 @@ export async function updateUser({
   }
 
   const update = {
-    ...(email && { email }),
+    ...(phoneNumber && { phoneNumber }),
     ...(avatar && { avatar }),
     ...(coverPhoto && { coverPhoto }),
     ...(hashedPassword && { password: hashedPassword }),
@@ -201,7 +190,7 @@ export async function updateUser({
   }
 }
 
-export async function resetPassword({ phoneNumber, newPassword }) {
+export async function resetPassword({ email, newPassword }) {
   const UserModel = this.model(modelNames.user);
 
   let hashedPassword;
@@ -211,7 +200,7 @@ export async function resetPassword({ phoneNumber, newPassword }) {
 
   try {
     const user = await UserModel.findOneAndUpdate(
-      { phoneNumber },
+      { email },
       { password: hashedPassword },
       {
         new: true,
@@ -288,42 +277,22 @@ export async function getAllUser({
 }
 
 export async function loginUser(data) {
-  const { phoneNumber, password, email } = data;
-  console.log(email, phoneNumber);
-
-  let user;
+  const { password, email } = data;
 
   try {
-    if (phoneNumber !== undefined) {
-      user = await this.findOne({ phoneNumber }).exec();
-      if (!user) {
-        throw new APIError(
-          "phoneNumber or Password doesn't match",
-          httpStatus.UNAUTHORIZED,
-          true
-        );
-      }
-    }
+    const user = await this.findOne({
+      email,
+    }).exec();
 
-    if (email) {
-      user = await this.findOne({
-        email,
-        role: 'pharmacist' || 'admin' || 'superAdmin',
-      }).exec();
-
-      console.log(user);
-
-      if (!user) {
-        throw new APIError(
-          "email or Password doesn't match",
-          httpStatus.UNAUTHORIZED,
-          true
-        );
-      }
+    if (!user) {
+      throw new APIError(
+        "email or Password doesn't match",
+        httpStatus.UNAUTHORIZED,
+        true
+      );
     }
 
     const passwordMatch = await bcrypt.compare(password, user.password);
-    console.log(passwordMatch);
     if (passwordMatch) {
       const token = generateJwtAccessToken(user._id);
       const newRefreshToken = generateJwtRefreshToken(user._id);
@@ -423,20 +392,19 @@ export async function registerPharmacist(data) {
       email
     );
 
-    const accountActivationEmailTemplate = ActivateAccount(activateAccountUrl);
+    const emailTemplate = ActivateAccount(activateAccountUrl);
 
     const emailContent = {
       to: email,
       from: `Medicine Locator <${appEmailAddress}`,
       subject: 'Activate Account',
-      html: accountActivationEmailTemplate,
+      html: emailTemplate,
     };
 
     try {
-      const mailer = await getMailer();
-      mailer.sendMail(emailContent);
+      await sendEmail(emailContent);
     } catch (error) {
-      throw new Error('Error sending email');
+      throw new Error(error);
     }
 
     if (!pharmacist) {
@@ -532,16 +500,16 @@ export async function forgotPassword(email) {
     };
 
     try {
-      const mailer = await getMailer();
-      mailer.sendMail(emailContent);
-      console.log('email sent');
+      await sendEmail(emailContent);
     } catch (error) {
-      console.log('error sending email', error);
+      throw new APIError(
+        'Error sending email',
+        httpStatus.INTERNAL_SERVER_ERROR
+      );
     }
 
     return {
       message: 'Password reset email is sent successfully',
-      resetPasswordUrl,
     };
   } catch (error) {
     if (error instanceof APIError) throw error;
@@ -575,7 +543,7 @@ export async function resetPasswordWithEmail(email, token, newPassword) {
     await tokenOwner.save();
 
     return {
-      message: 'Password changed successfully',
+      message: 'Password reset successfully',
       user: tokenOwner.clean(),
     };
   } catch (error) {

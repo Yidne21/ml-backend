@@ -1,9 +1,9 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import httpStatus from 'http-status';
-import crypto from 'crypto';
 import { jwtKey, jwtRefreshKey, appDomain } from '../config/environments';
 import APIError from '../errors/APIError';
+import { getMailer } from '../config/nodemailer';
 
 const generateJwtAccessToken = (userId, expiresIn = '30d') => {
   const token = jwt.sign({ _id: userId }, jwtKey, { expiresIn });
@@ -42,6 +42,15 @@ const generateAccountActivationUrl = (
 const generateJwtRefreshToken = (userId, expiresIn = '30d') => {
   const token = jwt.sign({ _id: userId }, jwtRefreshKey, { expiresIn });
   return token;
+};
+
+const sendEmail = async (emailContent) => {
+  try {
+    const mailer = await getMailer();
+    mailer.sendMail(emailContent);
+  } catch (error) {
+    throw new Error('Error sending email');
+  }
 };
 
 const verifyRefreshToken = (refreshToken) => {
@@ -111,4 +120,5 @@ export {
   generatePasswordResetUrl,
   generateAccountActivationUrl,
   paginationPipeline,
+  sendEmail,
 };

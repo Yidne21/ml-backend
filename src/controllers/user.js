@@ -1,51 +1,78 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import httpStatus from 'http-status';
+import otpGenerator from 'otp-generator';
 import User from '../models/users';
-import * as environments from '../config/environments';
 import APIError from '../errors/APIError';
-
-const client = require('twilio')(
-  environments.twilioAccountSid,
-  environments.twilioAuthToken,
-  { lazyLoading: true }
-);
+import Otp from '../models/otps';
 
 export const sendOTP = async (req, res, next) => {
-  const { phoneNumber } = req.body;
-  console.log(phoneNumber);
+  const { email } = req.body;
 
   try {
-    const existingUser = await User.find({ phoneNumber });
-    if (!existingUser || existingUser.length === 0) {
-      throw new APIError("Phone number doesn't exist", httpStatus.BAD_REQUEST);
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      throw new APIError('email already registered', httpStatus.UNAUTHORIZED);
     }
 
-    const otpResponse = await client.verify.v2
-      .services(environments.twilioServiceId)
-      .verifications.create({ to: phoneNumber, channel: 'sms' });
-    res.status(httpStatus.OK).json(otpResponse);
+    const existingOtp = await Otp.findOne({ email });
+
+    if (existingOtp) {
+      await Otp.findByIdAndDelete(existingOtp._id);
+    }
+
+    const otp = otpGenerator.generate(6, {
+      upperCaseAlphabets: false,
+      lowerCaseAlphabets: false,
+      specialChars: false,
+    });
+
+    const otpPayload = { otp, email };
+
+    const message = await Otp.create(otpPayload);
+
+    if (!message) {
+      throw new APIError(
+        'could not send otp',
+        httpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
+
+    res.status(httpStatus.OK).json({ success: true });
   } catch (error) {
-    console.log(error);
     next(error);
   }
 };
 
 export const verifyOTP = async (req, res, next) => {
-  const { phoneNumber, code } = req.body;
+  const { email, code } = req.body;
   try {
-    const otpResponse = await client.verify.v2
-      .services(environments.twilioServiceId)
-      .verificationChecks.create({ to: phoneNumber, code });
-    res.status(httpStatus.OK).json(otpResponse);
+    const otps = await Otp.findOne({
+      email,
+      otp: code,
+    });
+    if (!otps || otps.email !== email) {
+      throw new Error('invalid email', httpStatus.UNAUTHORIZED);
+    }
+    if (otps.otp !== code) {
+      throw new Error('invalid otp', httpStatus.UNAUTHORIZED);
+    }
+    if (otps.verified === true) {
+      throw new Error(
+        'otp already verified try another',
+        httpStatus.UNAUTHORIZED
+      );
+    }
+    await Otp.updateOne({ email }, { verified: true });
+    res.status(httpStatus.OK).json({ valid: true });
   } catch (error) {
     next(error);
   }
 };
 
 export const resetPasswordController = async (req, res, next) => {
-  const { phoneNumber, newPassword } = req.body;
+  const { email, newPassword } = req.body;
 
-  const params = { phoneNumber, newPassword };
+  const params = { email, newPassword };
 
   try {
     const message = await User.resetPassword(params);
@@ -56,9 +83,23 @@ export const resetPasswordController = async (req, res, next) => {
 };
 
 export const signUpUserController = async (req, res, next) => {
-  const { name, phoneNumber, password, role, email } = req.body;
+  const { name, phoneNumber, password, email, role } = req.body;
 
-  const creatUserParams = { name, phoneNumber, password, role, email };
+  const otps = await Otp.findOne({
+    email,
+  });
+
+  if (!otps || otps.email !== email || otps.verified === false) {
+    throw new APIError('invalid email', httpStatus.UNAUTHORIZED);
+  }
+
+  const creatUserParams = {
+    name,
+    phoneNumber,
+    password,
+    role,
+    email,
+  };
   try {
     const user = await User.signUpUser(creatUserParams);
     res.status(httpStatus.OK).json(user);
@@ -92,11 +133,11 @@ export const deleteUserByIdController = async (req, res, next) => {
 
 export const updateUserController = async (req, res, next) => {
   const { userId } = req.params;
-  const { email, avatar, coverPhoto, newPassword, oldPassword, address } =
+  const { phoneNumber, avatar, coverPhoto, newPassword, oldPassword, address } =
     req.body;
   const userParams = {
     userId,
-    email,
+    phoneNumber,
     avatar,
     coverPhoto,
     newPassword,
@@ -134,8 +175,8 @@ export const getAllUserController = async (req, res, next) => {
 };
 
 export const loginUserController = async (req, res, next) => {
-  const { phoneNumber, password, email } = req.body;
-  const data = { phoneNumber, password, email };
+  const { password, email } = req.body;
+  const data = { password, email };
   try {
     const user = await User.loginUser(data);
     res.status(httpStatus.OK).json(user);
@@ -183,8 +224,6 @@ export const registerPharmacistController = async (req, res, next) => {
       pharmacyPhoneNumber,
       files: req.files,
     };
-
-    console.log(data);
 
     const user = await User.registerPharmacist(data);
 
