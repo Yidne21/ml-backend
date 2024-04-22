@@ -32,8 +32,53 @@ export const parmacyDetailController = async (req, res, next) => {
 
 export const getMyPharmacyController = async (req, res, next) => {
   const { _id } = req.user;
+  const { pharmacyId } = req.params;
   try {
-    const pharmacy = await Pharmacy.getMyPharmacy(_id);
+    const pharmacy = await Pharmacy.getMyPharmacy(_id, pharmacyId);
+    res.status(httpStatus.OK).json(pharmacy);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updatePharmacyController = async (req, res, next) => {
+  const { _id } = req.user;
+  const { pharmacyId } = req.params;
+  const { logo, address, phoneNumber } = req.body;
+  const pharmacyParams = {
+    _id,
+    logo,
+    address,
+    phoneNumber,
+    pharmacyId,
+  };
+  try {
+    const updatedPharmacy = await Pharmacy.updatePharmacy(pharmacyParams);
+    res.status(httpStatus.OK).json(updatedPharmacy);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const addPharmacyController = async (req, res, next) => {
+  const { _id } = req.user;
+  const { name, email, location, pharmacyLicense, phoneNumber } = req.body;
+
+  const [lat, lng] = location.split(',');
+
+  const pharmacyParams = {
+    pharmacistId: _id,
+    name,
+    email,
+    location: {
+      type: 'Point',
+      coordinates: [parseFloat(lat), parseFloat(lng)],
+    },
+    pharmacyLicense,
+    phoneNumber,
+  };
+  try {
+    const pharmacy = await Pharmacy.addPharmacy(pharmacyParams);
     res.status(httpStatus.OK).json(pharmacy);
   } catch (error) {
     next(error);

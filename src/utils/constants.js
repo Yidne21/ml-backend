@@ -8,6 +8,9 @@ const modelNames = {
   feedback: 'Feedbacks',
   cart: 'Carts',
   stock: 'Stocks',
+  notification: 'Notifications',
+  rolePermissions: 'RolesPermissions',
+  otp: 'Otps',
 };
 
 export default modelNames;

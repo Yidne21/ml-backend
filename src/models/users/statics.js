@@ -1,25 +1,21 @@
 import httpStatus from 'http-status';
 import bcrypt from 'bcrypt';
 import mongoose from 'mongoose';
-import jwt from 'jsonwebtoken';
 import APIError from '../../errors/APIError';
 import modelNames from '../../utils/constants';
 import {
+  generateOtp,
   generateJwtAccessToken,
   generateJwtRefreshToken,
   verifyRefreshToken,
-  generateHashedPassword,
-  generatePasswordResetUrl,
-  generateAccountActivationUrl,
   paginationPipeline,
 } from '../../utils';
-import { getMailer } from '../../config/nodemailer';
-import { appEmailAddress, secretKey } from '../../config/environments';
-import { ForgotPassword, ActivateAccount } from '../../utils/mailTemplate';
+import { uploadFile } from '../../utils/cloudinary';
 
 export async function signUpUser({ name, phoneNumber, password, role, email }) {
   const hashedpassword = await bcrypt.hash(password, 10);
   const UserModel = this.model(modelNames.user);
+  const otpModel = this.model(modelNames.otp);
 
   const user = {
     name,
@@ -29,29 +25,26 @@ export async function signUpUser({ name, phoneNumber, password, role, email }) {
     email,
   };
 
-  if (phoneNumber) {
-    const existingUser = await UserModel.find({ phoneNumber });
-    if (existingUser.length > 0) {
-      throw new APIError(
-        `This ${phoneNumber} phone number is already used try another`,
-        httpStatus.CLIENT_ERROR
-      );
-    }
-  }
-
-  if (email) {
-    const existingEmail = await UserModel.find({ email });
-    if (existingEmail.length > 0) {
-      throw new APIError(
-        `This ${email} email is already used try another`,
-        httpStatus.CLIENT_ERROR
-      );
-    }
+  const existingEmail = await UserModel.findOne({ email });
+  if (existingEmail) {
+    throw new APIError(
+      `This ${email} email is already used try another`,
+      httpStatus.CLIENT_ERROR
+    );
   }
 
   const newUser = new UserModel(user);
 
   try {
+    const otp = generateOtp(6);
+
+    const otpPayload = {
+      otp,
+      email,
+      type: 'verify',
+    };
+
+    await otpModel.createOtp(otpPayload);
     await newUser.save();
 
     return newUser.clean();
@@ -144,12 +137,13 @@ export async function deleteUser(id) {
 
 export async function updateUser({
   userId,
-  email,
+  phoneNumber,
   avatar,
   coverPhoto,
   newPassword,
   address,
   oldPassword,
+  status,
 }) {
   const UserModel = this.model(modelNames.user);
 
@@ -172,11 +166,12 @@ export async function updateUser({
   }
 
   const update = {
-    ...(email && { email }),
+    ...(phoneNumber && { phoneNumber }),
     ...(avatar && { avatar }),
     ...(coverPhoto && { coverPhoto }),
     ...(hashedPassword && { password: hashedPassword }),
     ...(address && { address }),
+    ...(status && { status }),
   };
 
   try {
@@ -200,8 +195,9 @@ export async function updateUser({
   }
 }
 
-export async function resetPassword({ phoneNumber, newPassword }) {
+export async function resetPassword({ email, newPassword }) {
   const UserModel = this.model(modelNames.user);
+  const otpModel = this.model(modelNames.otp);
 
   let hashedPassword;
   if (newPassword) {
@@ -209,17 +205,30 @@ export async function resetPassword({ phoneNumber, newPassword }) {
   }
 
   try {
-    const user = await UserModel.findOneAndUpdate(
-      { phoneNumber },
+    const existingUser = await UserModel.findOne({
+      email,
+    });
+
+    if (!existingUser) {
+      throw new APIError('Invalid email', httpStatus.UNAUTHORIZED);
+    }
+
+    const hasVerifiedOtp = await otpModel.findOne({
+      email,
+      verified: true,
+    });
+
+    if (!hasVerifiedOtp) {
+      throw new APIError('Invalid email', httpStatus.UNAUTHORIZED);
+    }
+
+    await UserModel.findOneAndUpdate(
+      { email },
       { password: hashedPassword },
       {
         new: true,
       }
     );
-
-    if (!user) {
-      throw new APIError('User not found', httpStatus.NOT_FOUND);
-    }
 
     return {
       message: 'password reset successfully',
@@ -287,35 +296,19 @@ export async function getAllUser({
 }
 
 export async function loginUser(data) {
-  const { phoneNumber, password, email } = data;
-  console.log('data', data);
-
-  let user;
+  const { password, email } = data;
 
   try {
-    if (phoneNumber) {
-      user = await this.findOne({ phoneNumber }).exec();
-      if (!user) {
-        throw new APIError(
-          "phoneNumber or Password doesn't match",
-          httpStatus.UNAUTHORIZED,
-          true
-        );
-      }
-    }
+    const user = await this.findOne({
+      email,
+    }).exec();
 
-    if (email) {
-      user = await this.findOne({
-        email,
-        role: 'pharmacist' || 'admin' || 'superAdmin',
-      }).exec();
-      if (!user) {
-        throw new APIError(
-          "email or Password doesn't match",
-          httpStatus.UNAUTHORIZED,
-          true
-        );
-      }
+    if (!user) {
+      throw new APIError(
+        "email or Password doesn't match",
+        httpStatus.UNAUTHORIZED,
+        true
+      );
     }
 
     const passwordMatch = await bcrypt.compare(password, user.password);
@@ -369,96 +362,103 @@ export async function refreshToken(token) {
 }
 
 export async function registerPharmacist(data) {
-  const {
-    name,
-    phoneNumber,
-    password,
-    email,
-    pharmaciestLicense,
-    pharmacyName,
-    pharmacyLocation,
-    pharmacyEmail,
-    pharmacyPhoneNumber,
-    pharmacyLicense,
-  } = data;
+  const { name, password, email, file } = data;
+
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  const hashedpassword = await bcrypt.hash(password, 10);
+  const UserModel = this.model(modelNames.user);
+  const otpModel = this.model(modelNames.otp);
+
+  const existingEmail = await UserModel.find({ email });
+  if (existingEmail.length > 0) {
+    session.abortTransaction();
+    throw new APIError(
+      `This ${email} email is already used try another`,
+      httpStatus.CLIENT_ERROR
+    );
+  }
+
+  try {
+    const pharmaciestLicense = await uploadFile(file, 'pharmaciestLicense');
+
+    const user = {
+      name,
+      password: hashedpassword,
+      role: 'pharmacist',
+      email,
+      pharmaciestLicense,
+    };
+
+    const otp = generateOtp(6);
+
+    const otpPayload = {
+      otp,
+      email,
+      type: 'verify',
+    };
+
+    const message = await otpModel.createOtp(otpPayload);
+
+    if (!message) {
+      throw new APIError(
+        'could not send otp',
+        httpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
+
+    await UserModel.create(user);
+    return {
+      message: 'please activate your account with the otp sent to your email',
+    };
+  } catch (error) {
+    if (error.code === 11000 && error.keyPattern.email) {
+      await session.abortTransaction();
+      session.endSession();
+      throw new APIError(
+        `Email ${data.email} is already in use`,
+        httpStatus.CONFLICT
+      );
+    } else if (error instanceof APIError) throw error;
+    else {
+      throw new APIError(
+        'Internal Error',
+        httpStatus.INTERNAL_SERVER_ERROR,
+        true
+      );
+    }
+  } finally {
+    session.endSession();
+  }
+}
+
+export async function registerAdmin(data) {
+  const { name, password, email } = data;
 
   const hashedpassword = await bcrypt.hash(password, 10);
   const UserModel = this.model(modelNames.user);
-  const PharmacyModel = this.model(modelNames.pharmacy);
 
-  if (email) {
-    const existingEmail = await UserModel.find({ email });
-    if (existingEmail.length > 0) {
-      throw new APIError(
-        `This ${email} email is already used try another`,
-        httpStatus.CLIENT_ERROR
-      );
-    }
+  const existingEmail = await UserModel.find({ email });
+  if (existingEmail.length > 0) {
+    throw new APIError(
+      `This ${email} email is already used try another`,
+      httpStatus.CLIENT_ERROR
+    );
   }
 
-  const user = {
-    name,
-    phoneNumber,
-    password: hashedpassword,
-    role: 'pharmacist',
-    email,
-    pharmaciestLicense,
-    emailVerified: false,
-  };
-
   try {
-    const pharmacist = await UserModel.create(user);
-    pharmacist.clean();
-
-    const activateAccountUrl = generateAccountActivationUrl(
-      hashedpassword,
-      pharmacist._id,
-      email
-    );
-
-    const accountActivationEmailTemplate = ActivateAccount(activateAccountUrl);
-
-    const emailContent = {
-      to: email,
-      from: `Medicine Locator <${appEmailAddress}`,
-      subject: 'Activate Account',
-      html: accountActivationEmailTemplate,
+    const user = {
+      name,
+      password: hashedpassword,
+      role: 'admin',
+      email,
     };
 
-    try {
-      const mailer = await getMailer();
-      mailer.sendMail(emailContent);
-      console.log('email sent');
-    } catch (error) {
-      console.log('error sending email', error);
-    }
-
-    if (!pharmacist) {
-      throw new APIError('Internal Error', httpStatus.INTERNAL_SERVER_ERROR);
-    }
-
-    const [lat, lng] = pharmacyLocation.split(',');
-
-    const pharmacy = {
-      name: pharmacyName,
-      location: {
-        type: 'Point',
-        coordinates: [parseFloat(lat), parseFloat(lng)],
-      },
-      email: pharmacyEmail,
-      phoneNumber: pharmacyPhoneNumber,
-      pharmacyLicense,
-      pharmacistId: pharmacist._id,
-    };
-
-    await PharmacyModel.create(pharmacy);
-
+    await UserModel.create(user);
     return {
-      message: 'Pharmacist registered successfully',
-      activateAccountUrl,
+      message: 'Admin created successfully',
     };
   } catch (error) {
-    console.log('error', error);
     if (error instanceof APIError) throw error;
     else {
       throw new APIError(
@@ -467,100 +467,5 @@ export async function registerPharmacist(data) {
         true
       );
     }
-  }
-}
-
-export async function validateActivationToken(token, email) {
-  const tokenOwner = await this.findOne({ email }).exec();
-  if (!tokenOwner) {
-    throw new APIError('Not found', httpStatus.NOT_FOUND);
-  }
-
-  try {
-    const decoded = jwt.verify(token, tokenOwner.password);
-    if (decoded._id === `${tokenOwner._id}`) {
-      tokenOwner.emailVerified = true;
-      await tokenOwner.save();
-      return tokenOwner.clean();
-    }
-
-    throw new APIError('Unauthorized', httpStatus.UNAUTHORIZED);
-  } catch (error) {
-    throw new APIError('Unauthorized', httpStatus.UNAUTHORIZED);
-  }
-}
-
-export async function forgotPassword(email) {
-  try {
-    const tokenOwner = await this.findOne({ email }).exec();
-
-    if (!tokenOwner) {
-      throw new APIError('User not found!', httpStatus.NOT_FOUND);
-    }
-
-    const resetPasswordUrl = generatePasswordResetUrl(
-      secretKey,
-      tokenOwner._id,
-      tokenOwner.email
-    );
-
-    const forgetPasswordEmailTemplate = ForgotPassword(resetPasswordUrl);
-
-    const emailContent = {
-      to: tokenOwner.email,
-      from: `Medicine Locator <${appEmailAddress}`,
-      subject: 'Reset Password',
-      html: forgetPasswordEmailTemplate,
-    };
-
-    try {
-      const mailer = await getMailer();
-      mailer.sendMail(emailContent);
-      console.log('email sent');
-    } catch (error) {
-      console.log('error sending email', error);
-    }
-
-    return {
-      message: 'Password reset email is sent successfully',
-      resetPasswordUrl,
-    };
-  } catch (error) {
-    if (error instanceof APIError) throw error;
-    else {
-      throw new APIError(
-        'Internal error',
-        httpStatus.INTERNAL_SERVER_ERROR,
-        true
-      );
-    }
-  }
-}
-
-export async function resetPasswordWithEmail(email, token, newPassword) {
-  const tokenOwner = await this.findOne({ email }).exec();
-  if (!tokenOwner) {
-    throw new APIError('Not found', httpStatus.NOT_FOUND);
-  }
-
-  try {
-    const decoded = jwt.verify(token, secretKey);
-    if (decoded._id === `${tokenOwner._id}`) {
-      tokenOwner.password = await generateHashedPassword(newPassword);
-    } else {
-      throw new APIError(
-        'You are not authorized to change other users password',
-        httpStatus.UNAUTHORIZED
-      );
-    }
-
-    await tokenOwner.save();
-
-    return {
-      message: 'Password changed successfully',
-      user: tokenOwner.clean(),
-    };
-  } catch (error) {
-    throw new APIError('Unauthorized', httpStatus.UNAUTHORIZED);
   }
 }

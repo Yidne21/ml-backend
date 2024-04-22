@@ -15,7 +15,7 @@ const insertDummyData = async () => {
     const userData = {
       name: faker.person.fullName(),
       phoneNumber: faker.phone.number(),
-      password: faker.internet.password(),
+      password: '123456',
       email: faker.internet.email(),
       avatar: faker.image.avatar(),
       coverPhoto: faker.image.url(),
@@ -28,7 +28,7 @@ const insertDummyData = async () => {
       },
       role: faker.helpers.arrayElement([
         'admin',
-        'pharmaciest',
+        'pharmacist',
         'customer',
         'superAdmin',
       ]),
@@ -151,7 +151,7 @@ const insertDummyData = async () => {
 
     if (
       userData.role === 'customer' ||
-      userData.role === 'pharmaciest' ||
+      userData.role === 'pharmacist' ||
       userData.role === 'superAdmin'
     ) {
       userData.account = {
@@ -200,8 +200,8 @@ const insertDummyData = async () => {
     const user = await User.create(userData);
     console.log('Inserted dummy data for User:', user);
 
-    const pharmaciestID = await User.find({
-      role: 'pharmaciest',
+    const pharmacistIDs = await User.find({
+      role: 'pharmacist',
     }).select('_id');
 
     const customerIDs = await User.find({
@@ -224,7 +224,7 @@ const insertDummyData = async () => {
       },
       phoneNumber: faker.phone.number(),
       email: faker.internet.email(),
-      pharmaciestId: faker.helpers.arrayElement(pharmaciestID),
+      pharmacistId: faker.helpers.arrayElement(pharmacistIDs),
       about: faker.lorem.paragraph(),
       logo: faker.image.urlPicsumPhotos({ height: 100, width: 100 }),
       cover: faker.image.urlPicsumPhotos({ height: 100, width: 500 }),
@@ -233,6 +233,7 @@ const insertDummyData = async () => {
         instagram: faker.internet.url(),
         twitter: faker.internet.url(),
       },
+      pharmacyLicense: faker.image.urlPicsumPhotos({ height: 100, width: 500 }),
     };
 
     const pharmacy = await Pharmacy.create(pharmacyData);
@@ -356,7 +357,9 @@ const insertDummyData = async () => {
         receiver: orderData.orderedTo,
         senderAccount: faker.helpers.arrayElement(senderAccounts.account),
         receiverAccount: faker.helpers.arrayElement(receiverAccounts.account),
-        reason: 'order Payment to pharmacies',
+        reason: 'pharmacy-payment',
+        amount: orderedDrug.price,
+        orderId: orderedDrug._id,
       };
       const transaction = await Transaction.create(transactionData);
       console.log('Inserted dummy data for Transaction:', transaction);
@@ -364,6 +367,7 @@ const insertDummyData = async () => {
     }
 
     if (orderData.status === 'aborted') {
+      const orderedDrug = await Drug.findOne({ _id: orderData.drugId });
       orderData.abortedAt = Date.now();
       const superAdminId = faker.helpers.arrayElement(superAdminIDs);
       const senderAccounts = await User.findOne({
@@ -377,7 +381,9 @@ const insertDummyData = async () => {
         receiver: superAdminId,
         senderAccount: faker.helpers.arrayElement(senderAccounts.account),
         receiverAccount: faker.helpers.arrayElement(receiverAccounts.account),
-        reason: 'refund for aborted order',
+        reason: 'refund',
+        amount: orderedDrug.price,
+        orderId: orderedDrug._id,
       };
       const transaction = await Transaction.create(transactionData);
       console.log('Inserted dummy data for Transaction:', transaction);
@@ -385,6 +391,7 @@ const insertDummyData = async () => {
     }
 
     if (orderData.status === 'inprogress') {
+      const orderedDrug = await Drug.findOne({ _id: orderData.drugId });
       const senderAccounts = await User.findOne({
         _id: orderData.orderedBy,
       }).select('account');
@@ -397,7 +404,9 @@ const insertDummyData = async () => {
         receiver: superAdminId,
         senderAccount: faker.helpers.arrayElement(senderAccounts.account),
         receiverAccount: faker.helpers.arrayElement(receiverAccounts.account),
-        reason: 'Order Payment',
+        reason: 'order-payment',
+        amount: orderedDrug.price,
+        orderId: orderedDrug._id,
       };
       const transaction = await Transaction.create(transactionData);
       console.log('Inserted dummy data for Transaction:', transaction);
@@ -420,7 +429,7 @@ const insertDummyData = async () => {
 
     // Insert dummy data for Feedback
     const feedbackData = {
-      userId: faker.helpers.arrayElement(customerIDs.concat(pharmaciestID)),
+      userId: faker.helpers.arrayElement(customerIDs.concat(pharmacistIDs)),
       title: faker.lorem.sentence(),
       content: faker.lorem.paragraph(),
     };

@@ -3,9 +3,9 @@ import mongoose from 'mongoose';
 const userSchema = new mongoose.Schema(
   {
     name: { type: String },
-    phoneNumber: { type: String, required: true, unique: true },
+    phoneNumber: { type: String },
     password: { type: String, required: true },
-    email: { type: String },
+    email: { type: String, required: true, unique: true },
     address: {
       type: String,
     },
@@ -27,15 +27,6 @@ const userSchema = new mongoose.Schema(
         type: [Number],
       },
     },
-    account: [
-      {
-        accountHolderName: { type: String },
-        accountNumber: { type: String },
-        bankName: { type: String },
-        branchName: { type: String },
-        accountType: { type: String },
-      },
-    ],
     deliveryAddress: [
       {
         address: { type: String },
@@ -52,11 +43,16 @@ const userSchema = new mongoose.Schema(
       },
     ],
     pharmaciestLicense: { type: String },
-    emailVerified: { type: Boolean },
+    emailVerified: { type: Boolean, default: false, required: true },
     role: {
       type: String,
       enum: ['admin', 'pharmacist', 'customer', 'superAdmin'],
       required: true,
+    },
+    status: {
+      type: String,
+      enum: ['active', 'inactive', 'deactivated'],
+      default: 'active',
     },
   },
   { timestamps: true }

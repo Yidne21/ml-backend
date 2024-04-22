@@ -5,6 +5,7 @@ import {
   createDrugController,
   updateDrugController,
   deleteDrugController,
+  getDrugNamesController,
 } from '../controllers/drug';
 
 import {
@@ -21,9 +22,11 @@ router.get('/:drugId', drugDetailController);
 router.post('/:pharmacyId', createDrugController);
 router.put('/:drugId', updateDrugController);
 router.delete('/:drugId', deleteDrugController);
+
 router.post('/stocks/:drugId', addStockController);
 router.get('/stocks/:drugId', getStocksController);
 router.put('/stocks/:stockId', updateStockController);
 router.delete('/stocks/:stockId', deleteStockController);
+router.get('/names/:pharmacyId', getDrugNamesController);
 
 export default router;

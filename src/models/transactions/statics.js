@@ -188,3 +188,32 @@ export async function transactionDetail(transactionId) {
     }
   }
 }
+
+export async function createTransaction(transaction) {
+  const TransactionModel = this.model(modelNames.transaction);
+
+  const transactionData = {
+    sender: transaction.sender,
+    receiver: transaction.receiver,
+    senderAccount: transaction.senderAccount,
+    receiverAccount: transaction.receiverAccount,
+    amount: transaction.amount,
+    tx_ref: transaction.tx_ref,
+    reason: transaction.reason,
+    status: transaction.status,
+  };
+
+  try {
+    const createdTransaction = await TransactionModel.create(transactionData);
+    return createdTransaction._id;
+  } catch (error) {
+    if (error instanceof APIError) throw error;
+    else {
+      throw new APIError(
+        'Internal Error',
+        httpStatus.INTERNAL_SERVER_ERROR,
+        true
+      );
+    }
+  }
+}

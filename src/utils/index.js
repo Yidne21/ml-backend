@@ -1,10 +1,12 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import httpStatus from 'http-status';
-import { jwtKey, jwtRefreshKey, appDomain } from '../config/environments';
+import otpGenerator from 'otp-generator';
+import { jwtKey, jwtRefreshKey } from '../config/environments';
 import APIError from '../errors/APIError';
+import { getMailer } from '../config/nodemailer';
 
-const generateJwtAccessToken = (userId, expiresIn = '15m') => {
+const generateJwtAccessToken = (userId, expiresIn = '30d') => {
   const token = jwt.sign({ _id: userId }, jwtKey, { expiresIn });
   return token;
 };
@@ -15,32 +17,18 @@ const generateHashedPassword = async (cleanPassword) => {
   return hashedPassword;
 };
 
-const generatePasswordResetUrl = (
-  secretKey,
-  userId,
-  email,
-  expiresIn = '24h'
-) => {
-  const token = jwt.sign({ _id: userId, email }, secretKey, { expiresIn });
-  const url = `${appDomain}/reset-password?token=${token}&email=${email}`;
-  return url;
-};
-
-const generateAccountActivationUrl = (
-  passwordOrKey,
-  userId,
-  email,
-  expiresIn = '24h'
-) => {
-  const token = jwt.sign({ _id: userId }, passwordOrKey, { expiresIn });
-  // Change this with the appropirate route that will open your client side and send the token and email to the activate endpoint
-  const url = `${appDomain}/activate?token=${token}&email=${email}`;
-  return url;
-};
-
 const generateJwtRefreshToken = (userId, expiresIn = '30d') => {
   const token = jwt.sign({ _id: userId }, jwtRefreshKey, { expiresIn });
   return token;
+};
+
+const sendEmail = async (emailContent) => {
+  try {
+    const mailer = await getMailer();
+    mailer.sendMail(emailContent);
+  } catch (error) {
+    throw new Error('Error sending email');
+  }
 };
 
 const verifyRefreshToken = (refreshToken) => {
@@ -55,6 +43,15 @@ const verifyRefreshToken = (refreshToken) => {
       true
     );
   }
+};
+
+const generateOtp = (length = 6) => {
+  const otp = otpGenerator.generate(length, {
+    upperCaseAlphabets: false,
+    lowerCaseAlphabets: false,
+    specialChars: false,
+  });
+  return otp;
 };
 
 const paginationPipeline = (page, limit) => {
@@ -107,7 +104,7 @@ export {
   generateJwtRefreshToken,
   verifyRefreshToken,
   generateHashedPassword,
-  generatePasswordResetUrl,
-  generateAccountActivationUrl,
   paginationPipeline,
+  sendEmail,
+  generateOtp,
 };

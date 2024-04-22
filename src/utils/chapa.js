@@ -54,6 +54,7 @@ export const transferToBank = async (data) => {
       headers: {
         Authorization: `Bearer ${chapaSecretKey}`,
       },
+      'Content-Type': 'application/json',
     });
     return response.data;
   } catch (error) {

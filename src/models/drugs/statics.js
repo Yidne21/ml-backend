@@ -123,6 +123,8 @@ export async function filterDrug({
         expiredDate: 1,
         pharmacy: 1,
         drugPhoto: 1,
+        stockLevel: 1,
+        needPrescription: 1,
       },
     },
     ...paginationPipeline(page, limit),
@@ -134,6 +136,35 @@ export async function filterDrug({
     return drugs[0];
   } catch (error) {
     console.log(error);
+    if (error instanceof APIError) throw error;
+    else {
+      throw new APIError(
+        'Internal Error',
+        httpStatus.INTERNAL_SERVER_ERROR,
+        true
+      );
+    }
+  }
+}
+
+export async function getDrugNames(pharmacyId) {
+  const drugModel = this.model(modelNames.drug);
+  try {
+    const drugs = await drugModel.aggregate([
+      {
+        $match: {
+          pharmacyId: mongoose.Types.ObjectId(pharmacyId),
+        },
+      },
+      {
+        $project: {
+          name: 1,
+        },
+      },
+    ]);
+
+    return drugs;
+  } catch (error) {
     if (error instanceof APIError) throw error;
     else {
       throw new APIError(
@@ -208,6 +239,7 @@ export async function drugDetail(drugId) {
           strength: 1,
           dosage: 1,
           stockLevel: 1,
+          minStockLevel: 1,
           needPrescription: 1,
           drugPhoto: 1,
           pharmacyName: '$pharmacy.name',
@@ -328,5 +360,22 @@ export async function deleteDrug(drugId) {
     }
   } finally {
     session.endSession();
+  }
+}
+
+export async function getDrugCategories() {
+  const drugModel = this.model(modelNames.drug);
+  try {
+    const categories = await drugModel.distinct('category');
+    return categories;
+  } catch (error) {
+    if (error instanceof APIError) throw error;
+    else {
+      throw new APIError(
+        'Internal Error',
+        httpStatus.INTERNAL_SERVER_ERROR,
+        true
+      );
+    }
   }
 }
