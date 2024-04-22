@@ -13,7 +13,7 @@ export const sendOTP = async (req, res, next) => {
     const existingUser = await User.findOne({ email });
 
     if (!existingUser) {
-      throw new APIError('email not found', httpStatus.NOT_FOUND);
+      throw new APIError('email not found', httpStatus.NOT_FOUND, true);
     }
     const message = await Otp.createOtp(otpPayload);
     res.status(httpStatus.OK).json(message);

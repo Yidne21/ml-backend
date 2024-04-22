@@ -1,7 +1,7 @@
 {
     "client": "Thunder Client",
     "collectionName": "Medicine-locator-v2",
-    "dateExported": "2024-04-22T17:20:41.650Z",
+    "dateExported": "2024-04-22T22:24:46.885Z",
     "version": "1.1",
     "folders": [
         {
@@ -64,13 +64,32 @@
             "method": "POST",
             "sortNum": 1250,
             "created": "2024-03-31T12:56:24.921Z",
-            "modified": "2024-03-31T12:56:24.921Z",
+            "modified": "2024-04-22T20:10:42.662Z",
             "headers": [],
             "params": [],
             "body": {
-                "type": "json",
-                "raw": "{\n  \"name\": \"John Doe\",\n  \"phoneNumber\": \"0911045-456-7890\",\n  \"password\": \"securePassword123\",\n  \"email\": \"yid1nebanfgtrga@gmail.com\",\n  \"pharmaciestLicense\": \"PH123456\",\n  \"pharmacyName\": \"HealhthyMeds\",\n  \"pharmacyLocation\": \"12.33,34.99\",\n  \"pharmacyEmail\": \"y8kidne12345@healthymedspharmacy.com\",\n  \"pharmacyPhoneNumber\": \"1968890168-6658-32105\",\n  \"pharmacyLicense\": \"PLode789012\"\n}\n",
-                "form": []
+                "type": "formdata",
+                "raw": "",
+                "form": [
+                    {
+                        "name": "name",
+                        "value": "Yidne"
+                    },
+                    {
+                        "name": "password",
+                        "value": "1234"
+                    },
+                    {
+                        "name": "email",
+                        "value": "yidnebantrga@gmail.com"
+                    }
+                ],
+                "files": [
+                    {
+                        "name": "file",
+                        "value": "/workspaces/ml-backend/src/utils/medicine_locator_header.jpg"
+                    }
+                ]
             },
             "tests": []
         },
@@ -98,16 +117,16 @@
             "colId": "d956c8bb-5551-4936-b972-5f4778eac786",
             "containerId": "f509a47b-1032-44bd-ba5b-50f03cbc402c",
             "name": "activateAccount",
-            "url": "127.0.0.1:5000/api/user/activate-account",
-            "method": "POST",
+            "url": "127.0.0.1:5000/api/user/admin/set-password",
+            "method": "PUT",
             "sortNum": 3750,
             "created": "2024-03-31T12:56:24.920Z",
-            "modified": "2024-03-31T12:56:24.920Z",
+            "modified": "2024-04-22T22:04:15.447Z",
             "headers": [],
             "params": [],
             "body": {
                 "type": "json",
-                "raw": "{\n  \"email\": \"yidnebantrga@gmail.com\",\n  \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NWM3YWZiNTgwOTU0NzU4MDgwNGZkZmUiLCJpYXQiOjE3MDc1ODU0NjEsImV4cCI6MTcwNzY3MTg2MX0.urez0n7K42AO0KVJ4G_rF3xh_PqMy1uw0_eL2E8Ty0s\"\n}",
+                "raw": "{\n  \"email\": \"yidnebantrga@gmail.com\",\n  \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NjI2ZGRjZmM0YWQzN2I2YWYzOWFiOTciLCJpYXQiOjE3MTM4MjMxODMsImV4cCI6MTcxMzkwOTU4M30.5egMkNZOxSoPZjOvhvhFBG1TnhTcr9nWQEklwS9Bv2w\",\n  \"password\": \"1234\"\n}",
                 "form": []
             },
             "tests": []
@@ -117,16 +136,16 @@
             "colId": "d956c8bb-5551-4936-b972-5f4778eac786",
             "containerId": "f509a47b-1032-44bd-ba5b-50f03cbc402c",
             "name": "reset-password",
-            "url": "127.0.0.1:5000/api/user/reset-passwordWithEmail",
+            "url": "127.0.0.1:5000/api/user/reset-password",
             "method": "POST",
             "sortNum": 5000,
             "created": "2024-03-31T12:56:24.918Z",
-            "modified": "2024-03-31T12:56:24.918Z",
+            "modified": "2024-04-22T22:23:30.872Z",
             "headers": [],
             "params": [],
             "body": {
                 "type": "json",
-                "raw": "{\n \"email\": \"yidnebantrga@gmail.com\",\n \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NWM3YWZiNTgwOTU0NzU4MDgwNGZkZmUiLCJlbWFpbCI6InlpZG5lYmFudHJnYUBnbWFpbC5jb20iLCJpYXQiOjE3MDc1ODYwMzcsImV4cCI6MTcwNzY3MjQzN30.09ExuS8HyAzEmJU3OaLebJdGApMNfbRDdpUg4iyyNTg\",\n \"newPassword\": \"12345\"\n}",
+                "raw": "{\n \"email\": \"yidnebantrga@gmail.com\",\n \"newPassword\": \"12345\"\n}",
                 "form": []
             },
             "tests": []
@@ -136,16 +155,16 @@
             "colId": "d956c8bb-5551-4936-b972-5f4778eac786",
             "containerId": "f509a47b-1032-44bd-ba5b-50f03cbc402c",
             "name": "verifyOtp",
-            "url": "https://medicin-locator-service.onrender.com/api/user/verify-otp",
+            "url": "localhost:5000/api/user/verify-otp",
             "method": "POST",
             "sortNum": 10000,
             "created": "2024-03-31T12:56:24.904Z",
-            "modified": "2024-03-31T12:56:24.904Z",
+            "modified": "2024-04-22T22:22:44.514Z",
             "headers": [],
             "params": [],
             "body": {
                 "type": "json",
-                "raw": "{\n  \"phoneNumber\": \"938536801\",\n  \"code\": \"567876\"\n}",
+                "raw": "{\n  \"email\": \"yidnebantrga@gmail.com\",\n  \"code\": \"849760\"\n}",
                 "form": []
             },
             "tests": []
@@ -169,16 +188,16 @@
             "colId": "d956c8bb-5551-4936-b972-5f4778eac786",
             "containerId": "f509a47b-1032-44bd-ba5b-50f03cbc402c",
             "name": "sendOtp",
-            "url": "https://medicin-locator-service.onrender.com/api/user/send-otp",
+            "url": "localhost:5000/api/user/send-otp",
             "method": "POST",
             "sortNum": 20000,
             "created": "2024-03-31T12:56:24.905Z",
-            "modified": "2024-03-31T12:56:24.905Z",
+            "modified": "2024-04-22T22:21:30.067Z",
             "headers": [],
             "params": [],
             "body": {
                 "type": "json",
-                "raw": "{\n  \"phoneNumber\": \"938536801\"\n}",
+                "raw": "{\n \"email\": \"yidnebantrga@gmail.com\",\n \"type\": \"forgot\"\n}",
                 "form": []
             },
             "tests": []
@@ -211,12 +230,12 @@
             "method": "POST",
             "sortNum": 40000,
             "created": "2024-03-31T12:56:24.907Z",
-            "modified": "2024-03-31T12:56:24.907Z",
+            "modified": "2024-04-22T22:24:06.034Z",
             "headers": [],
             "params": [],
             "body": {
                 "type": "json",
-                "raw": "{\n  \"password\": \"securePassword123\",\n  \"email\": \"yidnebantrga@gmail.com\"\n}",
+                "raw": "{\n  \"email\": \"yidnebantrga@gmail.com\",\n  \"password\": \"12345\"\n}",
                 "form": []
             },
             "tests": []
@@ -226,16 +245,16 @@
             "colId": "d956c8bb-5551-4936-b972-5f4778eac786",
             "containerId": "f509a47b-1032-44bd-ba5b-50f03cbc402c",
             "name": "User create",
-            "url": "medicin-locator-service.onrender.com/api/user/create",
+            "url": "localhost:5000/api/user/create",
             "method": "POST",
             "sortNum": 50000,
             "created": "2024-03-31T12:56:24.909Z",
-            "modified": "2024-03-31T12:56:24.909Z",
+            "modified": "2024-04-22T21:01:43.271Z",
             "headers": [],
             "params": [],
             "body": {
                 "type": "json",
-                "raw": "{\n  \"name\": \"Yidne\",\n  \"email\": \"kebede232@gmail.com\",\n  \"role\": \"customer\",\n  \"password\": \"1234\"\n}",
+                "raw": "{\n  \"name\": \"Yidne\",\n  \"email\": \"mekuyidnedawit@gmail.com\",\n  \"password\": \"12345678\",\n  \"phoneNumber\": \"0934567801\"\n}",
                 "form": []
             },
             "tests": []
@@ -1157,6 +1176,25 @@
             "modified": "2024-03-31T12:56:24.946Z",
             "headers": [],
             "params": [],
+            "tests": []
+        },
+        {
+            "_id": "28bc040a-cc91-4548-bbf4-3645818ec571",
+            "colId": "d956c8bb-5551-4936-b972-5f4778eac786",
+            "containerId": "f509a47b-1032-44bd-ba5b-50f03cbc402c",
+            "name": "registerAdmin",
+            "url": "localhost:5000/api/user/admin",
+            "method": "POST",
+            "sortNum": 390000,
+            "created": "2024-04-22T21:54:15.822Z",
+            "modified": "2024-04-22T21:57:09.372Z",
+            "headers": [],
+            "params": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"name\": \"Tolle\",\n  \"email\": \"yidnebantrga@gmail.com\"\n}",
+                "form": []
+            },
             "tests": []
         }
     ]
