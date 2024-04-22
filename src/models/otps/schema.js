@@ -17,6 +17,8 @@ const otpSchema = new mongoose.Schema({
   otpType: {
     type: String,
     required: true,
+    enum: ['forgot', 'verify'],
+    default: 'verify',
   },
   verified: {
     type: Boolean,
@@ -31,14 +33,13 @@ const otpSchema = new mongoose.Schema({
 
 // eslint-disable-next-line func-names
 otpSchema.pre('save', async function (next) {
-  const subject =
+  const type =
     this.otpType === 'forgot' ? 'Reset Password' : 'email verification';
-  const content = emailTemplate(this.otp, subject);
-
+  const content = emailTemplate(this.otp, type);
   const emailContent = {
     to: this.email,
     from: `Medicine Locator <${appEmailAddress}`,
-    subject,
+    subject: type,
     html: content,
   };
   if (this.isNew) {

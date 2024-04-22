@@ -398,7 +398,14 @@ export async function registerPharmacist(data) {
       type: 'verify',
     };
 
-    await otpModel.createOtp(otpPayload);
+    const message = await otpModel.createOtp(otpPayload);
+
+    if (!message) {
+      throw new APIError(
+        'could not send otp',
+        httpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
 
     await UserModel.create(user);
     return {

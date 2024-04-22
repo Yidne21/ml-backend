@@ -67,8 +67,8 @@ router.post('/refresh-token', parseValidationResult, refreshTokenController);
 
 router.post(
   '/pharmacist',
-  parseValidationResult,
-  multerUploads.array('files', 2),
+  // parseValidationResult,
+  multerUploads.single('file'),
   registerPharmacistController
 );
 
