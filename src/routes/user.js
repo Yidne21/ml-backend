@@ -18,6 +18,8 @@ import {
   sendOTP,
   verifyOTP,
   registerPharmacistController,
+  registerAdminController,
+  setPassWordController,
 } from '../controllers/user';
 import { authenticateJwt } from '../middlewares';
 import multerUploads from '../middlewares/multer';
@@ -71,5 +73,13 @@ router.post(
   multerUploads.single('file'),
   registerPharmacistController
 );
+
+router.post(
+  '/admin',
+  // parseValidationResult,
+  registerAdminController
+);
+
+router.put('/admin/set-password', setPassWordController);
 
 export default router;

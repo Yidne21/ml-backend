@@ -1,6 +1,8 @@
 import httpStatus from 'http-status';
 import bcrypt from 'bcrypt';
 import mongoose from 'mongoose';
+import jwt from 'jsonwebtoken';
+import { tr } from '@faker-js/faker';
 import APIError from '../../errors/APIError';
 import modelNames from '../../utils/constants';
 import {
@@ -9,10 +11,14 @@ import {
   generateJwtRefreshToken,
   verifyRefreshToken,
   paginationPipeline,
+  sendEmail,
+  generateAccountActivationUrl,
 } from '../../utils';
 import { uploadFile } from '../../utils/cloudinary';
+import emailTemplate from '../../utils/mailTemplate';
+import { appEmailAddress, secretKey } from '../../config/environments';
 
-export async function signUpUser({ name, phoneNumber, password, role, email }) {
+export async function signUpUser({ name, phoneNumber, password, email }) {
   const hashedpassword = await bcrypt.hash(password, 10);
   const UserModel = this.model(modelNames.user);
   const otpModel = this.model(modelNames.otp);
@@ -20,7 +26,7 @@ export async function signUpUser({ name, phoneNumber, password, role, email }) {
   const user = {
     name,
     phoneNumber,
-    role,
+    role: 'customer',
     password: hashedpassword,
     email,
   };
@@ -44,10 +50,10 @@ export async function signUpUser({ name, phoneNumber, password, role, email }) {
       type: 'verify',
     };
 
-    await otpModel.createOtp(otpPayload);
+    const message = await otpModel.createOtp(otpPayload);
     await newUser.save();
 
-    return newUser.clean();
+    return message;
   } catch (error) {
     if (error instanceof APIError) throw error;
     else {
@@ -433,9 +439,8 @@ export async function registerPharmacist(data) {
 }
 
 export async function registerAdmin(data) {
-  const { name, password, email } = data;
+  const { name, email } = data;
 
-  const hashedpassword = await bcrypt.hash(password, 10);
   const UserModel = this.model(modelNames.user);
 
   const existingEmail = await UserModel.find({ email });
@@ -449,16 +454,63 @@ export async function registerAdmin(data) {
   try {
     const user = {
       name,
-      password: hashedpassword,
       role: 'admin',
       email,
     };
 
-    await UserModel.create(user);
+    const admin = await UserModel.create(user);
+
+    const activationUrl = generateAccountActivationUrl(
+      secretKey,
+      admin._id,
+      email
+    );
+
+    const type = 'Admin create password link';
+    const content = emailTemplate(activationUrl, type);
+    const emailContent = {
+      to: email,
+      from: `Medicine Locator <${appEmailAddress}`,
+      subject: type,
+      html: content,
+    };
+
+    await sendEmail(emailContent);
     return {
       message: 'Admin created successfully',
     };
   } catch (error) {
+    console.log(error);
+    if (error instanceof APIError) throw error;
+    else {
+      throw new APIError(
+        'Internal Error',
+        httpStatus.INTERNAL_SERVER_ERROR,
+        true
+      );
+    }
+  }
+}
+
+export async function setPassWord({ token, email, password }) {
+  const tokenOwner = await this.findOne({ email }).exec();
+  if (!tokenOwner) {
+    throw new APIError('Not found', httpStatus.NOT_FOUND, true);
+  }
+
+  try {
+    const decoded = jwt.verify(token, secretKey);
+    if (decoded._id === `${tokenOwner._id}`) {
+      const hashedpassword = await bcrypt.hash(password, 10);
+      tokenOwner.emailVerified = true;
+      tokenOwner.password = hashedpassword;
+      await tokenOwner.save();
+      return tokenOwner.clean();
+    }
+
+    throw new APIError('Unauthorized', httpStatus.UNAUTHORIZED, true);
+  } catch (error) {
+    console.log(error);
     if (error instanceof APIError) throw error;
     else {
       throw new APIError(

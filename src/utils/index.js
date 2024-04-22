@@ -2,7 +2,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import httpStatus from 'http-status';
 import otpGenerator from 'otp-generator';
-import { jwtKey, jwtRefreshKey } from '../config/environments';
+import { jwtKey, jwtRefreshKey, appDomain } from '../config/environments';
 import APIError from '../errors/APIError';
 import { getMailer } from '../config/nodemailer';
 
@@ -20,6 +20,18 @@ const generateHashedPassword = async (cleanPassword) => {
 const generateJwtRefreshToken = (userId, expiresIn = '30d') => {
   const token = jwt.sign({ _id: userId }, jwtRefreshKey, { expiresIn });
   return token;
+};
+
+const generateAccountActivationUrl = (
+  passwordOrKey,
+  userId,
+  email,
+  expiresIn = '24h'
+) => {
+  const token = jwt.sign({ _id: userId }, passwordOrKey, { expiresIn });
+  // Change this with the appropirate route that will open your client side and send the token and email to the activate endpoint
+  const url = `${appDomain}/change-password?token=${token}&email=${email}`;
+  return url;
 };
 
 const sendEmail = async (emailContent) => {
@@ -107,4 +119,5 @@ export {
   paginationPipeline,
   sendEmail,
   generateOtp,
+  generateAccountActivationUrl,
 };
