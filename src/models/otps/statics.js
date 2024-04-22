@@ -52,16 +52,17 @@ export async function verifyOtp({ email, otp }) {
     if (!existingOtp || existingOtp.email !== email) {
       throw new APIError(
         'invalid email or expired otp',
-        httpStatus.UNAUTHORIZED
+        httpStatus.UNAUTHORIZED,
+        true
       );
     }
 
     if (existingOtp.otp !== otp) {
-      throw new APIError('invalid otp', httpStatus.UNAUTHORIZED);
+      throw new APIError('invalid otp', httpStatus.UNAUTHORIZED, true);
     }
 
     if (existingOtp.verified === true) {
-      throw new APIError('otp already verified', httpStatus.UNAUTHORIZED);
+      throw new APIError('otp already verified', httpStatus.UNAUTHORIZED, true);
     }
 
     if (existingOtp.otpType === 'verify') {

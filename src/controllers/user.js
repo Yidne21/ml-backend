@@ -52,14 +52,6 @@ export const resetPasswordController = async (req, res, next) => {
 export const signUpUserController = async (req, res, next) => {
   const { name, phoneNumber, password, email, role } = req.body;
 
-  const otps = await Otp.findOne({
-    email,
-  });
-
-  if (!otps || otps.email !== email || otps.verified === false) {
-    throw new APIError('invalid email', httpStatus.UNAUTHORIZED);
-  }
-
   const creatUserParams = {
     name,
     phoneNumber,
@@ -195,19 +187,30 @@ export const registerPharmacistController = async (req, res, next) => {
 };
 
 export const registerAdminController = async (req, res, next) => {
-  const { name, password, email } = req.body;
+  const { name, email, role } = req.body;
 
   try {
     const data = {
       name,
-      password,
-      role: 'admin',
+      role: role || 'admin',
       email,
     };
 
     const user = await User.registerAdmin(data);
 
     res.status(httpStatus.OK).json(user);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const setPassWordController = async (req, res, next) => {
+  const { token, email, password } = req.body;
+  const data = { token, email, password };
+
+  try {
+    const message = await User.setPassWord(data);
+    res.status(httpStatus.OK).json(message);
   } catch (error) {
     next(error);
   }
