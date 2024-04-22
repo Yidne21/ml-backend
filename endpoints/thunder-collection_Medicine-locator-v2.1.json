@@ -1,0 +1,1180 @@
+{
+    "clientName": "Thunder Client",
+    "collectionName": "Medicine-locator-v2",
+    "collectionId": "40a791a8-def2-42c3-ae19-7a0e0d465613",
+    "dateExported": "2024-04-22T20:02:06.346Z",
+    "version": "1.2",
+    "folders": [
+        {
+            "_id": "e6a54eaf-3900-40fa-9e41-1d0573090fb4",
+            "name": "user",
+            "containerId": "",
+            "created": "2024-04-22T18:51:22.936Z",
+            "sortNum": 10000
+        },
+        {
+            "_id": "4faa97cc-2f7c-458b-a648-61ae09774478",
+            "name": "drug",
+            "containerId": "",
+            "created": "2024-04-22T18:51:22.937Z",
+            "sortNum": 20000
+        },
+        {
+            "_id": "8e4a0e12-0b19-419c-99ba-df27673dcf35",
+            "name": "pharmacy",
+            "containerId": "",
+            "created": "2024-04-22T18:51:22.938Z",
+            "sortNum": 30000
+        },
+        {
+            "_id": "4c215a9a-53de-47b3-a9f9-d4bec7ce39d9",
+            "name": "review",
+            "containerId": "",
+            "created": "2024-04-22T18:51:22.939Z",
+            "sortNum": 40000
+        },
+        {
+            "_id": "d0c6d4ed-cf63-494f-a50b-626666e07dd7",
+            "name": "order",
+            "containerId": "",
+            "created": "2024-04-22T18:51:22.940Z",
+            "sortNum": 50000
+        },
+        {
+            "_id": "c1957598-20a9-4bda-902e-18e900004539",
+            "name": "transactions",
+            "containerId": "",
+            "created": "2024-04-22T18:51:22.941Z",
+            "sortNum": 60000
+        },
+        {
+            "_id": "097d0952-3d19-4574-ad4e-999103320ab5",
+            "name": "feedbacks",
+            "containerId": "",
+            "created": "2024-04-22T18:51:22.943Z",
+            "sortNum": 70000
+        }
+    ],
+    "requests": [
+        {
+            "_id": "1b921e2f-9fc7-4c4f-91b0-13d4ae620f94",
+            "colId": "40a791a8-def2-42c3-ae19-7a0e0d465613",
+            "containerId": "e6a54eaf-3900-40fa-9e41-1d0573090fb4",
+            "name": "signUpPharmacist",
+            "url": "localhost:5000/api/user/pharmacist",
+            "method": "POST",
+            "sortNum": 1250,
+            "created": "2024-04-22T18:51:22.958Z",
+            "modified": "2024-04-22T19:58:37.078Z",
+            "headers": [],
+            "body": {
+                "type": "formdata",
+                "raw": "",
+                "form": [
+                    {
+                        "name": "name",
+                        "value": "Zola"
+                    },
+                    {
+                        "name": "email",
+                        "value": "zolaxdg@gmail.com"
+                    },
+                    {
+                        "name": "password",
+                        "value": "123"
+                    }
+                ],
+                "files": [
+                    {
+                        "name": "file",
+                        "value": "/workspace/ml-backend/src/utils/medicine_locator_header.jpg"
+                    }
+                ]
+            }
+        },
+        {
+            "_id": "6daefd76-dc08-41ca-8657-f51be148d1d4",
+            "colId": "40a791a8-def2-42c3-ae19-7a0e0d465613",
+            "containerId": "e6a54eaf-3900-40fa-9e41-1d0573090fb4",
+            "name": "forgotPasswordWithEmail",
+            "url": "127.0.0.1:5000/api/user/forgot-password",
+            "method": "POST",
+            "sortNum": 2500,
+            "created": "2024-04-22T18:51:22.956Z",
+            "modified": "2024-04-22T18:51:22.956Z",
+            "headers": [],
+            "params": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"email\": \"yidnebantrga@gmail.com\"\n}",
+                "form": []
+            },
+            "tests": []
+        },
+        {
+            "_id": "025ebb28-5078-489b-985e-ca911e4f0873",
+            "colId": "40a791a8-def2-42c3-ae19-7a0e0d465613",
+            "containerId": "e6a54eaf-3900-40fa-9e41-1d0573090fb4",
+            "name": "activateAccount",
+            "url": "127.0.0.1:5000/api/user/activate-account",
+            "method": "POST",
+            "sortNum": 3750,
+            "created": "2024-04-22T18:51:22.957Z",
+            "modified": "2024-04-22T18:51:22.957Z",
+            "headers": [],
+            "params": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"email\": \"yidnebantrga@gmail.com\",\n  \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NWM3YWZiNTgwOTU0NzU4MDgwNGZkZmUiLCJpYXQiOjE3MDc1ODU0NjEsImV4cCI6MTcwNzY3MTg2MX0.urez0n7K42AO0KVJ4G_rF3xh_PqMy1uw0_eL2E8Ty0s\"\n}",
+                "form": []
+            },
+            "tests": []
+        },
+        {
+            "_id": "6fe834ac-8e2b-4c2f-9455-6c91cb21549b",
+            "colId": "40a791a8-def2-42c3-ae19-7a0e0d465613",
+            "containerId": "e6a54eaf-3900-40fa-9e41-1d0573090fb4",
+            "name": "reset-password",
+            "url": "127.0.0.1:5000/api/user/reset-passwordWithEmail",
+            "method": "POST",
+            "sortNum": 5000,
+            "created": "2024-04-22T18:51:22.955Z",
+            "modified": "2024-04-22T18:51:22.955Z",
+            "headers": [],
+            "params": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n \"email\": \"yidnebantrga@gmail.com\",\n \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NWM3YWZiNTgwOTU0NzU4MDgwNGZkZmUiLCJlbWFpbCI6InlpZG5lYmFudHJnYUBnbWFpbC5jb20iLCJpYXQiOjE3MDc1ODYwMzcsImV4cCI6MTcwNzY3MjQzN30.09ExuS8HyAzEmJU3OaLebJdGApMNfbRDdpUg4iyyNTg\",\n \"newPassword\": \"12345\"\n}",
+                "form": []
+            },
+            "tests": []
+        },
+        {
+            "_id": "1750a84a-cccd-4e8a-8fac-85e4468de65c",
+            "colId": "40a791a8-def2-42c3-ae19-7a0e0d465613",
+            "containerId": "e6a54eaf-3900-40fa-9e41-1d0573090fb4",
+            "name": "verifyOtp",
+            "url": "https://medicin-locator-service.onrender.com/api/user/verify-otp",
+            "method": "POST",
+            "sortNum": 10000,
+            "created": "2024-04-22T18:51:22.942Z",
+            "modified": "2024-04-22T18:51:22.942Z",
+            "headers": [],
+            "params": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"phoneNumber\": \"938536801\",\n  \"code\": \"567876\"\n}",
+                "form": []
+            },
+            "tests": []
+        },
+        {
+            "_id": "23d3292b-5e72-4a17-81bd-51fd87290d8e",
+            "colId": "40a791a8-def2-42c3-ae19-7a0e0d465613",
+            "containerId": "d0c6d4ed-cf63-494f-a50b-626666e07dd7",
+            "name": "confirmDelivery",
+            "url": "https://gq9vx895-5000.inc1.devtunnels.ms/api/orderId/confirm-delivery",
+            "method": "GET",
+            "sortNum": 10000,
+            "created": "2024-04-22T18:51:22.978Z",
+            "modified": "2024-04-22T18:51:22.978Z",
+            "headers": [],
+            "params": [],
+            "tests": []
+        },
+        {
+            "_id": "e390d26b-ab70-446b-b2fd-1afdd2aec057",
+            "colId": "40a791a8-def2-42c3-ae19-7a0e0d465613",
+            "containerId": "e6a54eaf-3900-40fa-9e41-1d0573090fb4",
+            "name": "sendOtp",
+            "url": "https://medicin-locator-service.onrender.com/api/user/send-otp",
+            "method": "POST",
+            "sortNum": 20000,
+            "created": "2024-04-22T18:51:22.943Z",
+            "modified": "2024-04-22T18:51:22.943Z",
+            "headers": [],
+            "params": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"phoneNumber\": \"938536801\"\n}",
+                "form": []
+            },
+            "tests": []
+        },
+        {
+            "_id": "f35052ef-f628-43e3-a9a7-8620ea123b58",
+            "colId": "40a791a8-def2-42c3-ae19-7a0e0d465613",
+            "containerId": "e6a54eaf-3900-40fa-9e41-1d0573090fb4",
+            "name": "user refreshToken",
+            "url": "http://localhost:5000/api/user/refresh-token",
+            "method": "POST",
+            "sortNum": 30000,
+            "created": "2024-04-22T18:51:22.944Z",
+            "modified": "2024-04-22T18:51:22.944Z",
+            "headers": [
+                {
+                    "name": "X-Refresh-Token",
+                    "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NTdlZGU3Mzk3MzhlZDdlZjkyOTgyYTMiLCJpYXQiOjE3MDI4MTMzNjAsImV4cCI6MTcwNTQwNTM2MH0.408kFY9k5SHKFq6ej-onl7XWSmrT1XBHYlFiKc_ps3E"
+                }
+            ],
+            "params": [],
+            "tests": []
+        },
+        {
+            "_id": "8ab6fe34-5073-4add-80d2-b966deb0ea54",
+            "colId": "40a791a8-def2-42c3-ae19-7a0e0d465613",
+            "containerId": "e6a54eaf-3900-40fa-9e41-1d0573090fb4",
+            "name": "user Login",
+            "url": "localhost:5000/api/user/login",
+            "method": "POST",
+            "sortNum": 40000,
+            "created": "2024-04-22T18:51:22.945Z",
+            "modified": "2024-04-22T18:53:17.638Z",
+            "headers": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"password\": \"123\",\n  \"email\": \"mekuyidnedawit@gmail.com\"\n}",
+                "form": []
+            }
+        },
+        {
+            "_id": "2effed98-2164-423a-a010-b3ea8e558e3f",
+            "colId": "40a791a8-def2-42c3-ae19-7a0e0d465613",
+            "containerId": "e6a54eaf-3900-40fa-9e41-1d0573090fb4",
+            "name": "User create",
+            "url": "medicin-locator-service.onrender.com/api/user/create",
+            "method": "POST",
+            "sortNum": 50000,
+            "created": "2024-04-22T18:51:22.946Z",
+            "modified": "2024-04-22T18:51:22.946Z",
+            "headers": [],
+            "params": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"name\": \"Yidne\",\n  \"email\": \"kebede232@gmail.com\",\n  \"role\": \"customer\",\n  \"password\": \"1234\"\n}",
+                "form": []
+            },
+            "tests": []
+        },
+        {
+            "_id": "bb997d21-ffa3-4ffb-91f9-cd69a7c29294",
+            "colId": "40a791a8-def2-42c3-ae19-7a0e0d465613",
+            "containerId": "e6a54eaf-3900-40fa-9e41-1d0573090fb4",
+            "name": "getSingle user",
+            "url": "https://medicinelocatorsystem.azurewebsites.net/api/user/gfdgsd",
+            "method": "GET",
+            "sortNum": 60000,
+            "created": "2024-04-22T18:51:22.947Z",
+            "modified": "2024-04-22T18:51:22.947Z",
+            "headers": [],
+            "params": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"role\": \"pharmaciest\"\n}",
+                "form": []
+            },
+            "auth": {
+                "type": "bearer",
+                "bearer": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NWQ1MDQxZThiMWIyNzAwYWNlZTBjODYiLCJpYXQiOjE3MDg0NTkwNjYsImV4cCI6MTcwODQ1OTk2Nn0.HdRUQAHQ_ZWWqiXhWsacu80SCWK87wrGGfbxIHyicbI"
+            },
+            "tests": []
+        },
+        {
+            "_id": "500194c8-7198-42d4-9894-9695de0f3a20",
+            "colId": "40a791a8-def2-42c3-ae19-7a0e0d465613",
+            "containerId": "e6a54eaf-3900-40fa-9e41-1d0573090fb4",
+            "name": "updateUser",
+            "url": "http://localhost:5000/api/user/65f695dfde09bf1f57ed169a",
+            "method": "PUT",
+            "sortNum": 70000,
+            "created": "2024-04-22T18:51:22.948Z",
+            "modified": "2024-04-22T18:51:22.948Z",
+            "headers": [],
+            "params": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"avatar\": \"https://fakeimg.pl/150x150/bdbdbd/ffffff?text=avatar&font=noto\",\n  \"email\": \"abebe124@gmail.com\"\n}",
+                "form": []
+            },
+            "tests": []
+        },
+        {
+            "_id": "9ac6c7a1-61c1-47a2-a49f-933258d76af1",
+            "colId": "40a791a8-def2-42c3-ae19-7a0e0d465613",
+            "containerId": "e6a54eaf-3900-40fa-9e41-1d0573090fb4",
+            "name": "get all user",
+            "url": "http://localhost:5000/api/user/?role=admin&sortBy=email&sortOrder=asc&page=3&limit=5",
+            "method": "GET",
+            "sortNum": 80000,
+            "created": "2024-04-22T18:51:22.949Z",
+            "modified": "2024-04-22T18:51:22.949Z",
+            "headers": [],
+            "params": [
+                {
+                    "name": "name",
+                    "value": "Alton",
+                    "isDisabled": true,
+                    "isPath": false
+                },
+                {
+                    "name": "phoneNumber",
+                    "value": "(402) 334-0923 x1222",
+                    "isDisabled": true,
+                    "isPath": false
+                },
+                {
+                    "name": "email",
+                    "value": "Catalina_Lesch74",
+                    "isDisabled": true,
+                    "isPath": false
+                },
+                {
+                    "name": "role",
+                    "value": "admin",
+                    "isPath": false
+                },
+                {
+                    "name": "sortBy",
+                    "value": "email",
+                    "isPath": false
+                },
+                {
+                    "name": "sortOrder",
+                    "value": "asc",
+                    "isPath": false
+                },
+                {
+                    "name": "page",
+                    "value": "3",
+                    "isPath": false
+                },
+                {
+                    "name": "limit",
+                    "value": "5",
+                    "isPath": false
+                }
+            ],
+            "tests": []
+        },
+        {
+            "_id": "490774c6-38aa-450a-b8cf-bc76fd1a4685",
+            "colId": "40a791a8-def2-42c3-ae19-7a0e0d465613",
+            "containerId": "e6a54eaf-3900-40fa-9e41-1d0573090fb4",
+            "name": "delete user",
+            "url": "http://localhost:5000/api/user/6527c2d10f3f145e12f29f83",
+            "method": "DELETE",
+            "sortNum": 90000,
+            "created": "2024-04-22T18:51:22.950Z",
+            "modified": "2024-04-22T18:51:22.950Z",
+            "headers": [],
+            "params": [],
+            "tests": []
+        },
+        {
+            "_id": "c9733045-2cb3-409e-8cf6-dd1fcb339527",
+            "colId": "40a791a8-def2-42c3-ae19-7a0e0d465613",
+            "containerId": "8e4a0e12-0b19-419c-99ba-df27673dcf35",
+            "name": "filterPharmacy",
+            "url": "localhost:5000/api/pharmacy?location=7.6123, 38.9557&limit=5&page=2&fromStore=true",
+            "method": "GET",
+            "sortNum": 110000,
+            "created": "2024-04-22T18:51:22.951Z",
+            "modified": "2024-04-22T18:51:22.951Z",
+            "headers": [],
+            "params": [
+                {
+                    "name": "name",
+                    "value": "Roberts - Doyle",
+                    "isDisabled": true,
+                    "isPath": false
+                },
+                {
+                    "name": "location",
+                    "value": "7.6123, 38.9557",
+                    "isPath": false
+                },
+                {
+                    "name": "drugName",
+                    "value": "s",
+                    "isDisabled": true,
+                    "isPath": false
+                },
+                {
+                    "name": "limit",
+                    "value": "5",
+                    "isPath": false
+                },
+                {
+                    "name": "page",
+                    "value": "2",
+                    "isPath": false
+                },
+                {
+                    "name": "fromStore",
+                    "value": "true",
+                    "isPath": false
+                }
+            ],
+            "tests": []
+        },
+        {
+            "_id": "f3cfe6da-e8b6-4daa-87a4-0e94b85dbcf6",
+            "colId": "40a791a8-def2-42c3-ae19-7a0e0d465613",
+            "containerId": "8e4a0e12-0b19-419c-99ba-df27673dcf35",
+            "name": "pharmacyDetail",
+            "url": "http://localhost:5000/api/pharmacy/657711b99f521e451a499338",
+            "method": "GET",
+            "sortNum": 120000,
+            "created": "2024-04-22T18:51:22.952Z",
+            "modified": "2024-04-22T18:51:22.952Z",
+            "headers": [],
+            "params": [],
+            "tests": []
+        },
+        {
+            "_id": "a9533152-f4e6-45d3-a893-9144e31fbf45",
+            "colId": "40a791a8-def2-42c3-ae19-7a0e0d465613",
+            "containerId": "4faa97cc-2f7c-458b-a648-61ae09774478",
+            "name": "filterDrug",
+            "url": "localhost:5000/api/drug/?limit=15&page=1&pharmacyId=65d6500d7804b2e4f54ae38b",
+            "method": "GET",
+            "sortNum": 130000,
+            "created": "2024-04-22T18:51:22.953Z",
+            "modified": "2024-04-22T18:51:22.953Z",
+            "headers": [],
+            "params": [
+                {
+                    "name": "location",
+                    "value": "7.6123, 38.9557",
+                    "isDisabled": true,
+                    "isPath": false
+                },
+                {
+                    "name": "drugName",
+                    "value": "Gorgeous",
+                    "isDisabled": true,
+                    "isPath": false
+                },
+                {
+                    "name": "maxPrice",
+                    "value": "70000",
+                    "isDisabled": true,
+                    "isPath": false
+                },
+                {
+                    "name": "minPrice",
+                    "value": "60000",
+                    "isDisabled": true,
+                    "isPath": false
+                },
+                {
+                    "name": "category",
+                    "value": "Clothing",
+                    "isDisabled": true,
+                    "isPath": false
+                },
+                {
+                    "name": "name",
+                    "value": "Hartmann - Lueilwitz",
+                    "isDisabled": true,
+                    "isPath": false
+                },
+                {
+                    "name": "limit",
+                    "value": "15",
+                    "isPath": false
+                },
+                {
+                    "name": "page",
+                    "value": "1",
+                    "isPath": false
+                },
+                {
+                    "name": "pharmacyId",
+                    "value": "65d6500d7804b2e4f54ae38b",
+                    "isPath": false
+                }
+            ],
+            "tests": []
+        },
+        {
+            "_id": "c1436130-d04d-49fb-bb03-9b901c3d4c72",
+            "colId": "40a791a8-def2-42c3-ae19-7a0e0d465613",
+            "containerId": "4faa97cc-2f7c-458b-a648-61ae09774478",
+            "name": "drugDetail",
+            "url": "https://medicin-locator-service.onrender.com/api/drug/65bd3070d1a63b1d769c117b",
+            "method": "GET",
+            "sortNum": 140000,
+            "created": "2024-04-22T18:51:22.954Z",
+            "modified": "2024-04-22T18:51:22.954Z",
+            "headers": [],
+            "params": [],
+            "tests": []
+        },
+        {
+            "_id": "4d6f90c1-d956-4972-a269-bac8d7bc66ab",
+            "colId": "40a791a8-def2-42c3-ae19-7a0e0d465613",
+            "containerId": "4faa97cc-2f7c-458b-a648-61ae09774478",
+            "name": "createDrug",
+            "url": "127.0.0.1:5000/api/drug/65bd306fd1a63b1d769c10ef",
+            "method": "POST",
+            "sortNum": 150000,
+            "created": "2024-04-22T18:51:22.959Z",
+            "modified": "2024-04-22T18:51:22.959Z",
+            "headers": [],
+            "params": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"name\": \"Sample Drug\",\n  \"drugPhoto\": \"https://example.com/sample_drug_photo.jpg\",\n  \"category\": \"Pain Relief\",\n  \"instruction\": \"Take one tablet with water every 4-6 hours as needed for pain.\",\n  \"sideEffects\": \"Drowsiness, Nausea, Headache\",\n  \"strength\": \"50mg per tablet\",\n  \"dosage\": \"3 tablet per day\",\n  \"minStockLevel\": 100,\n  \"needPrescription\": true\n}\n",
+                "form": []
+            },
+            "tests": []
+        },
+        {
+            "_id": "0902287d-6c5c-402a-840d-0b26fd1b63e5",
+            "colId": "40a791a8-def2-42c3-ae19-7a0e0d465613",
+            "containerId": "4faa97cc-2f7c-458b-a648-61ae09774478",
+            "name": "updateDrug",
+            "url": "127.0.0.1:5000/api/drug/6601c274a85570bc3a883161",
+            "method": "PUT",
+            "sortNum": 160000,
+            "created": "2024-04-22T18:51:22.960Z",
+            "modified": "2024-04-22T18:51:22.960Z",
+            "headers": [],
+            "params": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"name\": \"SamLLple Drug\",\n  \"category\": \"PaLLinl Relief\"\n}\n",
+                "form": []
+            },
+            "tests": []
+        },
+        {
+            "_id": "c9130a50-53e0-46b5-b8a6-fdfe4971b360",
+            "colId": "40a791a8-def2-42c3-ae19-7a0e0d465613",
+            "containerId": "4faa97cc-2f7c-458b-a648-61ae09774478",
+            "name": "deleteDrug",
+            "url": "127.0.0.1:5000/api/drug/6602b0948b49c3827c9ff6c9",
+            "method": "DELETE",
+            "sortNum": 170000,
+            "created": "2024-04-22T18:51:22.961Z",
+            "modified": "2024-04-22T18:51:22.961Z",
+            "headers": [],
+            "params": [],
+            "tests": []
+        },
+        {
+            "_id": "b6cc0adf-6c00-4b20-a6c7-9b2797bc9f2a",
+            "colId": "40a791a8-def2-42c3-ae19-7a0e0d465613",
+            "containerId": "097d0952-3d19-4574-ad4e-999103320ab5",
+            "name": "feedbackDetail",
+            "url": "http://localhost:5000/api/feedback/65bd3070d1a63b1d769c11db",
+            "method": "GET",
+            "sortNum": 180000,
+            "created": "2024-04-22T18:51:22.962Z",
+            "modified": "2024-04-22T18:51:22.962Z",
+            "headers": [],
+            "params": [],
+            "tests": []
+        },
+        {
+            "_id": "debb6b95-303a-469c-b034-06b7fd5567e7",
+            "colId": "40a791a8-def2-42c3-ae19-7a0e0d465613",
+            "containerId": "097d0952-3d19-4574-ad4e-999103320ab5",
+            "name": "createFeedback",
+            "url": "http://localhost:5000/api/feedback/",
+            "method": "POST",
+            "sortNum": 190000,
+            "created": "2024-04-22T18:51:22.963Z",
+            "modified": "2024-04-22T18:51:22.963Z",
+            "headers": [],
+            "params": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"title\": \"refund didn't work\",\n  \"content\": \"i try to cancel my order but the system doesn't allow.\",\n  \"userId\": \"65bd306ed1a63b1d769c105d\"\n}",
+                "form": []
+            },
+            "tests": []
+        },
+        {
+            "_id": "c71b40f5-fdb1-48ce-8e70-8f51c49de35a",
+            "colId": "40a791a8-def2-42c3-ae19-7a0e0d465613",
+            "containerId": "097d0952-3d19-4574-ad4e-999103320ab5",
+            "name": "updateFeedback",
+            "url": "http://localhost:5000/api/feedback/65ca4a59a5bbebb2db4e6ccc",
+            "method": "PUT",
+            "sortNum": 200000,
+            "created": "2024-04-22T18:51:22.964Z",
+            "modified": "2024-04-22T18:51:22.964Z",
+            "headers": [],
+            "params": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"title\": \"unable to refund\"\n}",
+                "form": []
+            },
+            "tests": []
+        },
+        {
+            "_id": "583272ec-564b-4a46-8d11-eb16d5695809",
+            "colId": "40a791a8-def2-42c3-ae19-7a0e0d465613",
+            "containerId": "097d0952-3d19-4574-ad4e-999103320ab5",
+            "name": "deleteFeedback",
+            "url": "http://localhost:5000/api/feedback/65ca4a59a5bbebb2db4e6ccc",
+            "method": "DELETE",
+            "sortNum": 210000,
+            "created": "2024-04-22T18:51:22.965Z",
+            "modified": "2024-04-22T18:51:22.965Z",
+            "headers": [],
+            "params": [],
+            "tests": []
+        },
+        {
+            "_id": "4a9aa724-65f4-4e41-b410-86f47a18419e",
+            "colId": "40a791a8-def2-42c3-ae19-7a0e0d465613",
+            "containerId": "097d0952-3d19-4574-ad4e-999103320ab5",
+            "name": "filterFeedback",
+            "url": "http://localhost:5000/api/feedback/?userRole=customer&sortOrder=asc&sortBy=user.name&page=2&limit=1",
+            "method": "GET",
+            "sortNum": 220000,
+            "created": "2024-04-22T18:51:22.967Z",
+            "modified": "2024-04-22T18:51:22.967Z",
+            "headers": [],
+            "params": [
+                {
+                    "name": "userRole",
+                    "value": "customer",
+                    "isPath": false
+                },
+                {
+                    "name": "sortOrder",
+                    "value": "asc",
+                    "isPath": false
+                },
+                {
+                    "name": "sortBy",
+                    "value": "user.name",
+                    "isPath": false
+                },
+                {
+                    "name": "title",
+                    "value": "Consequuntur",
+                    "isDisabled": true,
+                    "isPath": false
+                },
+                {
+                    "name": "userEmail",
+                    "value": "Ber",
+                    "isDisabled": true,
+                    "isPath": false
+                },
+                {
+                    "name": "userName",
+                    "value": "Beatrice",
+                    "isDisabled": true,
+                    "isPath": false
+                },
+                {
+                    "name": "page",
+                    "value": "2",
+                    "isPath": false
+                },
+                {
+                    "name": "limit",
+                    "value": "1",
+                    "isPath": false
+                }
+            ],
+            "tests": []
+        },
+        {
+            "_id": "8df2813a-0853-4052-bfea-d5bfd61388d8",
+            "colId": "40a791a8-def2-42c3-ae19-7a0e0d465613",
+            "containerId": "4c215a9a-53de-47b3-a9f9-d4bec7ce39d9",
+            "name": "filterReview",
+            "url": "http://localhost:5000/api/review/?userRole=customer&page=1&pharmacyEmail=Odie_Littel",
+            "method": "GET",
+            "sortNum": 230000,
+            "created": "2024-04-22T18:51:22.968Z",
+            "modified": "2024-04-22T18:51:22.968Z",
+            "headers": [],
+            "params": [
+                {
+                    "name": "userRole",
+                    "value": "customer",
+                    "isPath": false
+                },
+                {
+                    "name": "sortOrder",
+                    "value": "asc",
+                    "isDisabled": true,
+                    "isPath": false
+                },
+                {
+                    "name": "sortBy",
+                    "value": "user.name",
+                    "isDisabled": true,
+                    "isPath": false
+                },
+                {
+                    "name": "page",
+                    "value": "1",
+                    "isPath": false
+                },
+                {
+                    "name": "limit",
+                    "value": "5",
+                    "isDisabled": true,
+                    "isPath": false
+                },
+                {
+                    "name": "pharmacyName",
+                    "value": "Ferry",
+                    "isDisabled": true,
+                    "isPath": false
+                },
+                {
+                    "name": "userName",
+                    "value": "Kate",
+                    "isDisabled": true,
+                    "isPath": false
+                },
+                {
+                    "name": "userEmail",
+                    "value": "a",
+                    "isDisabled": true,
+                    "isPath": false
+                },
+                {
+                    "name": "pharmacyEmail",
+                    "value": "Odie_Littel",
+                    "isPath": false
+                }
+            ],
+            "tests": []
+        },
+        {
+            "_id": "de206488-7b1a-4ea8-810a-e12503aee438",
+            "colId": "40a791a8-def2-42c3-ae19-7a0e0d465613",
+            "containerId": "4c215a9a-53de-47b3-a9f9-d4bec7ce39d9",
+            "name": "createReview",
+            "url": "http://localhost:5000/api/review/",
+            "method": "POST",
+            "sortNum": 240000,
+            "created": "2024-04-22T18:51:22.969Z",
+            "modified": "2024-04-22T18:51:22.969Z",
+            "headers": [],
+            "params": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"userId\": \"65bd306ed1a63b1d769c103a\",\n  \"pharmacyId\": \"65bd306fd1a63b1d769c10f3\",\n  \"rating\": 4.5,\n  \"feedback\": \"good service\"\n}",
+                "form": []
+            },
+            "tests": []
+        },
+        {
+            "_id": "73f1c20e-6a3b-4842-ad5c-08c76074eda1",
+            "colId": "40a791a8-def2-42c3-ae19-7a0e0d465613",
+            "containerId": "4c215a9a-53de-47b3-a9f9-d4bec7ce39d9",
+            "name": "reviewDetail",
+            "url": "http://localhost:5000/api/review/65ca7b9342615b1d602ed899",
+            "method": "GET",
+            "sortNum": 250000,
+            "created": "2024-04-22T18:51:22.970Z",
+            "modified": "2024-04-22T18:51:22.970Z",
+            "headers": [],
+            "params": [],
+            "tests": []
+        },
+        {
+            "_id": "a3a848e2-0878-48b1-b6a4-614661a1ebf8",
+            "colId": "40a791a8-def2-42c3-ae19-7a0e0d465613",
+            "containerId": "4c215a9a-53de-47b3-a9f9-d4bec7ce39d9",
+            "name": "updateReview",
+            "url": "http://localhost:5000/api/review/65ca7b9342615b1d602ed899",
+            "method": "PUT",
+            "sortNum": 260000,
+            "created": "2024-04-22T18:51:22.971Z",
+            "modified": "2024-04-22T18:51:22.971Z",
+            "headers": [],
+            "params": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"rating\": 5,\n  \"feedback\": \"very good service\"\n}",
+                "form": []
+            },
+            "tests": []
+        },
+        {
+            "_id": "538f8367-7f0f-46b5-9eef-6abffb97a535",
+            "colId": "40a791a8-def2-42c3-ae19-7a0e0d465613",
+            "containerId": "4c215a9a-53de-47b3-a9f9-d4bec7ce39d9",
+            "name": "deleteReview",
+            "url": "http://localhost:5000/api/review/65ca7b9342615b1d602ed899",
+            "method": "DELETE",
+            "sortNum": 270000,
+            "created": "2024-04-22T18:51:22.972Z",
+            "modified": "2024-04-22T18:51:22.972Z",
+            "headers": [],
+            "params": [],
+            "tests": []
+        },
+        {
+            "_id": "3f18e3f4-f74c-4d8c-b70d-30f2f26262f7",
+            "colId": "40a791a8-def2-42c3-ae19-7a0e0d465613",
+            "containerId": "c1957598-20a9-4bda-902e-18e900004539",
+            "name": "filterTransactions",
+            "url": "https://medicinelocatorsystem.azurewebsites.net/api/transaction/?sortBy=receiver.name&sortOrder=asc&page=5&limit=4",
+            "method": "GET",
+            "sortNum": 280000,
+            "created": "2024-04-22T18:51:22.973Z",
+            "modified": "2024-04-22T18:51:22.973Z",
+            "headers": [],
+            "params": [
+                {
+                    "name": "senderName",
+                    "value": "Ellen",
+                    "isDisabled": true,
+                    "isPath": false
+                },
+                {
+                    "name": "receiverName",
+                    "value": "Charles",
+                    "isDisabled": true,
+                    "isPath": false
+                },
+                {
+                    "name": "accountNumber",
+                    "value": "83096004",
+                    "isDisabled": true,
+                    "isPath": false
+                },
+                {
+                    "name": "sortBy",
+                    "value": "receiver.name",
+                    "isPath": false
+                },
+                {
+                    "name": "sortOrder",
+                    "value": "asc",
+                    "isPath": false
+                },
+                {
+                    "name": "page",
+                    "value": "5",
+                    "isPath": false
+                },
+                {
+                    "name": "limit",
+                    "value": "4",
+                    "isPath": false
+                }
+            ],
+            "tests": []
+        },
+        {
+            "_id": "a2db99bb-78b7-48e8-ad74-e55187454e3e",
+            "colId": "40a791a8-def2-42c3-ae19-7a0e0d465613",
+            "containerId": "c1957598-20a9-4bda-902e-18e900004539",
+            "name": "transactionDetail",
+            "url": "https://medicinelocatorsystem.azurewebsites.net/api/transaction/65bd30b2a117221fa91aa329",
+            "method": "GET",
+            "sortNum": 290000,
+            "created": "2024-04-22T18:51:22.974Z",
+            "modified": "2024-04-22T18:51:22.974Z",
+            "headers": [],
+            "params": [],
+            "tests": []
+        },
+        {
+            "_id": "5362d14f-6c9c-4ee5-b429-a9820d557b3e",
+            "colId": "40a791a8-def2-42c3-ae19-7a0e0d465613",
+            "containerId": "8e4a0e12-0b19-419c-99ba-df27673dcf35",
+            "name": "getMyPharmacies",
+            "url": "localhost:5000/api/pharmacy/pharmacist/my-pharmacy",
+            "method": "GET",
+            "sortNum": 300000,
+            "created": "2024-04-22T18:51:22.975Z",
+            "modified": "2024-04-22T18:51:22.975Z",
+            "headers": [],
+            "params": [],
+            "auth": {
+                "type": "bearer",
+                "bearer": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NWQ0Zjc2MjkwYzRiM2JjZDg4MzQ1Y2UiLCJpYXQiOjE3MDg0OTg5NzQsImV4cCI6MTcwODQ5OTg3NH0.n_mLOgFAlTcxoy0FT2X-0AG5dmdjji_CEQCL1O_3W3k"
+            },
+            "tests": []
+        },
+        {
+            "_id": "d6bbc2d8-c443-46d7-b2e6-db209d77de05",
+            "colId": "40a791a8-def2-42c3-ae19-7a0e0d465613",
+            "containerId": "c1edbc76-e5dc-4612-99cc-13045c8aa0ab",
+            "name": "getBank",
+            "url": "localhost:5000/api/order/chapa/banks",
+            "method": "GET",
+            "sortNum": 310000,
+            "created": "2024-04-22T18:51:22.937Z",
+            "modified": "2024-04-22T18:51:22.937Z",
+            "headers": [],
+            "params": [],
+            "tests": []
+        },
+        {
+            "_id": "9c4d09a9-3a90-4096-a6f7-24f413e9b215",
+            "colId": "40a791a8-def2-42c3-ae19-7a0e0d465613",
+            "containerId": "c1957598-20a9-4bda-902e-18e900004539",
+            "name": "initiatePayment",
+            "url": "localhost:5000/api/transaction/chapa/initiatePayment",
+            "method": "POST",
+            "sortNum": 310000,
+            "created": "2024-04-22T18:51:22.976Z",
+            "modified": "2024-04-22T18:51:22.976Z",
+            "headers": [],
+            "params": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"amount\": \"1000\",\n  \"phone_number\": \"0900123456\"\n}",
+                "form": []
+            },
+            "tests": []
+        },
+        {
+            "_id": "edde06ce-5021-4fbd-bece-824e82022e65",
+            "colId": "40a791a8-def2-42c3-ae19-7a0e0d465613",
+            "containerId": "c1edbc76-e5dc-4612-99cc-13045c8aa0ab",
+            "name": "cancelOrder",
+            "url": "localhost:5000/api/order/675435ghjgjerte8753874/cancel",
+            "method": "PUT",
+            "sortNum": 320000,
+            "created": "2024-04-22T18:51:22.938Z",
+            "modified": "2024-04-22T18:51:22.938Z",
+            "headers": [],
+            "params": [],
+            "tests": []
+        },
+        {
+            "_id": "a57be70c-b0d7-45ce-83d9-d83ebfca52be",
+            "colId": "40a791a8-def2-42c3-ae19-7a0e0d465613",
+            "containerId": "c1957598-20a9-4bda-902e-18e900004539",
+            "name": "getBankLIst",
+            "url": "localhost:5000/api/transaction/chapa/banks",
+            "method": "GET",
+            "sortNum": 320000,
+            "created": "2024-04-22T18:51:22.977Z",
+            "modified": "2024-04-22T18:51:22.977Z",
+            "headers": [],
+            "params": [],
+            "tests": []
+        },
+        {
+            "_id": "1354ef77-e002-4e44-9c87-0382d63ed303",
+            "colId": "40a791a8-def2-42c3-ae19-7a0e0d465613",
+            "containerId": "c1edbc76-e5dc-4612-99cc-13045c8aa0ab",
+            "name": "filterOrders",
+            "url": "localhost:5000/api/order/?status=inprogress&page=3&limit=4",
+            "method": "GET",
+            "sortNum": 330000,
+            "created": "2024-04-22T18:51:22.939Z",
+            "modified": "2024-04-22T18:51:22.939Z",
+            "headers": [],
+            "params": [
+                {
+                    "name": "customerId",
+                    "value": "65bd30afa117221fa91aa170",
+                    "isDisabled": true,
+                    "isPath": false
+                },
+                {
+                    "name": "pharmacyId",
+                    "value": "65bd306fd1a63b1d769c110f",
+                    "isDisabled": true,
+                    "isPath": false
+                },
+                {
+                    "name": "customerName",
+                    "value": "Margarita",
+                    "isDisabled": true,
+                    "isPath": false
+                },
+                {
+                    "name": "customerEmail",
+                    "value": "",
+                    "isDisabled": true,
+                    "isPath": false
+                },
+                {
+                    "name": "pharmacyName",
+                    "value": "",
+                    "isDisabled": true,
+                    "isPath": false
+                },
+                {
+                    "name": "pharmacyEmail",
+                    "value": "",
+                    "isDisabled": true,
+                    "isPath": false
+                },
+                {
+                    "name": "sortBy,",
+                    "value": "",
+                    "isDisabled": true,
+                    "isPath": false
+                },
+                {
+                    "name": "sortOrder",
+                    "value": "",
+                    "isDisabled": true,
+                    "isPath": false
+                },
+                {
+                    "name": "status",
+                    "value": "inprogress",
+                    "isPath": false
+                },
+                {
+                    "name": "page",
+                    "value": "3",
+                    "isPath": false
+                },
+                {
+                    "name": "limit",
+                    "value": "4",
+                    "isPath": false
+                }
+            ],
+            "tests": []
+        },
+        {
+            "_id": "f91995f0-e3d5-4a9e-b1e7-fc0440f7ffa9",
+            "colId": "40a791a8-def2-42c3-ae19-7a0e0d465613",
+            "containerId": "c1957598-20a9-4bda-902e-18e900004539",
+            "name": "transferToBank",
+            "url": "localhost:5000/api/transaction/chapa/transfer",
+            "method": "POST",
+            "sortNum": 330000,
+            "created": "2024-04-22T18:51:22.979Z",
+            "modified": "2024-04-22T18:51:22.979Z",
+            "headers": [],
+            "params": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n      \"account_number\": \"0900123456\",\n    \"account_name\":\"Yidnekachew Bantrga\",\n    \"bank_code\": \"153d0598-4e01-41ab-a693-t9e2g4da6u13\",\n    \"amount\": \"100\",\n    \"currency\": \"ETB\",\n    \"beneficiary_name\":\"Yidne\"\n}",
+                "form": []
+            },
+            "tests": []
+        },
+        {
+            "_id": "6ef4231e-098f-4d42-9939-19a4e29a6593",
+            "colId": "40a791a8-def2-42c3-ae19-7a0e0d465613",
+            "containerId": "c1edbc76-e5dc-4612-99cc-13045c8aa0ab",
+            "name": "orderDetail",
+            "url": "localhost:5000/api/order/65bd30b3a117221fa91aa390",
+            "method": "GET",
+            "sortNum": 340000,
+            "created": "2024-04-22T18:51:22.940Z",
+            "modified": "2024-04-22T18:51:22.940Z",
+            "headers": [],
+            "params": [],
+            "tests": []
+        },
+        {
+            "_id": "f21067ec-f75c-4b1f-aee6-5493d06e83d5",
+            "colId": "40a791a8-def2-42c3-ae19-7a0e0d465613",
+            "containerId": "d0c6d4ed-cf63-494f-a50b-626666e07dd7",
+            "name": "filterOrder",
+            "url": "localhost:5000/api/order/",
+            "method": "GET",
+            "sortNum": 340000,
+            "created": "2024-04-22T18:51:22.980Z",
+            "modified": "2024-04-22T18:51:22.980Z",
+            "headers": [],
+            "params": [],
+            "tests": []
+        },
+        {
+            "_id": "0d9ada6a-4bf9-44ed-882c-2d14801b987a",
+            "colId": "40a791a8-def2-42c3-ae19-7a0e0d465613",
+            "containerId": "892073cc-9654-4de2-bb87-cd0a9a601016",
+            "name": "initiatePayment",
+            "url": "https://medicin-locator-service.onrender.com/api/transaction/chapa/initiatePayment",
+            "method": "POST",
+            "sortNum": 350000,
+            "created": "2024-04-22T18:51:22.941Z",
+            "modified": "2024-04-22T18:51:22.941Z",
+            "headers": [],
+            "params": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"amount\": \"500\",\n  \"phone_number\": \"0900123456\"\n}",
+                "form": []
+            },
+            "tests": []
+        },
+        {
+            "_id": "f3f6be38-e877-476a-aaf8-e08503329d48",
+            "colId": "40a791a8-def2-42c3-ae19-7a0e0d465613",
+            "containerId": "4faa97cc-2f7c-458b-a648-61ae09774478",
+            "name": "addStocks",
+            "url": "127.0.0.1:5000/api/drug/stocks/6601c274a85570bc3a883161",
+            "method": "POST",
+            "sortNum": 350000,
+            "created": "2024-04-22T18:51:22.981Z",
+            "modified": "2024-04-22T18:51:22.981Z",
+            "headers": [],
+            "params": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"price\": \"400\",\n  \"cost\": \"200\",\n  \"recievedFrom\": \"MOH\",\n  \"expiredDate\":\"2026\",\n  \"batchNumber\": \"57834895\",\n  \"quantity\": 400\n}",
+                "form": []
+            },
+            "tests": []
+        },
+        {
+            "_id": "8ce039f5-8afc-4daa-9c07-e5281194effd",
+            "colId": "40a791a8-def2-42c3-ae19-7a0e0d465613",
+            "containerId": "4faa97cc-2f7c-458b-a648-61ae09774478",
+            "name": "getStockList",
+            "url": "127.0.0.1:5000/api/drug/stocks/6601c274a85570bc3a883161",
+            "method": "GET",
+            "sortNum": 360000,
+            "created": "2024-04-22T18:51:22.982Z",
+            "modified": "2024-04-22T18:51:22.982Z",
+            "headers": [],
+            "params": [],
+            "tests": []
+        },
+        {
+            "_id": "102f5101-ef1b-4f1d-92a2-fa7f69c6cbdc",
+            "colId": "40a791a8-def2-42c3-ae19-7a0e0d465613",
+            "containerId": "4faa97cc-2f7c-458b-a648-61ae09774478",
+            "name": "updateStock",
+            "url": "127.0.0.1:5000/api/drug/stocks/6602882727691649258c5092",
+            "method": "PUT",
+            "sortNum": 370000,
+            "created": "2024-04-22T18:51:22.983Z",
+            "modified": "2024-04-22T18:51:22.983Z",
+            "headers": [],
+            "params": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"price\": \"300\",\n  \"cost\": \"100\",\n  \"expiredDate\":\"2027\",\n  \"quantity\": -100\n}",
+                "form": []
+            },
+            "tests": []
+        },
+        {
+            "_id": "21823f4a-6424-4045-bde5-4b6d9f088bb4",
+            "colId": "40a791a8-def2-42c3-ae19-7a0e0d465613",
+            "containerId": "4faa97cc-2f7c-458b-a648-61ae09774478",
+            "name": "deleteStock",
+            "url": "http://localhost:5000/api/drug/stocks/6602882727691649258c5092",
+            "method": "DELETE",
+            "sortNum": 380000,
+            "created": "2024-04-22T18:51:22.984Z",
+            "modified": "2024-04-22T18:51:22.984Z",
+            "headers": [],
+            "params": [],
+            "tests": []
+        }
+    ],
+    "ref": "0ZbGkXmyL6QqC6ek9g5lZSGOWcRNYeYoXsxKyap1eX-L3Sw4r2ld0PVwsc-FXm8rSaupp3dKP2FJYMuJhkyLnw"
+}
