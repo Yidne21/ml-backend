@@ -1,43 +1,22 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import httpStatus from 'http-status';
-import otpGenerator from 'otp-generator';
 import User from '../models/users';
 import APIError from '../errors/APIError';
 import Otp from '../models/otps';
+import { generateOtp } from '../utils';
 
 export const sendOTP = async (req, res, next) => {
-  const { email } = req.body;
-
+  const { email, type } = req.body;
+  const otp = generateOtp(6);
+  const otpPayload = { otp, email, type };
   try {
     const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      throw new APIError('email already registered', httpStatus.UNAUTHORIZED);
+
+    if (!existingUser) {
+      throw new APIError('email not found', httpStatus.NOT_FOUND);
     }
-
-    const existingOtp = await Otp.findOne({ email });
-
-    if (existingOtp) {
-      await Otp.findByIdAndDelete(existingOtp._id);
-    }
-
-    const otp = otpGenerator.generate(6, {
-      upperCaseAlphabets: false,
-      lowerCaseAlphabets: false,
-      specialChars: false,
-    });
-
-    const otpPayload = { otp, email };
-
-    const message = await Otp.create(otpPayload);
-
-    if (!message) {
-      throw new APIError(
-        'could not send otp',
-        httpStatus.INTERNAL_SERVER_ERROR
-      );
-    }
-
-    res.status(httpStatus.OK).json({ success: true });
+    const message = await Otp.createOtp(otpPayload);
+    res.status(httpStatus.OK).json(message);
   } catch (error) {
     next(error);
   }
@@ -46,24 +25,12 @@ export const sendOTP = async (req, res, next) => {
 export const verifyOTP = async (req, res, next) => {
   const { email, code } = req.body;
   try {
-    const otps = await Otp.findOne({
+    const data = {
       email,
       otp: code,
-    });
-    if (!otps || otps.email !== email) {
-      throw new Error('invalid email', httpStatus.UNAUTHORIZED);
-    }
-    if (otps.otp !== code) {
-      throw new Error('invalid otp', httpStatus.UNAUTHORIZED);
-    }
-    if (otps.verified === true) {
-      throw new Error(
-        'otp already verified try another',
-        httpStatus.UNAUTHORIZED
-      );
-    }
-    await Otp.updateOne({ email }, { verified: true });
-    res.status(httpStatus.OK).json({ valid: true });
+    };
+    const message = await Otp.verifyOtp(data);
+    res.status(httpStatus.OK).json(message);
   } catch (error) {
     next(error);
   }
@@ -133,8 +100,15 @@ export const deleteUserByIdController = async (req, res, next) => {
 
 export const updateUserController = async (req, res, next) => {
   const { userId } = req.params;
-  const { phoneNumber, avatar, coverPhoto, newPassword, oldPassword, address } =
-    req.body;
+  const {
+    phoneNumber,
+    avatar,
+    status,
+    coverPhoto,
+    newPassword,
+    oldPassword,
+    address,
+  } = req.body;
   const userParams = {
     userId,
     phoneNumber,
@@ -143,6 +117,7 @@ export const updateUserController = async (req, res, next) => {
     newPassword,
     address,
     oldPassword,
+    status,
   };
 
   try {
@@ -196,33 +171,19 @@ export const refreshTokenController = async (req, res, next) => {
 };
 
 export const registerPharmacistController = async (req, res, next) => {
-  const {
-    name,
-    phoneNumber,
-    password,
-    email,
-    pharmacyName,
-    pharmacyLocation,
-    pharmacyEmail,
-    pharmacyPhoneNumber,
-  } = req.body;
+  const { name, password, email } = req.body;
 
   try {
-    if (!req.files || req.files.length < 2) {
-      throw new Error('Please upload at least two files');
+    if (!req.file) {
+      throw new Error('Please upload a file');
     }
 
     const data = {
       name,
-      phoneNumber,
       password,
       role: 'pharmacist',
       email,
-      pharmacyName,
-      pharmacyLocation,
-      pharmacyEmail,
-      pharmacyPhoneNumber,
-      files: req.files,
+      file: req.file,
     };
 
     const user = await User.registerPharmacist(data);
@@ -233,38 +194,20 @@ export const registerPharmacistController = async (req, res, next) => {
   }
 };
 
-export const activateAccountController = async (req, res, next) => {
-  const { email, token } = req.body;
+export const registerAdminController = async (req, res, next) => {
+  const { name, password, email } = req.body;
 
   try {
-    const user = await User.validateActivationToken(token, email);
-    res.status(httpStatus.OK).json(user);
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const forgotPasswordController = async (req, res, next) => {
-  const { email } = req.body;
-
-  try {
-    const message = await User.forgotPassword(email);
-    res.status(httpStatus.OK).json(message);
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const resetPasswordWithEmailController = async (req, res, next) => {
-  const { email, token, newPassword } = req.body;
-
-  try {
-    const message = await User.resetPasswordWithEmail(
+    const data = {
+      name,
+      password,
+      role: 'admin',
       email,
-      token,
-      newPassword
-    );
-    res.status(httpStatus.OK).json(message);
+    };
+
+    const user = await User.registerAdmin(data);
+
+    res.status(httpStatus.OK).json(user);
   } catch (error) {
     next(error);
   }

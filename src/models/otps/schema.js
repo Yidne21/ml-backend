@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import { sendEmail } from '../../utils';
-import { verifyYourEmail } from '../../utils/mailTemplate';
+import emailTemplate from '../../utils/mailTemplate';
 import { appEmailAddress } from '../../config/environments';
 
 const otpSchema = new mongoose.Schema({
@@ -13,6 +13,10 @@ const otpSchema = new mongoose.Schema({
     required: true,
     unique: true,
     ref: 'User',
+  },
+  otpType: {
+    type: String,
+    required: true,
   },
   verified: {
     type: Boolean,
@@ -27,13 +31,15 @@ const otpSchema = new mongoose.Schema({
 
 // eslint-disable-next-line func-names
 otpSchema.pre('save', async function (next) {
-  const emailTemplate = verifyYourEmail(this.otp);
+  const subject =
+    this.otpType === 'forgot' ? 'Reset Password' : 'email verification';
+  const content = emailTemplate(this.otp, subject);
 
   const emailContent = {
     to: this.email,
     from: `Medicine Locator <${appEmailAddress}`,
-    subject: 'Verify Yor Email',
-    html: emailTemplate,
+    subject,
+    html: content,
   };
   if (this.isNew) {
     await sendEmail(emailContent);

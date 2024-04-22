@@ -43,11 +43,16 @@ const userSchema = new mongoose.Schema(
       },
     ],
     pharmaciestLicense: { type: String },
-    emailVerified: { type: Boolean, default: false },
+    emailVerified: { type: Boolean, default: false, required: true },
     role: {
       type: String,
       enum: ['admin', 'pharmacist', 'customer', 'superAdmin'],
       required: true,
+    },
+    status: {
+      type: String,
+      enum: ['active', 'inactive', 'deactivated'],
+      default: 'active',
     },
   },
   { timestamps: true }

@@ -18,9 +18,6 @@ import {
   sendOTP,
   verifyOTP,
   registerPharmacistController,
-  activateAccountController,
-  forgotPasswordController,
-  resetPasswordWithEmailController,
 } from '../controllers/user';
 import { authenticateJwt } from '../middlewares';
 import multerUploads from '../middlewares/multer';
@@ -73,23 +70,6 @@ router.post(
   parseValidationResult,
   multerUploads.array('files', 2),
   registerPharmacistController
-);
-router.post(
-  '/activate-account',
-  parseValidationResult,
-  activateAccountController
-);
-
-router.post(
-  '/forgot-password',
-  parseValidationResult,
-  forgotPasswordController
-);
-
-router.post(
-  '/reset-passwordWithEmail',
-  parseValidationResult,
-  resetPasswordWithEmailController
 );
 
 export default router;
