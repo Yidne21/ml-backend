@@ -1,14 +1,15 @@
 import httpStatus from 'http-status';
 import { uploadFile } from '../utils/cloudinary';
+import APIError from '../errors/APIError';
 
 const uploadFileController = async (req, res, next) => {
   try {
     if (!req.file) {
-      throw new Error('please choose a file');
+      throw new APIError('please choose a file', httpStatus.BAD_REQUEST, true);
     }
     const secureUrl = await uploadFile(req.file, 'ml_app');
 
-    res.status(httpStatus.ok).json(secureUrl);
+    res.status(httpStatus.OK).json(secureUrl);
   } catch (error) {
     next(error);
   }
