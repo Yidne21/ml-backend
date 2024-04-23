@@ -30,22 +30,11 @@ const orderSchema = new mongoose.Schema(
       required: true,
       ref: 'Drug',
     },
-    transactionId: {
+    stockId: {
       type: mongoose.Types.ObjectId,
-      required: true,
-      ref: 'Transaction',
+      ref: 'Stock',
     },
-    deliveredAt: {
-      type: Date,
-    },
-    abortedAt: {
-      type: Date,
-    },
-    orderedAt: {
-      type: Date,
-      default: Date.now,
-    },
-    deliveryDate: {
+    deliveryExpireDate: {
       type: Date,
     },
     quantity: {
@@ -53,8 +42,15 @@ const orderSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['inprogress', 'delivered', 'aborted'],
-      default: 'inprogress',
+      enum: [
+        'inprogress',
+        'delivered',
+        'expired',
+        'rejected',
+        'pending',
+        'refunded',
+      ],
+      default: 'pending',
       required: true,
     },
   },

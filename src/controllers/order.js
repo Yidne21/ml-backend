@@ -1,15 +1,25 @@
 import httpStatus from 'http-status';
 import Order from '../models/orders';
+import Transaction from '../models/transactions';
+import Notification from '../models/notifications';
+import Pharmacy from '../models/pharmacies';
+import Stock from '../models/stocks';
+import Drug from '../models/drugs';
+import { transferToBank } from '../utils/chapa';
+import APIError from '../errors/APIError';
 
 export const createOrderController = async (req, res, next) => {
-  const { orderTo, orderedBy, deliveryAddress, drugId, deliveryDate } =
+  const { orderTo, orderedBy, deliveryAddress, deliveryExpireDate, quantity } =
     req.body;
+
+  const { drugId } = req.params;
   const data = {
     orderTo,
     orderedBy,
     deliveryAddress,
     drugId,
-    deliveryDate,
+    deliveryExpireDate,
+    quantity,
   };
   try {
     const order = await Order.createOrder(data);
@@ -31,10 +41,7 @@ export const filterOrderController = async (req, res, next) => {
   const {
     customerId,
     pharmacyId,
-    customerName,
-    customerEmail,
-    pharmacyName,
-    pharmacyEmail,
+    searchQuery,
     sortBy,
     sortOrder,
     status,
@@ -45,10 +52,7 @@ export const filterOrderController = async (req, res, next) => {
   const filter = {
     customerId,
     pharmacyId,
-    customerName,
-    customerEmail,
-    pharmacyName,
-    pharmacyEmail,
+    searchQuery,
     sortBy,
     sortOrder,
     status,
@@ -64,15 +68,41 @@ export const filterOrderController = async (req, res, next) => {
 };
 export const confirmOrderDeliveryController = async (req, res, next) => {
   const { orderId } = req.params;
+  const { role, _id } = req.user;
   try {
-    const message = await Order.confirmDelivery(orderId);
+    if (role !== 'customer') {
+      throw new APIError(
+        'You are not authorized to perform this action',
+        httpStatus.UNAUTHORIZED,
+        true
+      );
+    }
+    const order = await Order.findOne({ _id: orderId, orderedBy: _id });
+    if (!order) {
+      throw new APIError('Order not found', httpStatus.NOT_FOUND, true);
+    }
+
+    if (order.status !== 'inprogress') {
+      throw new APIError(
+        'Order is  not in progress, ',
+        httpStatus.BAD_REQUEST,
+        true
+      );
+    }
+
+    const pharmacy = await Pharmacy.findOne({ _id: order.orderedTo });
+    if (!pharmacy) {
+      throw new APIError('Pharmacy not found', httpStatus.NOT_FOUND, true);
+    }
+
+    const message = await Order.updateOrder(orderId);
     res.status(httpStatus.OK).json(message);
   } catch (error) {
     next(error);
   }
-}; // after delivery
+};
 
-export const cancelOrderController = async (req, res, next) => {
+export const refundController = async (req, res, next) => {
   const { orderId } = req.params;
   const { bank, accountName, accountNumber } = req.body;
   const bankDetails = {
@@ -81,7 +111,37 @@ export const cancelOrderController = async (req, res, next) => {
     accountNumber,
   };
   try {
-    const message = await Order.cancelOrder(orderId, bankDetails);
+    const message = await Order.updateOrder(orderId, bankDetails);
+    res.status(httpStatus.OK).json(message);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const rejectOrderController = async (req, res, next) => {
+  const { orderId } = req.params;
+  try {
+    const message = await Order.updateOrder(orderId);
+    res.status(httpStatus.OK).json(message);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const acceptOrderController = async (req, res, next) => {
+  const { orderId } = req.params;
+  try {
+    const message = await Order.updateOrder(orderId);
+    res.status(httpStatus.OK).json(message);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const extendOrderController = async (req, res, next) => {
+  const { orderId } = req.params;
+  try {
+    const message = await Order.updateOrder(orderId);
     res.status(httpStatus.OK).json(message);
   } catch (error) {
     next(error);

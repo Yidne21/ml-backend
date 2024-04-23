@@ -14,6 +14,7 @@ export async function filterDrug({
   coordinates,
   drugName,
   pharmacyId,
+  status,
 }) {
   const DrugModel = this.model(modelNames.drug);
   const mainPipeline = [
@@ -22,6 +23,7 @@ export async function filterDrug({
         ...(pharmacyId && {
           pharmacyId: mongoose.Types.ObjectId(pharmacyId),
         }),
+        ...(status && { status }),
       },
     },
     ...(!pharmacyId

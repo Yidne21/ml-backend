@@ -7,10 +7,7 @@ import { paginationPipeline } from '../../utils';
 export async function filterOrders({
   customerId,
   pharmacyId,
-  customerName,
-  customerEmail,
-  pharmacyName,
-  pharmacyEmail,
+  searchQuery,
   sortBy,
   sortOrder,
   status,
@@ -66,27 +63,33 @@ export async function filterOrders({
       },
       {
         $match: {
-          ...(customerName && {
+          ...(searchQuery && {
             'customer.name': {
-              $regex: customerName,
+              $regex: searchQuery,
               $options: 'i',
             },
           }),
-          ...(customerEmail && {
+          ...(searchQuery && {
             'customer.email': {
-              $regex: customerEmail,
+              $regex: searchQuery,
               $options: 'i',
             },
           }),
-          ...(pharmacyName && {
+          ...(searchQuery && {
+            'customer.phoneNumber': {
+              $regex: searchQuery,
+              $options: 'i',
+            },
+          }),
+          ...(searchQuery && {
             'pharmacy.name': {
-              $regex: pharmacyName,
+              $regex: searchQuery,
               $options: 'i',
             },
           }),
-          ...(pharmacyEmail && {
+          ...(searchQuery && {
             'pharmacy.email': {
-              $regex: pharmacyEmail,
+              $regex: searchQuery,
               $options: 'i',
             },
           }),
@@ -221,6 +224,64 @@ export async function getOrder(orderId) {
       },
     ]);
     return order[0];
+  } catch (error) {
+    if (error instanceof APIError) throw error;
+    else {
+      throw new APIError(
+        'Internal Error',
+        httpStatus.INTERNAL_SERVER_ERROR,
+        true
+      );
+    }
+  }
+}
+
+export async function updateOrderStatus({ orderId, status }) {
+  const OrderModel = this.model(modelNames.order);
+  try {
+    const order = await OrderModel.findByIdAndUpdate(
+      orderId,
+      { status },
+      { new: true }
+    );
+    if (!order) {
+      throw new APIError('Order not found', httpStatus.NOT_FOUND, true);
+    }
+
+    return { message: 'Order status updated successfully' };
+  } catch (error) {
+    if (error instanceof APIError) throw error;
+    else {
+      throw new APIError(
+        'Internal Error',
+        httpStatus.INTERNAL_SERVER_ERROR,
+        true
+      );
+    }
+  }
+}
+
+export async function createOrder({
+  orderTo,
+  orderedBy,
+  deliveryAddress,
+  drugId,
+  deliveryExpireDate,
+  quantity,
+}) {
+  const data = {
+    orderTo,
+    orderedBy,
+    deliveryAddress,
+    drugId,
+    deliveryExpireDate,
+    quantity,
+  };
+
+  const OrderModel = this.model(modelNames.order);
+  try {
+    const order = await OrderModel.create(data);
+    return order;
   } catch (error) {
     if (error instanceof APIError) throw error;
     else {
