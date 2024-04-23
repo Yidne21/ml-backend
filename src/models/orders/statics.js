@@ -248,7 +248,7 @@ export async function updateOrderStatus({ orderId, status }) {
       throw new APIError('Order not found', httpStatus.NOT_FOUND, true);
     }
 
-    return { message: 'Order status updated successfully' };
+    return { success: true };
   } catch (error) {
     if (error instanceof APIError) throw error;
     else {

@@ -49,6 +49,7 @@ const pharmacySchema = new mongoose.Schema(
       bankName: { type: String },
       branchName: { type: String },
       accountType: { type: String },
+      bankCode: { type: String },
     },
     avgRating: { type: Number, default: 0 },
   },

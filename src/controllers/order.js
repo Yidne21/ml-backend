@@ -1,9 +1,10 @@
 import httpStatus from 'http-status';
+import { v4 as uuidv4 } from 'uuid';
+import mongoose from 'mongoose';
 import Order from '../models/orders';
 import Transaction from '../models/transactions';
 import Notification from '../models/notifications';
 import Pharmacy from '../models/pharmacies';
-import Stock from '../models/stocks';
 import Drug from '../models/drugs';
 import { transferToBank } from '../utils/chapa';
 import APIError from '../errors/APIError';
@@ -95,7 +96,91 @@ export const confirmOrderDeliveryController = async (req, res, next) => {
       throw new APIError('Pharmacy not found', httpStatus.NOT_FOUND, true);
     }
 
-    const message = await Order.updateOrder(orderId);
+    const session = mongoose.startSession();
+    session.startTransaction();
+
+    const sale = await Drug.saleDrug({
+      drugId: order.drugId,
+      quantity: order.quantity,
+      amount: order.totalAmount,
+      stockId: order.stockId,
+      pharmacyId: pharmacy._id,
+      userId: pharmacy.pharmacistId,
+    });
+
+    if (!sale) {
+      await session.abortTransaction();
+      throw new APIError(
+        'Failed to update stock, please try again later',
+        httpStatus.INTERNAL_SERVER_ERROR,
+        true
+      );
+    }
+
+    const reference = uuidv4();
+    const response = await transferToBank({
+      account_name: pharmacy.account.accountHolderName,
+      account_number: pharmacy.account.accountNumber,
+      amount: order.totalAmount,
+      beneficiary_name: pharmacy.name,
+      currency: 'ETB',
+      reference,
+      bank_code: pharmacy.bankCode,
+    });
+
+    if (response.status === 'failed') {
+      await session.abortTransaction();
+      throw new APIError(
+        'please try again later',
+        httpStatus.INTERNAL_SERVER_ERROR,
+        true
+      );
+    }
+
+    const transactionData = {
+      receiver: pharmacy._id,
+      orderId,
+      senderAccount: {
+        accountHolderName: 'Medicine Locator system',
+        accountType: 'chapa',
+      },
+      receiverAccount: pharmacy.account,
+      amount: order.totalAmount,
+      tx_ref: reference,
+      reason: 'pharmacy-payment',
+    };
+
+    const transaction = await Transaction.createTransaction(transactionData);
+    if (!transaction) {
+      await session.abortTransaction();
+      throw new APIError(
+        'Failed to create transaction, please try again later',
+        httpStatus.INTERNAL_SERVER_ERROR,
+        true
+      );
+    }
+
+    const message = await Order.updateOrderStatus({
+      orderId,
+      status: 'delivered',
+    });
+
+    if (!message) {
+      await session.abortTransaction();
+      throw new APIError(
+        'Failed to update order status, please try again later',
+        httpStatus.INTERNAL_SERVER_ERROR,
+        true
+      );
+    }
+
+    await Notification.createNotification({
+      userId: pharmacy.pharmacistId,
+      title: 'Order Delivered',
+      message: `Order with id ${orderId} has been delivered, please check your account for payment with reference ${reference}`,
+    });
+
+    await session.commitTransaction();
     res.status(httpStatus.OK).json(message);
   } catch (error) {
     next(error);
