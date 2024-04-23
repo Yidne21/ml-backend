@@ -154,7 +154,13 @@ export async function deleteAllNotification(userId) {
   }
 }
 
-export async function createNewNotification(data) {
+export async function createNewNotification({ userId, title, message, type }) {
+  const data = {
+    userId,
+    title,
+    message,
+    type,
+  };
   const Notification = this.model(modelNames.notification);
   try {
     const notification = await Notification.create(data);

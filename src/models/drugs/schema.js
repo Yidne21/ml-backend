@@ -32,9 +32,14 @@ const drugSchema = new mongoose.Schema(
     stockLevel: { type: Number, default: 0 },
     minStockLevel: { type: Number, required: true },
     needPrescription: { type: Boolean, required: true, default: false },
-    batchNumber: { type: Number, required: true },
     totalSale: { type: Number, required: true, default: 0 },
     profit: { type: Number, required: true, default: 0 },
+    status: {
+      type: String,
+      enum: ['available', 'lowStock'],
+      required: true,
+      default: 'lowStock',
+    },
   },
   { timestamps: true }
 );

@@ -145,3 +145,23 @@ export const getDrugCategoriesController = async (req, res, next) => {
     next(error);
   }
 };
+
+export const saleDrugController = async (req, res, next) => {
+  const { drugId } = req.params;
+  const { _id } = req.user;
+  const { quantity, stockId, pharmacyId } = req.body;
+
+  const data = {
+    userId: _id,
+    drugId,
+    pharmacyId,
+    quantity,
+    stockId,
+  };
+  try {
+    const sale = await Drug.saleDrug(data);
+    res.status(httpStatus.OK).json(sale);
+  } catch (error) {
+    next(error);
+  }
+};

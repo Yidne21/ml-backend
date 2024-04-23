@@ -379,3 +379,80 @@ export async function getDrugCategories() {
     }
   }
 }
+
+export async function saleDrug({
+  drugId,
+  pharmacyId,
+  userId,
+  quantity,
+  stockId,
+}) {
+  const drugModel = this.model(modelNames.drug);
+  const stockModel = this.model(modelNames.stock);
+  const pharmacyModel = this.model(modelNames.pharmacy);
+  const notificationModel = this.model(modelNames.notification);
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    const drug = await drugModel.findById(drugId);
+    if (!drug) {
+      session.abortTransaction();
+      throw new APIError('drug not found', httpStatus.NOT_FOUND, true);
+    }
+    const stock = await stockModel.findOne({
+      _id: stockId,
+      drugId,
+    });
+    if (!stock) {
+      throw new APIError(
+        'stock not found in pharmacy',
+        httpStatus.NOT_FOUND,
+        true
+      );
+    }
+    if (stock.currentQuantity < quantity) {
+      session.abortTransaction();
+      throw new APIError('insufficient stock', httpStatus.BAD_REQUEST, true);
+    }
+    stock.currentQuantity -= quantity;
+    drug.stockLevel -= quantity;
+    drug.totalSale += quantity;
+    drug.profit += quantity * (stock.price - stock.cost);
+
+    if (drug.stockLevel < drug.minStockLevel) {
+      const pharmacy = await pharmacyModel.findById(pharmacyId);
+      if (!pharmacy) {
+        throw new APIError('pharmacy not found', httpStatus.NOT_FOUND, true);
+      }
+      const data = {
+        userId,
+        title: 'Stock level low',
+        message: `Your ${pharmacy.name} pharmacy Stock level of ${drug.name} is below minimum stock level`,
+        type: 'warning',
+      };
+      await notificationModel.create(data);
+    }
+    await stock.save();
+
+    await drug.save();
+
+    await session.commitTransaction();
+
+    return {
+      message: 'Drug sold successfully',
+      stockLevel: stock.currentQuantity,
+    };
+  } catch (error) {
+    await session.abortTransaction();
+    if (error instanceof APIError) throw error;
+    else {
+      throw new APIError(
+        'Internal Error',
+        httpStatus.INTERNAL_SERVER_ERROR,
+        true
+      );
+    }
+  } finally {
+    session.endSession();
+  }
+}

@@ -6,6 +6,7 @@ import {
   updateDrugController,
   deleteDrugController,
   getDrugNamesController,
+  saleDrugController,
 } from '../controllers/drug';
 
 import {
@@ -14,6 +15,8 @@ import {
   updateStockController,
   deleteStockController,
 } from '../controllers/stock';
+
+import { authenticateJwt } from '../middlewares';
 
 const router = express.Router();
 
@@ -28,5 +31,6 @@ router.get('/stocks/:drugId', getStocksController);
 router.put('/stocks/:stockId', updateStockController);
 router.delete('/stocks/:stockId', deleteStockController);
 router.get('/names/:pharmacyId', getDrugNamesController);
+router.post('/sale/:drugId', authenticateJwt, saleDrugController);
 
 export default router;
