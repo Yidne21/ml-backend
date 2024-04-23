@@ -188,15 +188,92 @@ export const confirmOrderDeliveryController = async (req, res, next) => {
 };
 
 export const refundController = async (req, res, next) => {
+  const { _id, role, name } = req.user;
+  if (role !== 'customer') {
+    throw new APIError(
+      'You are not authorized to perform this action',
+      httpStatus.UNAUTHORIZED,
+      true
+    );
+  }
   const { orderId } = req.params;
-  const { bank, accountName, accountNumber } = req.body;
+  const { bankName, accountName, accountNumber, bankCode, accountType } =
+    req.body;
   const bankDetails = {
-    bank,
-    accountName,
+    accountHolderName: accountName,
     accountNumber,
+    bankName,
+    accountType,
   };
   try {
-    const message = await Order.updateOrder(orderId, bankDetails);
+    const order = await Order.findOne({ _id: orderId, orderedBy: _id });
+    if (!order) {
+      throw new APIError('Order not found', httpStatus.NOT_FOUND, true);
+    }
+
+    if (order.status !== 'rejected' || order.status !== 'expired') {
+      throw new APIError(
+        'cannot refund order that is not rejected or expired',
+        httpStatus.BAD_REQUEST,
+        true
+      );
+    }
+    const session = mongoose.startSession();
+    session.startTransaction();
+    const reference = uuidv4();
+
+    const response = await transferToBank({
+      account_name: accountName,
+      account_number: accountNumber,
+      amount: order.totalAmount,
+      beneficiary_name: name,
+      currency: 'ETB',
+      reference,
+      bank_code: bankCode,
+    });
+
+    if (response.status === 'failed') {
+      await session.abortTransaction();
+      throw new APIError(
+        'please try again later',
+        httpStatus.INTERNAL_SERVER_ERROR,
+        true
+      );
+    }
+
+    const transactionData = {
+      receiver: _id,
+      orderId,
+      senderAccount: {
+        accountHolderName: 'Medicine Locator system',
+        accountType: 'chapa',
+      },
+      receiverAccount: bankDetails,
+      amount: order.totalAmount,
+      tx_ref: reference,
+      reason: 'refund',
+    };
+
+    const transaction = await Transaction.createTransaction(transactionData);
+    if (!transaction) {
+      await session.abortTransaction();
+      throw new APIError(
+        'Failed to create transaction, please try again later',
+        httpStatus.INTERNAL_SERVER_ERROR,
+        true
+      );
+    }
+
+    const message = await Order.updateOrder({ orderId, status: 'refunded' });
+
+    if (!message) {
+      await session.abortTransaction();
+      throw new APIError(
+        'Failed to update order status, please try again later',
+        httpStatus.INTERNAL_SERVER_ERROR,
+        true
+      );
+    }
     res.status(httpStatus.OK).json(message);
   } catch (error) {
     next(error);
