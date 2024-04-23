@@ -12,29 +12,31 @@ export async function filterPharmacy({
   drugName,
 }) {
   const PharmacyModel = this.model(modelNames.pharmacy);
-  const [Lat, Long] = location;
 
   const mainPipeline = [
-    {
-      $geoNear: {
-        near: {
-          type: 'Point',
-          coordinates: [Long, Lat],
-        },
-        distanceField: 'distance',
-        distanceMultiplier: 0.001,
-        includeLocs: 'location',
-        spherical: true,
-      },
-    },
-    {
-      $addFields: {
-        distance: {
-          $round: ['$distance', 2],
-        },
-      },
-    },
-
+    ...(location
+      ? [
+          {
+            $geoNear: {
+              near: {
+                type: 'Point',
+                coordinates: [location[1], location[0]],
+              },
+              distanceField: 'distance',
+              distanceMultiplier: 0.001,
+              includeLocs: 'location',
+              spherical: true,
+            },
+          },
+          {
+            $addFields: {
+              distance: {
+                $round: ['$distance', 2],
+              },
+            },
+          },
+        ]
+      : []),
     ...(name
       ? [
           {

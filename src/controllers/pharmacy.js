@@ -3,7 +3,10 @@ import Pharmacy from '../models/pharmacies';
 
 export const filterPharmacyController = async (req, res, next) => {
   const { page, limit, name, drugName } = req.query;
-  const location = req.query.location.split(',').map(Number);
+
+  const location = req.query.location
+    ? req.query.location.split(',').map(Number)
+    : null;
 
   const filterParams = {
     page: parseInt(page, 10) || 1,
