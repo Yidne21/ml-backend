@@ -260,7 +260,69 @@ export async function addPharmacy(pharmacyParams) {
 
     return { message: 'Your pharmacy is ready to review', pharmacy };
   } catch (error) {
-    console.log(error);
+    if (error instanceof APIError) throw error;
+    else {
+      throw new APIError(
+        'Internal Error',
+        httpStatus.INTERNAL_SERVER_ERROR,
+        true
+      );
+    }
+  }
+}
+
+export async function updatePharmacy({
+  pharmacistId,
+  pharmacyId,
+  logo,
+  address,
+  phoneNumber,
+  cover,
+  socialMedia,
+  workingHours,
+  deliverPricePerKm,
+  deliveryCoverage,
+  status,
+  account,
+  location,
+  email,
+  about,
+}) {
+  const PharmacyModel = this.model(modelNames.pharmacy);
+  try {
+    const currentPharmacy = await PharmacyModel.findOne({
+      _id: pharmacyId,
+      ...(pharmacistId ? { pharmacistId } : {}),
+    });
+
+    if (!currentPharmacy) {
+      throw new APIError('Pharmacy not found', httpStatus.NOT_FOUND, true);
+    }
+
+    const updatedPharmacy = await PharmacyModel.findOneAndUpdate(
+      {
+        _id: pharmacyId,
+        ...(pharmacistId ? { pharmacistId } : {}),
+      },
+      {
+        ...(logo ? { logo } : {}),
+        ...(address ? { address } : {}),
+        ...(phoneNumber ? { phoneNumber } : {}),
+        ...(cover ? { cover } : {}),
+        ...(socialMedia ? { socialMedia } : {}),
+        ...(workingHours ? { workingHours } : {}),
+        ...(deliverPricePerKm ? { deliverPricePerKm } : {}),
+        ...(deliveryCoverage ? { deliveryCoverage } : {}),
+        ...(status ? { status } : {}),
+        ...(account ? { account } : {}),
+        ...(location ? { location } : {}),
+        ...(email ? { email } : {}),
+        ...(about ? { about } : {}),
+      },
+      { new: true }
+    );
+    return { message: 'Pharmacy updated successfully', updatedPharmacy };
+  } catch (error) {
     if (error instanceof APIError) throw error;
     else {
       throw new APIError(

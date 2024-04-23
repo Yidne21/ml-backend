@@ -44,13 +44,38 @@ export const getMyPharmacyController = async (req, res, next) => {
 export const updatePharmacyController = async (req, res, next) => {
   const { _id } = req.user;
   const { pharmacyId } = req.params;
-  const { logo, address, phoneNumber } = req.body;
-  const pharmacyParams = {
-    _id,
+
+  const {
     logo,
     address,
     phoneNumber,
+    cover,
+    socialMedia,
+    workingHours,
+    deliverPricePerKm,
+    deliveryCoverage,
+    status,
+    account,
+    location,
+    email,
+    about,
+  } = req.body;
+  const pharmacyParams = {
+    pharmacistId: _id ? req.user.role === 'pharmacist' : null,
     pharmacyId,
+    logo,
+    address,
+    phoneNumber,
+    cover,
+    socialMedia,
+    workingHours,
+    deliverPricePerKm,
+    deliveryCoverage,
+    status,
+    account,
+    location,
+    email,
+    about,
   };
   try {
     const updatedPharmacy = await Pharmacy.updatePharmacy(pharmacyParams);
