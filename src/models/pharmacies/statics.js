@@ -10,6 +10,8 @@ export async function filterPharmacy({
   limit = 10,
   location,
   drugName,
+  sortBy,
+  sortOrder,
 }) {
   const PharmacyModel = this.model(modelNames.pharmacy);
 
@@ -84,6 +86,7 @@ export async function filterPharmacy({
           },
         ]
       : []),
+    ...(sortBy ? [{ $sort: { [sortBy]: sortOrder === 'des' ? -1 : 1 } }] : []),
     {
       $project: {
         _id: 1,
@@ -94,6 +97,7 @@ export async function filterPharmacy({
         'drug._id': 1,
         'drug.name': 1,
         'drug.stockLevel': 1,
+        avgRating: 1,
       },
     },
     ...paginationPipeline(page, limit),

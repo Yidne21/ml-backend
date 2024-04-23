@@ -47,6 +47,7 @@ const pharmacySchema = new mongoose.Schema(
       branchName: { type: String },
       accountType: { type: String },
     },
+    avgRating: { type: Number, default: 0 },
   },
   { timestamps: true }
 );

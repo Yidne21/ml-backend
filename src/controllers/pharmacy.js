@@ -2,7 +2,7 @@ import httpStatus from 'http-status';
 import Pharmacy from '../models/pharmacies';
 
 export const filterPharmacyController = async (req, res, next) => {
-  const { page, limit, name, drugName } = req.query;
+  const { page, limit, name, drugName, sortBy, sortOrder } = req.query;
 
   const location = req.query.location
     ? req.query.location.split(',').map(Number)
@@ -14,6 +14,8 @@ export const filterPharmacyController = async (req, res, next) => {
     name,
     location,
     drugName,
+    sortBy,
+    sortOrder,
   };
   try {
     const pharmacies = await Pharmacy.filterPharmacy(filterParams);
