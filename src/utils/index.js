@@ -43,6 +43,10 @@ const sendEmail = async (emailContent) => {
   }
 };
 
+const addMinutes = (date, minutes) => {
+  return new Date(date.getTime() + minutes * 60000);
+};
+
 const verifyRefreshToken = (refreshToken) => {
   try {
     const decoded = jwt.verify(refreshToken, jwtRefreshKey);
@@ -120,4 +124,5 @@ export {
   sendEmail,
   generateOtp,
   generateAccountActivationUrl,
+  addMinutes,
 };

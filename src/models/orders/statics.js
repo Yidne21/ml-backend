@@ -236,12 +236,16 @@ export async function getOrder(orderId) {
   }
 }
 
-export async function updateOrderStatus({ orderId, status }) {
+export async function updateOrderStatus({
+  orderId,
+  status,
+  deliveryExpireDate,
+}) {
   const OrderModel = this.model(modelNames.order);
   try {
     const order = await OrderModel.findByIdAndUpdate(
       orderId,
-      { status },
+      { status, ...(deliveryExpireDate ? { deliveryExpireDate } : {}) },
       { new: true }
     );
     if (!order) {

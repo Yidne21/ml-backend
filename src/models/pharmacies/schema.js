@@ -36,8 +36,8 @@ const pharmacySchema = new mongoose.Schema(
     deliverPricePerKm: { type: Number, default: 0 },
     deliveryCoverage: { type: Number, default: 0 },
     hasDeliveryService: { type: Boolean, default: false },
-    minDeliveryTime: { type: Number },
-    maxDeliveryTime: { type: Number },
+    minDeliveryTime: { type: Number, default: 0 },
+    maxDeliveryTime: { type: Number, default: 0 },
     status: {
       type: String,
       default: 'pending',

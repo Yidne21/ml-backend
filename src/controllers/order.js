@@ -8,6 +8,7 @@ import Pharmacy from '../models/pharmacies';
 import Drug from '../models/drugs';
 import { transferToBank } from '../utils/chapa';
 import APIError from '../errors/APIError';
+import { addMinutes } from '../utils';
 
 export const createOrderController = async (req, res, next) => {
   const { orderTo, orderedBy, deliveryAddress, deliveryExpireDate, quantity } =
@@ -218,6 +219,12 @@ export const refundController = async (req, res, next) => {
         true
       );
     }
+
+    const pharmacy = await Pharmacy.findOne({ _id: order.orderedTo });
+    if (!pharmacy) {
+      throw new APIError('Pharmacy not found', httpStatus.NOT_FOUND, true);
+    }
+
     const session = mongoose.startSession();
     session.startTransaction();
     const reference = uuidv4();
@@ -274,6 +281,21 @@ export const refundController = async (req, res, next) => {
         true
       );
     }
+
+    await Notification.createNotification({
+      userId: order.orderedBy,
+      title: 'Order Refunded',
+      message: `Order with id ${orderId} has been refunded, please check your account for payment with reference ${reference}`,
+    });
+
+    await Notification.createNotification({
+      userId: pharmacy.pharmacistId,
+      title: 'Order Refunded',
+      message: `Order with id ${orderId} has been refunded`,
+    });
+
+    await session.commitTransaction();
+
     res.status(httpStatus.OK).json(message);
   } catch (error) {
     next(error);
@@ -281,9 +303,56 @@ export const refundController = async (req, res, next) => {
 };
 
 export const rejectOrderController = async (req, res, next) => {
+  const { _id, role } = req.user;
+  if (role !== 'pharmacist') {
+    throw new APIError(
+      'You are not authorized to perform this action',
+      httpStatus.UNAUTHORIZED,
+      true
+    );
+  }
   const { orderId } = req.params;
   try {
-    const message = await Order.updateOrder(orderId);
+    const order = await Order.findOne({ _id: orderId, orderedTo: _id });
+    if (!order) {
+      throw new APIError('Order not found', httpStatus.NOT_FOUND, true);
+    }
+
+    if (order.status !== 'pending') {
+      throw new APIError(
+        'cannot reject order that is not in pending state',
+        httpStatus.UNAUTHORIZED,
+        true
+      );
+    }
+
+    const pharmacy = await Pharmacy.findOne({ _id: order.orderedTo });
+    if (!pharmacy) {
+      throw new APIError('Pharmacy not found', httpStatus.NOT_FOUND, true);
+    }
+
+    const session = mongoose.startSession();
+    session.startTransaction();
+
+    const message = await Order.updateOrder({ orderId, status: 'rejected' });
+
+    if (!message) {
+      await session.abortTransaction();
+      throw new APIError(
+        'Failed to update order status, please try again later',
+        httpStatus.INTERNAL_SERVER_ERROR,
+        true
+      );
+    }
+
+    await Notification.createNotification({
+      userId: order.orderedBy,
+      title: 'Order Rejected',
+      message: `Order with id ${orderId} has been rejected by ${pharmacy.name}, You can now request for refund in your order list`,
+    });
+
+    await session.commitTransaction();
+
     res.status(httpStatus.OK).json(message);
   } catch (error) {
     next(error);
@@ -291,9 +360,54 @@ export const rejectOrderController = async (req, res, next) => {
 };
 
 export const acceptOrderController = async (req, res, next) => {
+  const { _id, role } = req.user;
+  if (role !== 'pharmacist') {
+    throw new APIError(
+      'You are not authorized to perform this action',
+      httpStatus.UNAUTHORIZED,
+      true
+    );
+  }
   const { orderId } = req.params;
   try {
-    const message = await Order.updateOrder(orderId);
+    const order = await Order.findOne({ _id: orderId, orderedTo: _id });
+    if (!order) {
+      throw new APIError('Order not found', httpStatus.NOT_FOUND, true);
+    }
+
+    if (order.status !== 'pending') {
+      throw new APIError(
+        'cannot accept order that is not in pending state',
+        httpStatus.UNAUTHORIZED,
+        true
+      );
+    }
+
+    const pharmacy = await Pharmacy.findOne({ _id: order.orderedTo });
+    if (!pharmacy) {
+      throw new APIError('Pharmacy not found', httpStatus.NOT_FOUND, true);
+    }
+
+    const session = mongoose.startSession();
+    session.startTransaction();
+    const message = await Order.updateOrder({ orderId, status: 'inprogress' });
+
+    if (!message) {
+      await session.abortTransaction();
+      throw new APIError(
+        'Failed to update order status, please try again later',
+        httpStatus.INTERNAL_SERVER_ERROR,
+        true
+      );
+    }
+
+    await Notification.createNotification({
+      userId: order.orderedBy,
+      title: 'Order Accepted',
+      message: `Order with id ${orderId} has been accepted by the ${pharmacy.name} pharmacy, please wait for delivery`,
+    });
+
+    await session.commitTransaction();
     res.status(httpStatus.OK).json(message);
   } catch (error) {
     next(error);
@@ -301,9 +415,60 @@ export const acceptOrderController = async (req, res, next) => {
 };
 
 export const extendOrderController = async (req, res, next) => {
+  const { _id, role } = req.user;
   const { orderId } = req.params;
+  if (role !== 'customer') {
+    throw new APIError(
+      'You are not authorized to perform this action',
+      httpStatus.UNAUTHORIZED,
+      true
+    );
+  }
+
   try {
-    const message = await Order.updateOrder(orderId);
+    const order = await Order.findOne({ _id: orderId, orderedBy: _id });
+    if (!order) {
+      throw new APIError('Order not found', httpStatus.NOT_FOUND, true);
+    }
+
+    if (order.status !== 'expired') {
+      throw new APIError(
+        'cannot extend order that is not expired',
+        httpStatus.UNAUTHORIZED,
+        true
+      );
+    }
+
+    const pharmacy = await Pharmacy.findOne({ _id: order.orderedTo });
+    if (!pharmacy) {
+      throw new APIError('Pharmacy not found', httpStatus.NOT_FOUND, true);
+    }
+
+    const session = mongoose.startSession();
+    session.startTransaction();
+
+    const deliveryExpireDate = addMinutes(new Date(), pharmacy.maxDeliveryTime);
+    const message = await Order.updateOrder({
+      orderId,
+      status: 'pending',
+      deliveryExpireDate,
+    });
+
+    if (!message) {
+      await session.abortTransaction();
+      throw new APIError(
+        'Failed extend expire date, please try again later',
+        httpStatus.INTERNAL_SERVER_ERROR,
+        true
+      );
+    }
+
+    await Notification.createNotification({
+      userId: pharmacy.pharmacistId,
+      title: 'Order delivery date Extended',
+      message: `Order with id ${orderId} has been extended, please hurry up with delivery`,
+    });
+    session.commitTransaction();
     res.status(httpStatus.OK).json(message);
   } catch (error) {
     next(error);
