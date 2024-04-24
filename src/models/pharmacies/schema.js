@@ -33,7 +33,7 @@ const pharmacySchema = new mongoose.Schema(
       telegram: { type: String },
     },
     pharmacyLicense: { type: String, required: true },
-    deliverPricePerKm: { type: Number, default: 0 },
+    deliveryPricePerKm: { type: Number, default: 0 },
     deliveryCoverage: { type: Number, default: 0 },
     hasDeliveryService: { type: Boolean, default: false },
     minDeliveryTime: { type: Number, default: 0 },

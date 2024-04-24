@@ -8,24 +8,81 @@ import Pharmacy from '../models/pharmacies';
 import Drug from '../models/drugs';
 import { transferToBank } from '../utils/chapa';
 import APIError from '../errors/APIError';
-import { addMinutes } from '../utils';
+import { addMinutes, calculateDistance } from '../utils';
+import Stock from '../models/stocks';
 
 export const createOrderController = async (req, res, next) => {
-  const { orderTo, orderedBy, deliveryAddress, deliveryExpireDate, quantity } =
-    req.body;
+  const { role, _id } = req.user;
+  if (role !== 'customer') {
+    throw new APIError(
+      'You are not authorized to perform this action',
+      httpStatus.UNAUTHORIZED,
+      true
+    );
+  }
+  const { orderTo, deliveryAddress, quantity, stockId } = req.body;
 
   const { drugId } = req.params;
-  const data = {
-    orderTo,
-    orderedBy,
-    deliveryAddress,
-    drugId,
-    deliveryExpireDate,
-    quantity,
-  };
   try {
-    const order = await Order.createOrder(data);
-    res.status(httpStatus.CREATED).json(order);
+    const drug = await Drug.findOne({ _id: drugId });
+    if (!drug) {
+      throw new APIError('Drug not found', httpStatus.NOT_FOUND, true);
+    }
+
+    const stock = await Stock.findOne({ _id: stockId });
+    if (!stock) {
+      throw new APIError('Stock not found', httpStatus.NOT_FOUND, true);
+    }
+
+    const pharmacy = await Pharmacy.findOne({ _id: orderTo });
+    if (!pharmacy) {
+      throw new APIError('Pharmacy not found', httpStatus.NOT_FOUND, true);
+    }
+
+    const distance = calculateDistance({
+      lat1: pharmacy.location.coordinates[1],
+      long1: pharmacy.location.coordinates[0],
+      lat2: deliveryAddress.location.coordinates[1],
+      long2: deliveryAddress.location.coordinates[0],
+    });
+
+    if (distance > pharmacy.deliveryCoverage) {
+      throw new APIError(
+        'Delivery address is out of the pharmacy delivery coverage, please choose another pharmacy',
+        httpStatus.BAD_REQUEST,
+        true
+      );
+    }
+
+    const deliveryExpireDate = addMinutes(new Date(), pharmacy.maxDeliveryTime);
+    const totalAmount =
+      stock.price * quantity + pharmacy.deliveryPricePerKm * distance;
+
+    const data = {
+      orderTo,
+      orderedBy: _id,
+      deliveryAddress,
+      drugId,
+      quantity,
+      stockId,
+      deliveryExpireDate,
+      totalAmount,
+    };
+    const success = await Order.createOrder(data);
+    if (!success) {
+      throw new APIError(
+        'Failed to create order, please try again later',
+        httpStatus.INTERNAL_SERVER_ERROR,
+        true
+      );
+    }
+
+    await Notification.createNotification({
+      userId: pharmacy.pharmacistId,
+      title: 'New Order',
+      message: `You have a new order from ${req.user.name}, please check your ${pharmacy.name} pharmacy dashboard`,
+    });
+    res.status(httpStatus.CREATED).json(success);
   } catch (error) {
     next(error);
   }
