@@ -22,7 +22,7 @@ const stockSchema = new mongoose.Schema(
       required: true,
     },
     quantity: { type: Number, required: true, default: 0 },
-    currentQuantity: { type: Number, required: true },
+    currentQuantity: { type: Number, required: true, default: 0 },
   },
   { timestamps: true }
 );

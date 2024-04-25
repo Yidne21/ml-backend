@@ -14,17 +14,18 @@ import Cart from '../models/cart';
 
 export const createOrderController = async (req, res, next) => {
   const { role, _id } = req.user;
-  if (role !== 'customer') {
-    throw new APIError(
-      'You are not authorized to perform this action',
-      httpStatus.UNAUTHORIZED,
-      true
-    );
-  }
+
   const { deliveryAddress } = req.body;
 
   const { cartId } = req.params;
   try {
+    // if (role !== 'customer') {
+    //   throw new APIError(
+    //     'You are not authorized to perform this action',
+    //     httpStatus.UNAUTHORIZED,
+    //     true
+    //   );
+    // }
     const cart = await Cart.findOne({ _id: cartId });
     if (!cart) {
       throw new APIError('Cart not found', httpStatus.NOT_FOUND, true);
@@ -35,7 +36,7 @@ export const createOrderController = async (req, res, next) => {
       throw new APIError('Pharmacy not found', httpStatus.NOT_FOUND, true);
     }
 
-    const session = mongoose.startSession();
+    const session = await mongoose.startSession();
     session.startTransaction();
 
     cart.drugs.forEach(async (drug) => {
@@ -61,7 +62,7 @@ export const createOrderController = async (req, res, next) => {
     let distance = 0;
     let deliveryExpireDate;
     let hasDelivery = false;
-    if (deliveryAddress.location.coordinates.length !== 2) {
+    if (deliveryAddress) {
       distance = calculateDistance({
         lat1: pharmacy.location.coordinates[1],
         long1: pharmacy.location.coordinates[0],
@@ -84,8 +85,10 @@ export const createOrderController = async (req, res, next) => {
     const totalAmount =
       cart.totalPrice + pharmacy.deliveryPricePerKm * distance;
 
+    console.log(totalAmount);
+
     const data = {
-      orderTo: cart.pharmacyId,
+      orderedTo: cart.pharmacyId,
       orderedBy: _id,
       deliveryAddress,
       quantity: cart.totalQuantity,
@@ -94,6 +97,7 @@ export const createOrderController = async (req, res, next) => {
       deliveryExpireDate,
       totalAmount,
     };
+
     const success = await Order.createOrder(data);
     if (!success) {
       await session.abortTransaction();
@@ -112,6 +116,7 @@ export const createOrderController = async (req, res, next) => {
     session.commitTransaction();
     res.status(httpStatus.CREATED).json(success);
   } catch (error) {
+    console.log(error);
     next(error);
   }
 }; // after a successful payment

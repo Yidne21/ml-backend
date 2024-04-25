@@ -266,7 +266,7 @@ export async function updateOrderStatus({
 }
 
 export async function createOrder({
-  orderTo,
+  orderedTo,
   orderedBy,
   deliveryAddress,
   drugId,
@@ -276,7 +276,7 @@ export async function createOrder({
   totalAmount,
 }) {
   const data = {
-    orderTo,
+    orderedTo,
     orderedBy,
     deliveryAddress,
     drugId,
@@ -294,6 +294,7 @@ export async function createOrder({
     }
     return { success: true };
   } catch (error) {
+    console.log(error);
     if (error instanceof APIError) throw error;
     else {
       throw new APIError(

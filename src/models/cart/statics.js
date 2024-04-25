@@ -2,6 +2,7 @@ import httpStatus from 'http-status';
 import mongoose from 'mongoose';
 import APIError from '../../errors/APIError';
 import modelNames from '../../utils/constants';
+import { paginationPipeline } from '../../utils';
 
 export async function saveCart({
   userId,
@@ -34,6 +35,7 @@ export async function saveCart({
       cart,
     };
   } catch (error) {
+    console.log(error);
     if (error instanceof APIError) throw error;
     else {
       throw new APIError(
@@ -45,13 +47,18 @@ export async function saveCart({
   }
 }
 
-export async function getCart(userId) {
+export async function getCarts({ userId, page = 1, limit = 5 }) {
   const CartModel = this.model(modelNames.cart);
   try {
-    const cart = await CartModel.findOne({
-      userId: mongoose.Types.ObjectId(userId),
-    });
-    return cart;
+    const cart = await CartModel.aggregate([
+      {
+        $match: {
+          userId: mongoose.Types.ObjectId(userId),
+        },
+      },
+      ...paginationPipeline(page, limit),
+    ]);
+    return cart[0];
   } catch (error) {
     if (error instanceof APIError) throw error;
     else {
@@ -71,6 +78,10 @@ export async function deleteCart({ userId, cartId }) {
       userId: mongoose.Types.ObjectId(userId),
       _id: mongoose.Types.ObjectId(cartId),
     });
+
+    if (!cart) {
+      throw new APIError('cart not found', httpStatus.NOT_FOUND, true);
+    }
 
     return cart;
   } catch (error) {

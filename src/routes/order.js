@@ -10,9 +10,11 @@ import {
   extendOrderController,
 } from '../controllers/order';
 
+import { authenticateJwt } from '../middlewares';
+
 const router = express.Router();
 
-router.post('/:drugId', createOrderController);
+router.post('/:cartId', authenticateJwt, createOrderController);
 router.get('/:orderId', orderDetailController);
 router.get('/', filterOrderController);
 router.put('/:orderId/confirm-delivery', confirmOrderDeliveryController);

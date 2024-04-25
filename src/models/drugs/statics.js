@@ -457,6 +457,7 @@ export async function saleDrug({
       stockLevel: stock.currentQuantity,
     };
   } catch (error) {
+    console.log(error);
     await session.abortTransaction();
     if (error instanceof APIError) throw error;
     else {

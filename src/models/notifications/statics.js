@@ -154,7 +154,7 @@ export async function deleteAllNotification(userId) {
   }
 }
 
-export async function createNewNotification({ userId, title, message, type }) {
+export async function createNotification({ userId, title, message, type }) {
   const data = {
     userId,
     title,

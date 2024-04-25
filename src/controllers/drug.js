@@ -53,7 +53,6 @@ export const drugDetailController = async (req, res, next) => {
 };
 
 export const createDrugController = async (req, res, next) => {
-  // const { pharmacyId } = req.user;
   const { pharmacyId } = req.params;
   const {
     name,
