@@ -67,6 +67,10 @@ export const updatePharmacyController = async (req, res, next) => {
     email,
     about,
   } = req.body;
+
+  if (location) {
+    location.type = 'Point';
+  }
   const pharmacyParams = {
     pharmacistId: _id,
     pharmacyId,
@@ -78,11 +82,11 @@ export const updatePharmacyController = async (req, res, next) => {
     workingHours,
     deliverPricePerKm,
     deliveryCoverage,
+    location,
     hasDeliveryService,
     minDeliveryTime,
     maxDeliveryTime,
     account,
-    location,
     email,
     about,
   };
