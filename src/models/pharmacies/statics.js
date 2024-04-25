@@ -294,7 +294,9 @@ export async function updatePharmacy({
   workingHours,
   deliverPricePerKm,
   deliveryCoverage,
-  status,
+  hasDeliveryService,
+  minDeliveryTime,
+  maxDeliveryTime,
   account,
   location,
   email,
@@ -314,7 +316,7 @@ export async function updatePharmacy({
     const updatedPharmacy = await PharmacyModel.findOneAndUpdate(
       {
         _id: pharmacyId,
-        ...(pharmacistId ? { pharmacistId } : {}),
+        pharmacistId,
       },
       {
         ...(logo ? { logo } : {}),
@@ -325,11 +327,13 @@ export async function updatePharmacy({
         ...(workingHours ? { workingHours } : {}),
         ...(deliverPricePerKm ? { deliverPricePerKm } : {}),
         ...(deliveryCoverage ? { deliveryCoverage } : {}),
-        ...(status ? { status } : {}),
         ...(account ? { account } : {}),
         ...(location ? { location } : {}),
         ...(email ? { email } : {}),
         ...(about ? { about } : {}),
+        ...(hasDeliveryService ? { hasDeliveryService } : {}),
+        ...(minDeliveryTime ? { minDeliveryTime } : {}),
+        ...(maxDeliveryTime ? { maxDeliveryTime } : {}),
       },
       { new: true }
     );
