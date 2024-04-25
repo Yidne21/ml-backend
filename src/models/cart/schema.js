@@ -7,12 +7,26 @@ const cartSchema = new mongoose.Schema(
       required: true,
       ref: 'User',
     },
-    drug: [
+    pharmacyId: {
+      type: mongoose.Types.ObjectId,
+      required: true,
+      ref: 'Pharmacy',
+    },
+    pharmacyName: {
+      type: String,
+      required: true,
+    },
+    drugs: [
       {
         drugId: {
           type: mongoose.Types.ObjectId,
           required: true,
           ref: 'Drug',
+        },
+        stockId: {
+          type: mongoose.Types.ObjectId,
+          required: true,
+          ref: 'Stock',
         },
         quantity: {
           type: Number,

@@ -25,15 +25,30 @@ const orderSchema = new mongoose.Schema(
         },
       },
     },
-    drugId: {
-      type: mongoose.Types.ObjectId,
-      required: true,
-      ref: 'Drug',
-    },
-    stockId: {
-      type: mongoose.Types.ObjectId,
-      ref: 'Stock',
-    },
+    drugs: [
+      {
+        drugId: {
+          type: mongoose.Types.ObjectId,
+          ref: 'Drug',
+        },
+        stockId: {
+          type: mongoose.Types.ObjectId,
+          ref: 'Stock',
+        },
+        quantity: {
+          type: Number,
+          default: 1,
+        },
+        price: {
+          type: Number,
+          required: true,
+        },
+        drugName: {
+          type: String,
+          required: true,
+        },
+      },
+    ],
     deliveryExpireDate: {
       type: Date,
     },
