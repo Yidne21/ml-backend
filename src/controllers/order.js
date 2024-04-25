@@ -10,6 +10,7 @@ import { transferToBank } from '../utils/chapa';
 import APIError from '../errors/APIError';
 import { addMinutes, calculateDistance } from '../utils';
 import Stock from '../models/stocks';
+import Cart from '../models/cart';
 
 export const createOrderController = async (req, res, next) => {
   const { role, _id } = req.user;
@@ -20,56 +21,82 @@ export const createOrderController = async (req, res, next) => {
       true
     );
   }
-  const { orderTo, deliveryAddress, quantity, stockId } = req.body;
+  const { deliveryAddress } = req.body;
 
-  const { drugId } = req.params;
+  const { cartId } = req.params;
   try {
-    const drug = await Drug.findOne({ _id: drugId });
-    if (!drug) {
-      throw new APIError('Drug not found', httpStatus.NOT_FOUND, true);
+    const cart = await Cart.findOne({ _id: cartId });
+    if (!cart) {
+      throw new APIError('Cart not found', httpStatus.NOT_FOUND, true);
     }
 
-    const stock = await Stock.findOne({ _id: stockId });
-    if (!stock) {
-      throw new APIError('Stock not found', httpStatus.NOT_FOUND, true);
-    }
-
-    const pharmacy = await Pharmacy.findOne({ _id: orderTo });
+    const pharmacy = await Pharmacy.findOne({ _id: cart.pharmacyId });
     if (!pharmacy) {
       throw new APIError('Pharmacy not found', httpStatus.NOT_FOUND, true);
     }
 
-    const distance = calculateDistance({
-      lat1: pharmacy.location.coordinates[1],
-      long1: pharmacy.location.coordinates[0],
-      lat2: deliveryAddress.location.coordinates[1],
-      long2: deliveryAddress.location.coordinates[0],
+    const session = mongoose.startSession();
+    session.startTransaction();
+
+    cart.drugs.forEach(async (drug) => {
+      const message = await Drug.saleDrug({
+        drugId: drug.drugId,
+        quantity: drug.quantity,
+        amount: drug.totalAmount,
+        stockId: drug.stockId,
+        pharmacyId: pharmacy._id,
+        userId: pharmacy.pharmacistId,
+      });
+
+      if (!message) {
+        await session.abortTransaction();
+        throw new APIError(
+          'Insufficient stock for some drugs, please try again later',
+          httpStatus.INTERNAL_SERVER_ERROR,
+          true
+        );
+      }
     });
 
-    if (distance > pharmacy.deliveryCoverage) {
-      throw new APIError(
-        'Delivery address is out of the pharmacy delivery coverage, please choose another pharmacy',
-        httpStatus.BAD_REQUEST,
-        true
-      );
+    let distance = 0;
+    let deliveryExpireDate;
+    let hasDelivery = false;
+    if (deliveryAddress.location.coordinates.length !== 2) {
+      distance = calculateDistance({
+        lat1: pharmacy.location.coordinates[1],
+        long1: pharmacy.location.coordinates[0],
+        lat2: deliveryAddress.location.coordinates[1],
+        long2: deliveryAddress.location.coordinates[0],
+      });
+
+      if (distance > pharmacy.deliveryCoverage) {
+        await session.abortTransaction();
+        throw new APIError(
+          'Delivery address is out of the pharmacy delivery coverage, please choose another pharmacy',
+          httpStatus.BAD_REQUEST,
+          true
+        );
+      }
+      deliveryExpireDate = addMinutes(new Date(), pharmacy.maxDeliveryTime);
+      hasDelivery = true;
     }
 
-    const deliveryExpireDate = addMinutes(new Date(), pharmacy.maxDeliveryTime);
     const totalAmount =
-      stock.price * quantity + pharmacy.deliveryPricePerKm * distance;
+      cart.totalPrice + pharmacy.deliveryPricePerKm * distance;
 
     const data = {
-      orderTo,
+      orderTo: cart.pharmacyId,
       orderedBy: _id,
       deliveryAddress,
-      drugId,
-      quantity,
-      stockId,
+      quantity: cart.totalQuantity,
+      hasDelivery,
+      drugs: cart.drugs,
       deliveryExpireDate,
       totalAmount,
     };
     const success = await Order.createOrder(data);
     if (!success) {
+      await session.abortTransaction();
       throw new APIError(
         'Failed to create order, please try again later',
         httpStatus.INTERNAL_SERVER_ERROR,
@@ -82,6 +109,7 @@ export const createOrderController = async (req, res, next) => {
       title: 'New Order',
       message: `You have a new order from ${req.user.name}, please check your ${pharmacy.name} pharmacy dashboard`,
     });
+    session.commitTransaction();
     res.status(httpStatus.CREATED).json(success);
   } catch (error) {
     next(error);
@@ -141,9 +169,9 @@ export const confirmOrderDeliveryController = async (req, res, next) => {
       throw new APIError('Order not found', httpStatus.NOT_FOUND, true);
     }
 
-    if (order.status !== 'inprogress') {
+    if (order.status !== 'inprogress' && order.hasDelivery !== true) {
       throw new APIError(
-        'Order is  not in progress, ',
+        'Order is not accepted yet or does not have delivery',
         httpStatus.BAD_REQUEST,
         true
       );
@@ -156,24 +184,6 @@ export const confirmOrderDeliveryController = async (req, res, next) => {
 
     const session = mongoose.startSession();
     session.startTransaction();
-
-    const sale = await Drug.saleDrug({
-      drugId: order.drugId,
-      quantity: order.quantity,
-      amount: order.totalAmount,
-      stockId: order.stockId,
-      pharmacyId: pharmacy._id,
-      userId: pharmacy.pharmacistId,
-    });
-
-    if (!sale) {
-      await session.abortTransaction();
-      throw new APIError(
-        'Failed to update stock, please try again later',
-        httpStatus.INTERNAL_SERVER_ERROR,
-        true
-      );
-    }
 
     const reference = uuidv4();
     const response = await transferToBank({

@@ -414,6 +414,17 @@ export async function saleDrug({
     }
     if (stock.currentQuantity < quantity) {
       session.abortTransaction();
+      const pharmacy = await pharmacyModel.findById(pharmacyId);
+      if (!pharmacy) {
+        throw new APIError('pharmacy not found', httpStatus.NOT_FOUND, true);
+      }
+      const data = {
+        userId,
+        title: 'Stock level low',
+        message: `Your ${pharmacy.name} pharmacy Stock level of ${drug.name} is empty and needs to be restocked`,
+        type: 'warning',
+      };
+      await notificationModel.create(data);
       throw new APIError('insufficient stock', httpStatus.BAD_REQUEST, true);
     }
     stock.currentQuantity -= quantity;
@@ -429,11 +440,12 @@ export async function saleDrug({
       const data = {
         userId,
         title: 'Stock level low',
-        message: `Your ${pharmacy.name} pharmacy Stock level of ${drug.name} is below minimum stock level`,
+        message: `Your ${pharmacy.name} pharmacy Stock level of ${drug.name} is below minimum stock level The current quantity is: ${stock.currentQuantity} and needs to be restocked`,
         type: 'warning',
       };
       await notificationModel.create(data);
     }
+
     await stock.save();
 
     await drug.save();
