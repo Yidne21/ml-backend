@@ -51,17 +51,6 @@ export async function filterOrders({
         $unwind: '$pharmacy',
       },
       {
-        $lookup: {
-          from: 'drugs',
-          localField: 'drugId',
-          foreignField: '_id',
-          as: 'drug',
-        },
-      },
-      {
-        $unwind: '$drug',
-      },
-      {
         $match: {
           ...(searchQuery && {
             'customer.name': {
@@ -101,14 +90,12 @@ export async function filterOrders({
           'customer.email': 1,
           'pharmacy.name': 1,
           'pharmacy.email': 1,
-          'drug.name': 1,
-          'drug.price': 1,
-          'drug.cost': 1,
+          drugs: 1,
           deliveryAddress: 1,
           drugId: 1,
           orderedBy: 1,
           orderedTo: 1,
-          deliveryDate: 1,
+          deliveryExpireDate: 1,
           status: 1,
           createdAt: 1,
           quantity: 1,
@@ -145,6 +132,7 @@ export async function filterOrders({
 }
 
 export async function getOrder(orderId) {
+  console.log('orderId', orderId);
   const OrderModel = this.model(modelNames.order);
   try {
     const order = await OrderModel.aggregate([
@@ -170,28 +158,6 @@ export async function getOrder(orderId) {
         },
       },
       {
-        $lookup: {
-          from: 'drugs',
-          localField: 'drugId',
-          foreignField: '_id',
-          as: 'drug',
-        },
-      },
-      {
-        $lookup: {
-          from: 'transactions',
-          localField: 'transactionId',
-          foreignField: '_id',
-          as: 'transaction',
-        },
-      },
-      {
-        $unwind: '$transaction',
-      },
-      {
-        $unwind: '$drug',
-      },
-      {
         $unwind: '$customer',
       },
       {
@@ -203,27 +169,18 @@ export async function getOrder(orderId) {
           'customer.email': 1,
           'pharmacy.name': 1,
           'pharmacy.email': 1,
-          'drug.name': 1,
-          'drug.price': 1,
-          'drug.cost': 1,
-          'drug.expiredDate': 1,
-          'transaction.amount': 1,
-          'transaction.reason': 1,
-          'transaction.senderAccount': 1,
-          'transaction.receiverAccount': 1,
           deliveryAddress: 1,
-          drugId: 1,
-          deliveryDate: 1,
+          deliveryExpireDate: 1,
+          hasDelivery: 1,
+          totalAmount: 1,
+          drugs: 1,
+          deliveryDistance: 1,
           status: 1,
           quantity: 1,
-          orderedAt: 1,
-          abortedAt: 1,
-          deliveredAt: 1,
-          transactionId: 1,
         },
       },
     ]);
-    return order[0];
+    return order;
   } catch (error) {
     if (error instanceof APIError) throw error;
     else {
@@ -269,20 +226,18 @@ export async function createOrder({
   orderedTo,
   orderedBy,
   deliveryAddress,
-  drugId,
   quantity,
-  stockId,
   deliveryExpireDate,
   totalAmount,
   drugs,
+  hasDelivery,
 }) {
   const data = {
     orderedTo,
     orderedBy,
     deliveryAddress,
-    drugId,
     quantity,
-    stockId,
+    hasDelivery,
     deliveryExpireDate,
     totalAmount,
     drugs,
