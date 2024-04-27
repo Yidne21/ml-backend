@@ -30,9 +30,8 @@ router.post('/send-otp', sendOTP);
 router.post('/verify-otp', verifyOTP);
 
 router.post(
-  '/create',
-  // authenticateJwt,
-  //  registerUserValidator(),
+  '/signUp',
+
   parseValidationResult,
   signUpUserController
 );

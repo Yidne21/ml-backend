@@ -510,7 +510,6 @@ export async function setPassWord({ token, email, password }) {
 
     throw new APIError('Unauthorized', httpStatus.UNAUTHORIZED, true);
   } catch (error) {
-    console.log(error);
     if (error instanceof APIError) throw error;
     else {
       throw new APIError(

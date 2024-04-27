@@ -17,10 +17,14 @@ const router = express.Router();
 router.post('/:cartId', authenticateJwt, createOrderController);
 router.get('/:orderId', orderDetailController);
 router.get('/', filterOrderController);
-router.put('/:orderId/confirm-delivery', confirmOrderDeliveryController);
-router.put('/:orderId/refund', refundController);
-router.put('/:orderId/reject', rejectOrderController);
-router.put('/:orderId/accept', acceptOrderController);
-router.put('/:orderId/extend', extendOrderController);
+router.put(
+  '/:orderId/confirm-delivery',
+  authenticateJwt,
+  confirmOrderDeliveryController
+);
+router.put('/:orderId/refund', authenticateJwt, refundController);
+router.put('/:orderId/reject', authenticateJwt, rejectOrderController);
+router.put('/:orderId/accept', authenticateJwt, acceptOrderController);
+router.put('/:orderId/extend', authenticateJwt, extendOrderController);
 
 export default router;

@@ -116,3 +116,16 @@ export const verifyTransfer = async (txRef) => {
     throw new Error(error);
   }
 };
+
+export const getListOfTransfers = async () => {
+  try {
+    const response = await axios.get(`${chapaBaseUrl}/transfers`, {
+      headers: {
+        Authorization: `Bearer ${chapaSecretKey}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error(error);
+  }
+};
