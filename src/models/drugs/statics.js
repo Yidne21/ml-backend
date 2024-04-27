@@ -412,12 +412,13 @@ export async function saleDrug({
         true
       );
     }
+    const pharmacy = await pharmacyModel.findById(pharmacyId);
+
+    if (!pharmacy) {
+      throw new APIError('pharmacy not found', httpStatus.NOT_FOUND, true);
+    }
     if (stock.currentQuantity < quantity) {
       session.abortTransaction();
-      const pharmacy = await pharmacyModel.findById(pharmacyId);
-      if (!pharmacy) {
-        throw new APIError('pharmacy not found', httpStatus.NOT_FOUND, true);
-      }
       const data = {
         userId,
         title: 'Stock level low',
@@ -433,10 +434,6 @@ export async function saleDrug({
     drug.profit += quantity * (stock.price - stock.cost);
 
     if (drug.stockLevel < drug.minStockLevel) {
-      const pharmacy = await pharmacyModel.findById(pharmacyId);
-      if (!pharmacy) {
-        throw new APIError('pharmacy not found', httpStatus.NOT_FOUND, true);
-      }
       const data = {
         userId,
         title: 'Stock level low',
@@ -457,7 +454,6 @@ export async function saleDrug({
       stockLevel: stock.currentQuantity,
     };
   } catch (error) {
-    console.log(error);
     await session.abortTransaction();
     if (error instanceof APIError) throw error;
     else {

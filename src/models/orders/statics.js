@@ -274,6 +274,7 @@ export async function createOrder({
   stockId,
   deliveryExpireDate,
   totalAmount,
+  drugs,
 }) {
   const data = {
     orderedTo,
@@ -284,17 +285,16 @@ export async function createOrder({
     stockId,
     deliveryExpireDate,
     totalAmount,
+    drugs,
   };
-
   const OrderModel = this.model(modelNames.order);
   try {
     const order = await OrderModel.create(data);
     if (!order) {
       throw new APIError('Order not created', httpStatus.BAD_REQUEST, true);
     }
-    return { success: true };
+    return order;
   } catch (error) {
-    console.log(error);
     if (error instanceof APIError) throw error;
     else {
       throw new APIError(

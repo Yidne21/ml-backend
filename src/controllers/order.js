@@ -19,13 +19,13 @@ export const createOrderController = async (req, res, next) => {
 
   const { cartId } = req.params;
   try {
-    // if (role !== 'customer') {
-    //   throw new APIError(
-    //     'You are not authorized to perform this action',
-    //     httpStatus.UNAUTHORIZED,
-    //     true
-    //   );
-    // }
+    if (role !== 'customer') {
+      throw new APIError(
+        'You are not authorized to perform this action',
+        httpStatus.UNAUTHORIZED,
+        true
+      );
+    }
     const cart = await Cart.findOne({ _id: cartId });
     if (!cart) {
       throw new APIError('Cart not found', httpStatus.NOT_FOUND, true);
@@ -39,26 +39,6 @@ export const createOrderController = async (req, res, next) => {
     const session = await mongoose.startSession();
     session.startTransaction();
 
-    cart.drugs.forEach(async (drug) => {
-      const message = await Drug.saleDrug({
-        drugId: drug.drugId,
-        quantity: drug.quantity,
-        amount: drug.totalAmount,
-        stockId: drug.stockId,
-        pharmacyId: pharmacy._id,
-        userId: pharmacy.pharmacistId,
-      });
-
-      if (!message) {
-        await session.abortTransaction();
-        throw new APIError(
-          'Insufficient stock for some drugs, please try again later',
-          httpStatus.INTERNAL_SERVER_ERROR,
-          true
-        );
-      }
-    });
-
     let distance = 0;
     let deliveryExpireDate;
     let hasDelivery = false;
@@ -69,11 +49,10 @@ export const createOrderController = async (req, res, next) => {
         lat2: deliveryAddress.location.coordinates[1],
         long2: deliveryAddress.location.coordinates[0],
       });
-
       if (distance > pharmacy.deliveryCoverage) {
         await session.abortTransaction();
         throw new APIError(
-          'Delivery address is out of the pharmacy delivery coverage, please choose another pharmacy',
+          'Delivery address is out of the pharmacy delivery coverage, please choose another address or pharmacy',
           httpStatus.BAD_REQUEST,
           true
         );
@@ -84,8 +63,6 @@ export const createOrderController = async (req, res, next) => {
 
     const totalAmount =
       cart.totalPrice + pharmacy.deliveryPricePerKm * distance;
-
-    console.log(totalAmount);
 
     const data = {
       orderedTo: cart.pharmacyId,
@@ -113,13 +90,15 @@ export const createOrderController = async (req, res, next) => {
       title: 'New Order',
       message: `You have a new order from ${req.user.name}, please check your ${pharmacy.name} pharmacy dashboard`,
     });
-    session.commitTransaction();
+
+    await Cart.deleteCart({ userId: _id, cartId });
+    await session.commitTransaction();
     res.status(httpStatus.CREATED).json(success);
   } catch (error) {
-    console.log(error);
     next(error);
   }
-}; // after a successful payment
+};
+
 export const orderDetailController = async (req, res, next) => {
   const { orderId } = req.params;
   try {
@@ -129,6 +108,7 @@ export const orderDetailController = async (req, res, next) => {
     next(error);
   }
 };
+
 export const filterOrderController = async (req, res, next) => {
   const {
     customerId,
@@ -158,6 +138,7 @@ export const filterOrderController = async (req, res, next) => {
     next(error);
   }
 };
+
 export const confirmOrderDeliveryController = async (req, res, next) => {
   const { orderId } = req.params;
   const { role, _id } = req.user;
@@ -262,13 +243,6 @@ export const confirmOrderDeliveryController = async (req, res, next) => {
 
 export const refundController = async (req, res, next) => {
   const { _id, role, name } = req.user;
-  if (role !== 'customer') {
-    throw new APIError(
-      'You are not authorized to perform this action',
-      httpStatus.UNAUTHORIZED,
-      true
-    );
-  }
   const { orderId } = req.params;
   const { bankName, accountName, accountNumber, bankCode, accountType } =
     req.body;
@@ -277,8 +251,17 @@ export const refundController = async (req, res, next) => {
     accountNumber,
     bankName,
     accountType,
+    bankCode,
   };
   try {
+    if (role !== 'customer') {
+      throw new APIError(
+        'You are not authorized to perform this action',
+        httpStatus.UNAUTHORIZED,
+        true
+      );
+    }
+
     const order = await Order.findOne({ _id: orderId, orderedBy: _id });
     if (!order) {
       throw new APIError('Order not found', httpStatus.NOT_FOUND, true);
@@ -376,16 +359,18 @@ export const refundController = async (req, res, next) => {
 
 export const rejectOrderController = async (req, res, next) => {
   const { _id, role } = req.user;
-  if (role !== 'pharmacist') {
-    throw new APIError(
-      'You are not authorized to perform this action',
-      httpStatus.UNAUTHORIZED,
-      true
-    );
-  }
+
   const { orderId } = req.params;
   try {
-    const order = await Order.findOne({ _id: orderId, orderedTo: _id });
+    if (role !== 'pharmacist') {
+      throw new APIError(
+        'You are not authorized to perform this action',
+        httpStatus.UNAUTHORIZED,
+        true
+      );
+    }
+
+    const order = await Order.findOne({ _id: orderId });
     if (!order) {
       throw new APIError('Order not found', httpStatus.NOT_FOUND, true);
     }
@@ -399,8 +384,12 @@ export const rejectOrderController = async (req, res, next) => {
     }
 
     const pharmacy = await Pharmacy.findOne({ _id: order.orderedTo });
-    if (!pharmacy) {
-      throw new APIError('Pharmacy not found', httpStatus.NOT_FOUND, true);
+    if (pharmacy.pharmacistId.toString() !== _id.toString()) {
+      throw new APIError(
+        'Your not allowed to reject other pharmacies order',
+        httpStatus.UNAUTHORIZED,
+        true
+      );
     }
 
     const session = mongoose.startSession();
@@ -408,7 +397,7 @@ export const rejectOrderController = async (req, res, next) => {
 
     const message = await Order.updateOrder({ orderId, status: 'rejected' });
 
-    if (!message) {
+    if (!message.success) {
       await session.abortTransaction();
       throw new APIError(
         'Failed to update order status, please try again later',
@@ -442,9 +431,22 @@ export const acceptOrderController = async (req, res, next) => {
   }
   const { orderId } = req.params;
   try {
-    const order = await Order.findOne({ _id: orderId, orderedTo: _id });
+    const order = await Order.findOne({
+      _id: orderId,
+    });
+
     if (!order) {
-      throw new APIError('Order not found', httpStatus.NOT_FOUND, true);
+      throw new APIError('order not found', httpStatus.NOT_FOUND, true);
+    }
+
+    const pharmacy = await Pharmacy.findOne({ _id: order.orderedTo });
+
+    if (pharmacy.pharmacistId.toString() !== _id.toString()) {
+      throw new APIError(
+        'Your not allowed to accept other pharmacies order',
+        httpStatus.UNAUTHORIZED,
+        true
+      );
     }
 
     if (order.status !== 'pending') {
@@ -455,13 +457,29 @@ export const acceptOrderController = async (req, res, next) => {
       );
     }
 
-    const pharmacy = await Pharmacy.findOne({ _id: order.orderedTo });
-    if (!pharmacy) {
-      throw new APIError('Pharmacy not found', httpStatus.NOT_FOUND, true);
-    }
-
     const session = mongoose.startSession();
     session.startTransaction();
+    order.drugs.forEach(async (drug) => {
+      const updatedStock = await Stock.findByIdAndUpdate(
+        drug.stockId,
+        { $inc: { currentQuantity: -drug.quantity } },
+        { new: true }
+      );
+
+      if (updatedStock.currentQuantity < 0) {
+        await session.abortTransaction;
+        throw new APIError(
+          'insufficient stock',
+          httpStatus.NOT_ACCEPTABLE,
+          true
+        );
+      }
+      const profit = drug.quantity * (updatedStock.price - updatedStock.cost);
+      await Drug.findByIdAndUpdate(drug.drugId, {
+        $inc: { profit, totalSale: drug.quantity },
+      });
+    });
+
     const message = await Order.updateOrder({ orderId, status: 'inprogress' });
 
     if (!message) {
@@ -489,15 +507,15 @@ export const acceptOrderController = async (req, res, next) => {
 export const extendOrderController = async (req, res, next) => {
   const { _id, role } = req.user;
   const { orderId } = req.params;
-  if (role !== 'customer') {
-    throw new APIError(
-      'You are not authorized to perform this action',
-      httpStatus.UNAUTHORIZED,
-      true
-    );
-  }
-
   try {
+    if (role !== 'customer') {
+      throw new APIError(
+        'You are not authorized to perform this action',
+        httpStatus.UNAUTHORIZED,
+        true
+      );
+    }
+
     const order = await Order.findOne({ _id: orderId, orderedBy: _id });
     if (!order) {
       throw new APIError('Order not found', httpStatus.NOT_FOUND, true);
