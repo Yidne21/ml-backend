@@ -73,6 +73,7 @@ export const createOrderController = async (req, res, next) => {
       drugs: cart.drugs,
       deliveryExpireDate,
       totalAmount,
+      deliveryDistance: distance,
     };
 
     const success = await Order.createOrder(data);
@@ -168,8 +169,8 @@ export const confirmOrderDeliveryController = async (req, res, next) => {
       throw new APIError('Pharmacy not found', httpStatus.NOT_FOUND, true);
     }
 
-    const session = mongoose.startSession();
-    session.startTransaction();
+    const session = await mongoose.startSession();
+    await session.startTransaction();
 
     const reference = uuidv4();
     const response = await transferToBank({
@@ -267,7 +268,7 @@ export const refundController = async (req, res, next) => {
       throw new APIError('Order not found', httpStatus.NOT_FOUND, true);
     }
 
-    if (order.status !== 'rejected' || order.status !== 'expired') {
+    if (order.status !== 'rejected' && order.status !== 'expired') {
       throw new APIError(
         'cannot refund order that is not rejected or expired',
         httpStatus.BAD_REQUEST,
@@ -280,8 +281,8 @@ export const refundController = async (req, res, next) => {
       throw new APIError('Pharmacy not found', httpStatus.NOT_FOUND, true);
     }
 
-    const session = mongoose.startSession();
-    session.startTransaction();
+    const session = await mongoose.startSession();
+    await session.startTransaction();
     const reference = uuidv4();
 
     const response = await transferToBank({
@@ -326,7 +327,10 @@ export const refundController = async (req, res, next) => {
       );
     }
 
-    const message = await Order.updateOrder({ orderId, status: 'refunded' });
+    const message = await Order.updateOrderStatus({
+      orderId,
+      status: 'refunded',
+    });
 
     if (!message) {
       await session.abortTransaction();
@@ -392,10 +396,13 @@ export const rejectOrderController = async (req, res, next) => {
       );
     }
 
-    const session = mongoose.startSession();
-    session.startTransaction();
+    const session = await mongoose.startSession();
+    await session.startTransaction();
 
-    const message = await Order.updateOrder({ orderId, status: 'rejected' });
+    const message = await Order.updateOrderStatus({
+      orderId,
+      status: 'rejected',
+    });
 
     if (!message.success) {
       await session.abortTransaction();
@@ -457,22 +464,22 @@ export const acceptOrderController = async (req, res, next) => {
       );
     }
 
-    const session = mongoose.startSession();
-    session.startTransaction();
+    const session = await mongoose.startSession();
+    await session.startTransaction();
     order.drugs.forEach(async (drug) => {
       const updatedStock = await Stock.findByIdAndUpdate(
         drug.stockId,
         { $inc: { currentQuantity: -drug.quantity } },
         { new: true }
       );
-
       if (updatedStock.currentQuantity < 0) {
         await session.abortTransaction;
-        throw new APIError(
+        const erro = new APIError(
           'insufficient stock',
           httpStatus.NOT_ACCEPTABLE,
           true
         );
+        next(erro);
       }
       const profit = drug.quantity * (updatedStock.price - updatedStock.cost);
       await Drug.findByIdAndUpdate(drug.drugId, {
@@ -480,7 +487,10 @@ export const acceptOrderController = async (req, res, next) => {
       });
     });
 
-    const message = await Order.updateOrder({ orderId, status: 'inprogress' });
+    const message = await Order.updateOrderStatus({
+      orderId,
+      status: 'inprogress',
+    });
 
     if (!message) {
       await session.abortTransaction();
@@ -534,11 +544,11 @@ export const extendOrderController = async (req, res, next) => {
       throw new APIError('Pharmacy not found', httpStatus.NOT_FOUND, true);
     }
 
-    const session = mongoose.startSession();
-    session.startTransaction();
+    const session = await mongoose.startSession();
+    await session.startTransaction();
 
     const deliveryExpireDate = addMinutes(new Date(), pharmacy.maxDeliveryTime);
-    const message = await Order.updateOrder({
+    const message = await Order.updateOrderStatus({
       orderId,
       status: 'pending',
       deliveryExpireDate,
