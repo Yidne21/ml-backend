@@ -14,6 +14,7 @@ export const addStockController = async (req, res, next) => {
     expiredDate,
     batchNumber,
     quantity,
+    currentQuantity: quantity,
   };
 
   try {
@@ -54,6 +55,7 @@ export const updateStockController = async (req, res, next) => {
     expiredDate,
     batchNumber,
     quantity,
+    currentQuantity: quantity,
   };
 
   try {

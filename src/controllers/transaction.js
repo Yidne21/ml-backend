@@ -8,6 +8,7 @@ import {
   initializePayment,
   getListOfBanks,
   transferToBank,
+  getListOfTransfers,
 } from '../utils/chapa';
 import { webhookKey } from '../config/environments';
 
@@ -155,5 +156,14 @@ export const transferToBankController = async (req, res, next) => {
     return res.status(httpStatus.OK).json(response);
   } catch (error) {
     return next(error);
+  }
+};
+
+export const getListOfTransfersController = async (req, res, next) => {
+  try {
+    const transfers = await getListOfTransfers();
+    res.status(httpStatus.OK).json(transfers);
+  } catch (error) {
+    next(error);
   }
 };

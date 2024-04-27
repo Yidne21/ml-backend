@@ -61,6 +61,9 @@ const orderSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    deliveryDistance: {
+      type: Number,
+    },
     status: {
       type: String,
       enum: [
