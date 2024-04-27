@@ -201,7 +201,7 @@ export async function getPharmacyDetail(pharmacyId) {
           logo: 1,
           avgRating: { $round: ['$avgRating', 2] },
           reviews: 1,
-          deliverPricePerKm: 1,
+          deliveryPricePerKm: 1,
           hasDeliveryService: 1,
           deliveryCoverage: 1,
           minDeliveryTime: 1,
