@@ -1,5 +1,7 @@
 import httpStatus from 'http-status';
 import Pharmacy from '../models/pharmacies';
+import APIError from '../errors/APIError';
+import { paginationPipeline } from '../utils/index';
 
 export const filterPharmacyController = async (req, res, next) => {
   const { page, limit, name, drugName, sortBy, sortOrder } = req.query;
@@ -118,6 +120,47 @@ export const addPharmacyController = async (req, res, next) => {
   try {
     const pharmacy = await Pharmacy.addPharmacy(pharmacyParams);
     res.status(httpStatus.OK).json(pharmacy);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updatePharmacyStatusController = async (req, res, next) => {
+  const { role } = req.user;
+  const { pharmacyId } = req.params;
+  const { status } = req.body;
+  try {
+    if (role !== 'admin' && role !== 'superAdmin') {
+      throw new APIError(
+        'You are not authorized to perform this action',
+        httpStatus.UNAUTHORIZED,
+        true
+      );
+    }
+    const pharmacy = await Pharmacy.updatePharmacyStatus({
+      pharmacyId,
+      status,
+    });
+    res.status(httpStatus.OK).json(pharmacy);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getPharmacyAddressController = async (req, res, next) => {
+  const { page = 1, limit = 10 } = req.query;
+  try {
+    const address = await Pharmacy.aggregate([
+      {
+        $project: {
+          _id: 0,
+          address: 1,
+          location: 1,
+        },
+      },
+      ...paginationPipeline(page, limit),
+    ]);
+    res.status(httpStatus.OK).json(address);
   } catch (error) {
     next(error);
   }

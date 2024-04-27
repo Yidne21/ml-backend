@@ -350,3 +350,28 @@ export async function updatePharmacy({
     }
   }
 }
+
+export async function updatePharmacyStatus(pharmacyId, status) {
+  const PharmacyModel = this.model(modelNames.pharmacy);
+  try {
+    const updatedPharmacy = await PharmacyModel.findOneAndUpdate(
+      {
+        _id: pharmacyId,
+      },
+      {
+        status,
+      },
+      { new: true }
+    );
+    return { message: 'Pharmacy status updated successfully', updatedPharmacy };
+  } catch (error) {
+    if (error instanceof APIError) throw error;
+    else {
+      throw new APIError(
+        'Internal Error',
+        httpStatus.INTERNAL_SERVER_ERROR,
+        true
+      );
+    }
+  }
+}

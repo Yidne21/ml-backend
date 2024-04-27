@@ -7,6 +7,7 @@ import {
   deleteDrugController,
   getDrugNamesController,
   saleDrugController,
+  getDrugCategoriesController,
 } from '../controllers/drug';
 
 import {
@@ -25,6 +26,7 @@ router.get('/:drugId', drugDetailController);
 router.post('/:pharmacyId', createDrugController);
 router.put('/:drugId', updateDrugController);
 router.delete('/:drugId', deleteDrugController);
+router.get('/category/categories', getDrugCategoriesController);
 
 router.post('/stocks/:drugId', addStockController);
 router.get('/stocks/:drugId', getStocksController);
