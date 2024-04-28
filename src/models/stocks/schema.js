@@ -23,6 +23,12 @@ const stockSchema = new mongoose.Schema(
     },
     quantity: { type: Number, required: true, default: 0 },
     currentQuantity: { type: Number, required: true, default: 0 },
+    status: {
+      type: String,
+      enum: ['available', 'expired'],
+      required: true,
+      default: 'available',
+    },
   },
   { timestamps: true }
 );
