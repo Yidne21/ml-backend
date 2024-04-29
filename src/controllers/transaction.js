@@ -23,20 +23,18 @@ export const transactionDetailController = async (req, res, next) => {
 };
 export const filterTransactionController = async (req, res, next) => {
   const {
-    senderName,
-    receiverName,
-    accountHolderName,
-    accountNumber,
+    searchQuery,
+    customerId,
+    pharmacyId,
     sortBy,
     sortOrder,
     page,
     limit,
   } = req.query;
   const filter = {
-    senderName,
-    receiverName,
-    accountHolderName,
-    accountNumber,
+    searchQuery,
+    customerId,
+    pharmacyId,
     sortBy,
     sortOrder,
     page,

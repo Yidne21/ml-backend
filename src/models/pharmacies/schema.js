@@ -21,6 +21,10 @@ const pharmacySchema = new mongoose.Schema(
       required: true,
       ref: 'User',
     },
+    assignedTo: {
+      type: mongoose.Types.ObjectId,
+      ref: 'User',
+    },
     about: { type: String },
     logo: { type: String },
     cover: { type: String },
@@ -40,8 +44,8 @@ const pharmacySchema = new mongoose.Schema(
     maxDeliveryTime: { type: Number, default: 0 },
     status: {
       type: String,
-      default: 'pending',
-      enum: ['pending', 'approved', 'rejected', 'deactivated'],
+      default: 'unassigned',
+      enum: ['pending', 'approved', 'rejected', 'deactivated', 'unassigned'],
     },
     account: {
       accountHolderName: { type: String },

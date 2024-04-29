@@ -57,6 +57,9 @@ const orderSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    profit: {
+      type: Number,
+    },
     hasDelivery: {
       type: Boolean,
       default: false,
@@ -64,6 +67,10 @@ const orderSchema = new mongoose.Schema(
     deliveryDistance: {
       type: Number,
     },
+    deliveryFee: {
+      type: Number,
+    },
+
     status: {
       type: String,
       enum: [

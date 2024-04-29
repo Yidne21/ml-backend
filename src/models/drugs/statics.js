@@ -110,6 +110,45 @@ export async function filterDrug({
     ...(!pharmacyId
       ? [
           {
+            $lookup: {
+              from: 'stocks',
+              let: { drugId: '$_id' },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: { $eq: ['$drugId', '$$drugId'] },
+                    status: 'available',
+                  },
+                },
+                {
+                  $group: {
+                    _id: {
+                      price: '$price',
+                      expiredDate: '$expiredDate',
+                      stockId: '$_id',
+                    }, // Group by price
+                    quantity: { $sum: '$quantity' }, // Sum up the quantity for each price
+                  },
+                },
+                {
+                  $project: {
+                    _id: 0,
+                    price: '$_id.price',
+                    expiredDate: '$_id.expiredDate',
+                    stockId: '$_id.stockId',
+                    quantity: 1,
+                  },
+                },
+              ],
+              as: 'stocks',
+            },
+          },
+          { $unwind: '$stocks' },
+        ]
+      : []),
+    ...(!pharmacyId
+      ? [
+          {
             $sort: {
               'pharmacy.distance': 1,
             },
@@ -121,8 +160,7 @@ export async function filterDrug({
         location: 1,
         name: 1,
         category: 1,
-        price: 1,
-        expiredDate: 1,
+        stocks: 1,
         pharmacy: 1,
         drugPhoto: 1,
         stockLevel: 1,
@@ -137,7 +175,6 @@ export async function filterDrug({
 
     return drugs[0];
   } catch (error) {
-    console.log(error);
     if (error instanceof APIError) throw error;
     else {
       throw new APIError(
@@ -178,7 +215,7 @@ export async function getDrugNames(pharmacyId) {
   }
 }
 
-export async function drugDetail(drugId) {
+export async function drugDetail({ drugId, stockId }) {
   const drugModel = this.model(modelNames.drug);
   try {
     const drug = await drugModel.aggregate([
@@ -211,27 +248,34 @@ export async function drugDetail(drugId) {
         },
       },
       {
-        $lookup: {
-          from: 'stocks',
-          let: { drugId: '$_id' },
-          pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $eq: ['$drugId', '$$drugId'],
-                },
-              },
-            },
-          ],
-          as: 'stocks',
-        },
-      },
-      {
         $unwind: { path: '$pharmacy', preserveNullAndEmptyArrays: true },
       },
-      {
-        $unwind: { path: '$stocks', preserveNullAndEmptyArrays: true },
-      },
+      ...(stockId
+        ? [
+            {
+              $lookup: {
+                from: 'stocks',
+                let: { drugId: '$_id' },
+                pipeline: [
+                  {
+                    $match: {
+                      $expr: { $eq: ['$drugId', '$$drugId'] },
+                    },
+                  },
+                ],
+                as: 'stock',
+              },
+            },
+            {
+              $unwind: '$stock',
+            },
+            {
+              $match: {
+                'stock._id': mongoose.Types.ObjectId(stockId),
+              },
+            },
+          ]
+        : []),
       {
         $project: {
           name: 1,
@@ -244,10 +288,19 @@ export async function drugDetail(drugId) {
           minStockLevel: 1,
           needPrescription: 1,
           drugPhoto: 1,
-          pharmacyName: '$pharmacy.name',
-          price: '$stocks.price',
-          expiredDate: '$stocks.expiredDate',
-          recievedFrom: '$stocks.recievedFrom',
+          profit: 1,
+          status: 1,
+          stock: {
+            _id: 1,
+            price: 1,
+            recievedFrom: 1,
+            expiredDate: 1,
+            batchNumber: 1,
+            currentQuantity: 1,
+            status: 1,
+            quantity: 1,
+            cost: 1,
+          },
         },
       },
       {

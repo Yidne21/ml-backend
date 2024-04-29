@@ -7,6 +7,10 @@ const transactionSchema = new mongoose.Schema(
       type: mongoose.Types.ObjectId,
       ref: 'User',
     },
+    receiverPharmacy: {
+      type: mongoose.Types.ObjectId,
+      ref: 'Pharmacy',
+    },
     orderId: {
       type: mongoose.Types.ObjectId,
       ref: 'Order',

@@ -9,9 +9,10 @@ export async function filterPharmacy({
   page = 1,
   limit = 10,
   location,
-  drugName,
+  status,
   sortBy,
   sortOrder,
+  adminId,
 }) {
   const PharmacyModel = this.model(modelNames.pharmacy);
 
@@ -39,50 +40,24 @@ export async function filterPharmacy({
           },
         ]
       : []),
+    ...(adminId
+      ? [{ $match: { assignedTo: mongoose.Types.ObjectId(adminId) } }]
+      : []),
+    ...(status !== 'any'
+      ? [
+          {
+            $match: {
+              status,
+            },
+          },
+        ]
+      : []),
     ...(name
       ? [
           {
             $match: {
               name: { $regex: new RegExp(name, 'i') },
             },
-          },
-        ]
-      : []),
-
-    ...(drugName
-      ? [
-          {
-            $lookup: {
-              from: 'drugs',
-              let: { pharmacyId: '$_id' },
-              pipeline: [
-                {
-                  $match: {
-                    $expr: {
-                      $and: [
-                        { $eq: ['$pharmacyId', '$$pharmacyId'] },
-                        // { $eq: ['$name', drugName] },
-                        {
-                          $regexMatch: {
-                            input: '$name',
-                            regex: new RegExp(drugName, 'i'),
-                          },
-                        },
-                      ],
-                    },
-                  },
-                },
-              ],
-              as: 'drug',
-            },
-          },
-          {
-            $match: {
-              drug: { $ne: [] },
-            },
-          },
-          {
-            $unwind: { path: '$drug', preserveNullAndEmptyArrays: true },
           },
         ]
       : []),
@@ -94,12 +69,10 @@ export async function filterPharmacy({
         distance: 1,
         location: 1,
         logo: 1,
-        'drug._id': 1,
-        'drug.name': 1,
-        'drug.stockLevel': 1,
         avgRating: 1,
         status: 1,
         email: 1,
+        assignedTo: 1,
       },
     },
     ...paginationPipeline(page, limit),
@@ -187,6 +160,35 @@ export async function getPharmacyDetail(pharmacyId) {
         },
       },
       {
+        $lookup: {
+          from: 'users',
+          let: { pharmacistId: '$pharmacistId' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $eq: ['$_id', '$$pharmacistId'],
+                },
+              },
+            },
+            {
+              $project: {
+                name: 1,
+                phoneNumber: 1,
+                pharmaciestLicense: 1,
+                status: 1,
+                address: 1,
+                email: 1,
+              },
+            },
+          ],
+          as: 'pharmacist',
+        },
+      },
+      {
+        $unwind: { path: '$pharmacist', preserveNullAndEmptyArrays: true },
+      },
+      {
         $project: {
           _id: 1,
           name: 1,
@@ -208,6 +210,7 @@ export async function getPharmacyDetail(pharmacyId) {
           maxDeliveryTime: 1,
           pharmacyLicense: 1,
           account: 1,
+          pharmacist: 1,
         },
       },
       {
@@ -364,6 +367,36 @@ export async function updatePharmacyStatus(pharmacyId, status) {
       { new: true }
     );
     return { message: 'Pharmacy status updated successfully', updatedPharmacy };
+  } catch (error) {
+    if (error instanceof APIError) throw error;
+    else {
+      throw new APIError(
+        'Internal Error',
+        httpStatus.INTERNAL_SERVER_ERROR,
+        true
+      );
+    }
+  }
+}
+
+export async function assignToAdmin({ adminId, numberofPharmacies }) {
+  const PharmacyModel = this.model(modelNames.pharmacy);
+  try {
+    const updatedPharmacy = await PharmacyModel.findOneAndUpdate(
+      {
+        status: 'unassigned',
+      },
+      {
+        assignedTo: adminId,
+        status: 'pending',
+      },
+      { new: true, limit: numberofPharmacies }
+    );
+
+    return {
+      message: 'Pharmacy assigned to admin successfully',
+      updatedPharmacy,
+    };
   } catch (error) {
     if (error instanceof APIError) throw error;
     else {

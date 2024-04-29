@@ -39,17 +39,21 @@ export async function filterOrders({
       {
         $unwind: '$customer',
       },
-      {
-        $lookup: {
-          from: 'pharmacies',
-          localField: 'orderedTo',
-          foreignField: '_id',
-          as: 'pharmacy',
-        },
-      },
-      {
-        $unwind: '$pharmacy',
-      },
+      ...(!pharmacyId
+        ? [
+            {
+              $lookup: {
+                from: 'pharmacies',
+                localField: 'orderedTo',
+                foreignField: '_id',
+                as: 'pharmacy',
+              },
+            },
+            {
+              $unwind: '$pharmacy',
+            },
+          ]
+        : []),
       {
         $match: {
           ...(searchQuery && {
@@ -90,25 +94,10 @@ export async function filterOrders({
           'customer.email': 1,
           'pharmacy.name': 1,
           'pharmacy.email': 1,
-          drugs: 1,
           deliveryAddress: 1,
-          drugId: 1,
-          orderedBy: 1,
-          orderedTo: 1,
           deliveryExpireDate: 1,
           status: 1,
           createdAt: 1,
-          quantity: 1,
-          profit: {
-            $subtract: [
-              {
-                $multiply: ['$drug.price', '$quantity'],
-              },
-              {
-                $multiply: ['$drug.cost', '$quantity'],
-              },
-            ],
-          },
         },
       },
       {
@@ -132,7 +121,6 @@ export async function filterOrders({
 }
 
 export async function getOrder(orderId) {
-  console.log('orderId', orderId);
   const OrderModel = this.model(modelNames.order);
   try {
     const order = await OrderModel.aggregate([

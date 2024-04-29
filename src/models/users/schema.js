@@ -42,7 +42,7 @@ const userSchema = new mongoose.Schema(
         },
       },
     ],
-    pharmaciestLicense: { type: String },
+    pharmacistLicense: { type: String },
     emailVerified: { type: Boolean, default: false, required: true },
     role: {
       type: String,

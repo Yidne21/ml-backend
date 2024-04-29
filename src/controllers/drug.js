@@ -42,10 +42,9 @@ export const filterDrugController = async (req, res, next) => {
 
 export const drugDetailController = async (req, res, next) => {
   const { drugId } = req.params;
-  // const { pharmacistId } = req.user;
-  // const { pharmacyId } = req.body;
+  const { stockId } = req.query;
   try {
-    const drug = await Drug.drugDetail(drugId);
+    const drug = await Drug.drugDetail({ drugId, stockId });
     res.status(httpStatus.OK).json(drug);
   } catch (error) {
     next(error);

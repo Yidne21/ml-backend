@@ -4,22 +4,40 @@ import APIError from '../errors/APIError';
 import { paginationPipeline } from '../utils/index';
 
 export const filterPharmacyController = async (req, res, next) => {
+  const { role, _id } = req.user;
   const { page, limit, name, drugName, sortBy, sortOrder } = req.query;
-
+  let status = '';
+  let adminId = '';
   const location = req.query.location
     ? req.query.location.split(',').map(Number)
     : null;
 
-  const filterParams = {
-    page: parseInt(page, 10) || 1,
-    limit: parseInt(limit, 10) || 10,
-    name,
-    location,
-    drugName,
-    sortBy,
-    sortOrder,
-  };
   try {
+    if (role === 'admin') {
+      status = 'pending';
+      adminId = _id;
+    } else if (role === 'customer') {
+      status = 'approved';
+    } else if (role === 'superAdmin') {
+      status = 'any';
+    } else {
+      throw new APIError(
+        'You are not authorized to perform this action',
+        httpStatus.UNAUTHORIZED,
+        true
+      );
+    }
+    const filterParams = {
+      page: parseInt(page, 10) || 1,
+      limit: parseInt(limit, 10) || 10,
+      name,
+      location,
+      drugName,
+      sortBy,
+      sortOrder,
+      status,
+      adminId,
+    };
     const pharmacies = await Pharmacy.filterPharmacy(filterParams);
     res.status(httpStatus.OK).json(pharmacies);
   } catch (error) {
@@ -161,6 +179,28 @@ export const getPharmacyAddressController = async (req, res, next) => {
       ...paginationPipeline(page, limit),
     ]);
     res.status(httpStatus.OK).json(address);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const assignToAdminController = async (req, res, next) => {
+  const { role } = req.user;
+  const { adminId } = req.params;
+  const { numberofPharmacies } = req.body;
+  try {
+    if (role !== 'superAdmin') {
+      throw new APIError(
+        'You are not authorized to perform this action',
+        httpStatus.UNAUTHORIZED,
+        true
+      );
+    }
+    const pharmacy = await Pharmacy.assignToAdmin({
+      adminId,
+      numberofPharmacies,
+    });
+    res.status(httpStatus.OK).json(pharmacy);
   } catch (error) {
     next(error);
   }
