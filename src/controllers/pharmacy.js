@@ -6,8 +6,9 @@ import { paginationPipeline } from '../utils/index';
 export const filterPharmacyController = async (req, res, next) => {
   const { role, _id } = req.user;
   const { page, limit, name, drugName, sortBy, sortOrder } = req.query;
-  let status = '';
+  let { status } = req.query;
   let adminId = '';
+  let pharmacistId = '';
   const location = req.query.location
     ? req.query.location.split(',').map(Number)
     : null;
@@ -18,15 +19,8 @@ export const filterPharmacyController = async (req, res, next) => {
       adminId = _id;
     } else if (role === 'customer') {
       status = 'approved';
-    } else if (role === 'superAdmin') {
-      status = 'any';
-    } else {
-      const error = new APIError(
-        'You are not authorized to perform this action',
-        httpStatus.UNAUTHORIZED,
-        true
-      );
-      next(error);
+    } else if (role === 'pharmacist') {
+      pharmacistId = _id;
     }
     const filterParams = {
       page: parseInt(page, 10) || 1,
@@ -38,6 +32,7 @@ export const filterPharmacyController = async (req, res, next) => {
       sortOrder,
       status,
       adminId,
+      pharmacistId,
     };
     const pharmacies = await Pharmacy.filterPharmacy(filterParams);
     res.status(httpStatus.OK).json(pharmacies);
