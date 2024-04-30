@@ -21,11 +21,12 @@ export const filterPharmacyController = async (req, res, next) => {
     } else if (role === 'superAdmin') {
       status = 'any';
     } else {
-      throw new APIError(
+      const error = new APIError(
         'You are not authorized to perform this action',
         httpStatus.UNAUTHORIZED,
         true
       );
+      next(error);
     }
     const filterParams = {
       page: parseInt(page, 10) || 1,

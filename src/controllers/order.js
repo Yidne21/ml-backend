@@ -60,20 +60,31 @@ export const createOrderController = async (req, res, next) => {
       deliveryExpireDate = addMinutes(new Date(), pharmacy.maxDeliveryTime);
       hasDelivery = true;
     }
+    const deliveryFee = distance * pharmacy.deliveryPricePerKm;
+    let totalAmount = deliveryFee;
+    let totalCost = 0;
+    let totalQuantity = 0;
 
-    const totalAmount =
-      cart.totalPrice + pharmacy.deliveryPricePerKm * distance;
+    cart.drugs.forEach((drug) => {
+      const stock = pharmacy.stocks.find({ _id: drug.stockId });
+      totalAmount += stock.price * drug.quantity;
+      totalCost += stock.cost * drug.quantity;
+      totalQuantity += drug.quantity;
+    });
 
     const data = {
       orderedTo: cart.pharmacyId,
       orderedBy: _id,
       deliveryAddress,
-      quantity: cart.totalQuantity,
+      quantity: totalQuantity,
       hasDelivery,
       drugs: cart.drugs,
       deliveryExpireDate,
       totalAmount,
       deliveryDistance: distance,
+      profit: totalAmount - totalCost,
+      deliveryFee,
+      totalCost,
     };
 
     const success = await Order.createOrder(data);
