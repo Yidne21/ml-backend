@@ -68,11 +68,10 @@ export const signUpUserController = async (req, res, next) => {
 };
 
 export const userDetailController = async (req, res, next) => {
-  const { _id, role } = req.user;
-  const userId = _id;
+  const { _id } = req.user;
 
   try {
-    const user = await User.userDetail(userId, role);
+    const user = await User.userDetail(_id);
     res.status(httpStatus.OK).json(user);
   } catch (error) {
     next(error);

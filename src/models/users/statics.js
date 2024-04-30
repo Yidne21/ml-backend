@@ -66,7 +66,7 @@ export async function signUpUser({ name, phoneNumber, password, email }) {
   }
 }
 
-export async function userDetail(userId, role) {
+export async function userDetail(userId) {
   const UserModel = this.model(modelNames.user);
 
   try {
@@ -76,26 +76,10 @@ export async function userDetail(userId, role) {
           _id: new mongoose.Types.ObjectId(userId),
         },
       },
-      ...(role === 'pharmacist' && [
-        {
-          $lookup: {
-            from: 'pharmacies',
-            localField: '_id',
-            foreignField: 'pharmacistId',
-            as: 'pharmacies',
-          },
-        },
-      ]),
       {
         $project: {
-          name: 1,
-          phoneNumber: 1,
-          avatar: 1,
-          email: 1,
-          address: 1,
-          location: 1,
-          coverPhoto: 1,
-          pharmacies: 1,
+          password: 0,
+          __v: 0,
         },
       },
     ]);
