@@ -165,10 +165,14 @@ export async function getOrder(orderId) {
           deliveryDistance: 1,
           status: 1,
           quantity: 1,
+          deliveryFee: 1,
+          profit: 1,
+          totalCost: 1,
+          deliveryPricePerKm: 1,
         },
       },
     ]);
-    return order;
+    return order[0];
   } catch (error) {
     if (error instanceof APIError) throw error;
     else {

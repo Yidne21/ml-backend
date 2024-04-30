@@ -870,6 +870,7 @@ const insertDummyData = async () => {
       hasDelivery: faker.datatype.boolean(),
       totalAmount: totAmount,
       profit: totAmount - totalCost,
+      totalCost,
       status: faker.helpers.arrayElement([
         'inprogress',
         'delivered',
@@ -898,6 +899,7 @@ const insertDummyData = async () => {
       orderData.totalAmount += orderData.deliveryFee;
       orderData.deliveryExpireDate = dExpireDate;
       orderData.profit += orderData.deliveryFee;
+      orderData.deliveryPricePerKm = orederTopharmacy.deliveryPricePerKm;
     }
 
     const order = await Order.create(orderData);
@@ -971,8 +973,8 @@ const insertDummyData = async () => {
     }
 
     const cartData = {
-      userId: faker.helpers.arrayElements(customerIDs),
-      pharmacyId: faker.helpers.arrayElements(pharmacyId),
+      userId: customerid,
+      pharmacyId: pharmacy._id,
       pharmacyName: orederTopharmacy.name,
       drugs,
       totalQuantity: toqty,

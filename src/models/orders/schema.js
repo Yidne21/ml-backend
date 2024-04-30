@@ -70,6 +70,12 @@ const orderSchema = new mongoose.Schema(
     deliveryFee: {
       type: Number,
     },
+    totalCost: {
+      type: Number,
+    },
+    deliveryPricePerKm: {
+      type: Number,
+    },
 
     status: {
       type: String,
