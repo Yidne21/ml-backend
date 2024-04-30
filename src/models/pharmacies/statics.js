@@ -13,6 +13,7 @@ export async function filterPharmacy({
   sortBy,
   sortOrder,
   adminId,
+  pharmacistId,
 }) {
   const PharmacyModel = this.model(modelNames.pharmacy);
 
@@ -40,18 +41,13 @@ export async function filterPharmacy({
           },
         ]
       : []),
+    ...(pharmacistId
+      ? [{ $match: { pharmacistId: mongoose.Types.ObjectId(pharmacistId) } }]
+      : []),
     ...(adminId
       ? [{ $match: { assignedTo: mongoose.Types.ObjectId(adminId) } }]
       : []),
-    ...(status !== 'any'
-      ? [
-          {
-            $match: {
-              status,
-            },
-          },
-        ]
-      : []),
+    ...(status ? [{ $match: { status } }] : []),
     ...(name
       ? [
           {
@@ -175,7 +171,7 @@ export async function getPharmacyDetail(pharmacyId) {
               $project: {
                 name: 1,
                 phoneNumber: 1,
-                pharmaciestLicense: 1,
+                pharmacistLicense: 1,
                 status: 1,
                 address: 1,
                 email: 1,
