@@ -370,14 +370,14 @@ export async function registerPharmacist(data) {
   }
 
   try {
-    const pharmaciestLicense = await uploadFile(file, 'pharmaciestLicense');
+    const pharmacistLicense = await uploadFile(file, 'pharmaciestLicense');
 
     const user = {
       name,
       password: hashedpassword,
       role: 'pharmacist',
       email,
-      pharmaciestLicense,
+      pharmacistLicense,
     };
 
     const otp = generateOtp(6);
