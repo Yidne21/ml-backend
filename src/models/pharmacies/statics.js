@@ -350,19 +350,19 @@ export async function updatePharmacy({
   }
 }
 
-export async function updatePharmacyStatus(pharmacyId, status) {
+export async function updatePharmacyStatus({ pharmacyId, status }) {
   const PharmacyModel = this.model(modelNames.pharmacy);
   try {
-    const updatedPharmacy = await PharmacyModel.findOneAndUpdate(
+    await PharmacyModel.findOneAndUpdate(
       {
-        _id: pharmacyId,
+        _id: mongoose.Types.ObjectId(pharmacyId),
       },
       {
         status,
       },
       { new: true }
     );
-    return { message: 'Pharmacy status updated successfully', updatedPharmacy };
+    return { message: `Pharmacy ${status} updated successfully` };
   } catch (error) {
     if (error instanceof APIError) throw error;
     else {
@@ -378,20 +378,20 @@ export async function updatePharmacyStatus(pharmacyId, status) {
 export async function assignToAdmin({ adminId, numberofPharmacies }) {
   const PharmacyModel = this.model(modelNames.pharmacy);
   try {
-    const updatedPharmacy = await PharmacyModel.findOneAndUpdate(
+    const noOfAssigned = await PharmacyModel.updateMany(
       {
         status: 'unassigned',
       },
       {
-        assignedTo: adminId,
+        assignedTo: mongoose.Types.ObjectId(adminId),
         status: 'pending',
       },
       { new: true, limit: numberofPharmacies }
     );
 
     return {
-      message: 'Pharmacy assigned to admin successfully',
-      updatedPharmacy,
+      message: `Found ${noOfAssigned.n} unassigned pharmacies assigned ${noOfAssigned.nModified} to this admin`,
+      noOfAssigned,
     };
   } catch (error) {
     if (error instanceof APIError) throw error;
