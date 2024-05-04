@@ -15,6 +15,8 @@ export async function filterDrug({
   drugName,
   pharmacyId,
   status,
+  sortBy,
+  sortOrder,
 }) {
   const DrugModel = this.model(modelNames.drug);
   const mainPipeline = [
@@ -23,7 +25,6 @@ export async function filterDrug({
         ...(pharmacyId && {
           pharmacyId: mongoose.Types.ObjectId(pharmacyId),
         }),
-        ...(status && { status }),
       },
     },
     ...(!pharmacyId
@@ -57,6 +58,7 @@ export async function filterDrug({
                     $expr: {
                       $eq: ['$_id', '$$pharmacyId'],
                     },
+                    status: 'approved',
                   },
                 },
                 ...(name
@@ -155,6 +157,10 @@ export async function filterDrug({
           },
         ]
       : []),
+    ...(status ? [{ $match: { status } }] : []),
+    ...(sortBy && sortOrder
+      ? [{ $sort: { [sortBy]: sortOrder === 'asc' ? 1 : -1 } }]
+      : []),
     {
       $project: {
         location: 1,
@@ -165,6 +171,8 @@ export async function filterDrug({
         drugPhoto: 1,
         stockLevel: 1,
         needPrescription: 1,
+        createdAt: 1,
+        status: 1,
       },
     },
     ...paginationPipeline(page, limit),

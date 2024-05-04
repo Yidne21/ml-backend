@@ -13,6 +13,8 @@ export const filterDrugController = async (req, res, next) => {
     pharmacyId,
     location,
     status,
+    sortBy,
+    sortOrder,
   } = req.query;
   let coordinates;
 
@@ -31,6 +33,8 @@ export const filterDrugController = async (req, res, next) => {
     category,
     pharmacyId,
     status,
+    sortBy,
+    sortOrder,
   };
   try {
     const drugs = await Drug.filterDrug(filterParams);
