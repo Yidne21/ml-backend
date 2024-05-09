@@ -2,7 +2,6 @@ import httpStatus from 'http-status';
 import bcrypt from 'bcrypt';
 import mongoose from 'mongoose';
 import jwt from 'jsonwebtoken';
-import { tr } from '@faker-js/faker';
 import APIError from '../../errors/APIError';
 import modelNames from '../../utils/constants';
 import {
@@ -19,9 +18,18 @@ import emailTemplate from '../../utils/mailTemplate';
 import { appEmailAddress, secretKey } from '../../config/environments';
 
 export async function signUpUser({ name, phoneNumber, password, email }) {
-  const hashedpassword = await bcrypt.hash(password, 10);
   const UserModel = this.model(modelNames.user);
   const otpModel = this.model(modelNames.otp);
+
+  const existingEmail = await UserModel.findOne({ email });
+  if (existingEmail) {
+    throw new APIError(
+      `This ${email} email is already used try another`,
+      httpStatus.CONFLICT
+    );
+  }
+
+  const hashedpassword = await bcrypt.hash(password, 10);
 
   const user = {
     name,
@@ -30,14 +38,6 @@ export async function signUpUser({ name, phoneNumber, password, email }) {
     password: hashedpassword,
     email,
   };
-
-  const existingEmail = await UserModel.findOne({ email });
-  if (existingEmail) {
-    throw new APIError(
-      `This ${email} email is already used try another`,
-      httpStatus.CLIENT_ERROR
-    );
-  }
 
   const newUser = new UserModel(user);
 
@@ -365,7 +365,7 @@ export async function registerPharmacist(data) {
     session.abortTransaction();
     throw new APIError(
       `This ${email} email is already used try another`,
-      httpStatus.CLIENT_ERROR
+      httpStatus.CONFLICT
     );
   }
 
@@ -423,7 +423,7 @@ export async function registerPharmacist(data) {
 }
 
 export async function registerAdmin(data) {
-  const { name, email } = data;
+  const { name, email, role = 'admin' } = data;
 
   const UserModel = this.model(modelNames.user);
 
@@ -438,8 +438,8 @@ export async function registerAdmin(data) {
   try {
     const user = {
       name,
-      role: 'admin',
       email,
+      role,
     };
 
     const admin = await UserModel.create(user);
@@ -461,10 +461,9 @@ export async function registerAdmin(data) {
 
     await sendEmail(emailContent);
     return {
-      message: 'Admin created successfully',
+      success: true,
     };
   } catch (error) {
-    console.log(error);
     if (error instanceof APIError) throw error;
     else {
       throw new APIError(

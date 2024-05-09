@@ -7,7 +7,7 @@ export const initializePayment = async ({
   amount,
   first_name,
   last_name,
-  reference,
+  tx_ref,
   return_url,
   phone_number,
   currency,
@@ -19,7 +19,7 @@ export const initializePayment = async ({
       amount,
       first_name,
       last_name,
-      reference,
+      tx_ref,
       return_url,
       phone_number,
       currency,
@@ -37,6 +37,7 @@ export const initializePayment = async ({
     );
     return response.data;
   } catch (error) {
+    console.log(error);
     throw new Error(error);
   }
 };

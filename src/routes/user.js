@@ -1,9 +1,18 @@
 import express from 'express';
 import {
-  registerUserValidator,
-  getUserValidator,
+  sendOTPValidator,
+  verifyOTPValidator,
+  resetPasswordValidator,
+  signUpUserValidator,
+  userDetailValidator,
   deleteUserValidator,
   updateUserValidator,
+  loginValidator,
+  refreshTokenValidator,
+  registerPharmacistValidator,
+  registerAdminValidator,
+  setPasswordValidator,
+  getAllUserValidator,
 } from '../validators/user.validator';
 import parseValidationResult from '../validators/errors.parser';
 import {
@@ -26,21 +35,31 @@ import multerUploads from '../middlewares/multer';
 
 const router = express.Router();
 
-router.post('/send-otp', sendOTP);
-router.post('/verify-otp', verifyOTP);
+router.post('/send-otp', sendOTPValidator(), parseValidationResult, sendOTP);
+router.post(
+  '/verify-otp',
+  verifyOTPValidator(),
+  parseValidationResult,
+  verifyOTP
+);
 
 router.post(
   '/signUp',
-
+  signUpUserValidator(),
   parseValidationResult,
   signUpUserController
 );
 
-router.get('/', getAllUserController);
+router.get(
+  '/',
+  getAllUserValidator(),
+  parseValidationResult,
+  getAllUserController
+);
 
 router.put(
   '/:userId',
-  // updateUserValidator(),
+  updateUserValidator(),
   parseValidationResult,
   updateUserController
 );
@@ -48,37 +67,59 @@ router.put(
 router.get(
   '/:userId',
   authenticateJwt,
-  // getUserValidator(),
+  userDetailValidator(),
   parseValidationResult,
   userDetailController
 );
 
 router.delete(
   '/:userId',
-  // deleteUserValidator(),
+  deleteUserValidator(),
   parseValidationResult,
   deleteUserByIdController
 );
 
-router.post('/reset-password', parseValidationResult, resetPasswordController);
+router.post(
+  '/reset-password',
+  resetPasswordValidator(),
+  parseValidationResult,
+  resetPasswordController
+);
 
-router.post('/login', parseValidationResult, loginUserController);
+router.post(
+  '/login',
+  loginValidator(),
+  parseValidationResult,
+  loginUserController
+);
 
-router.post('/refresh-token', parseValidationResult, refreshTokenController);
+router.post(
+  '/refresh-token',
+  refreshTokenValidator(),
+  parseValidationResult,
+  refreshTokenController
+);
 
 router.post(
   '/pharmacist',
-  // parseValidationResult,
+  registerPharmacistValidator(),
+  parseValidationResult,
   multerUploads.single('file'),
   registerPharmacistController
 );
 
 router.post(
   '/admin',
-  // parseValidationResult,
+  registerAdminValidator(),
+  parseValidationResult,
   registerAdminController
 );
 
-router.put('/admin/set-password', setPassWordController);
+router.put(
+  '/admin/set-password',
+  setPasswordValidator(),
+  parseValidationResult,
+  setPassWordController
+);
 
 export default router;
