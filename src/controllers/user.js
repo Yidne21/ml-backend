@@ -166,7 +166,7 @@ export const registerPharmacistController = async (req, res, next) => {
 
   try {
     if (!req.file) {
-      throw new Error('Please upload a file');
+      throw new APIError('file is required', httpStatus.BAD_REQUEST, true);
     }
 
     const data = {
