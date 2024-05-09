@@ -2,9 +2,9 @@ import httpStatus from 'http-status';
 import Feedback from '../models/feedbacks';
 
 export const createFeedbackController = async (req, res, next) => {
-  const userId = req.user;
+  const { _id } = req.user;
   const { title, content, type } = req.body;
-  const feedbackData = { userId, title, content, type };
+  const feedbackData = { userId: _id, title, content, type };
   try {
     const feedback = await Feedback.createFeedback(feedbackData);
     res.status(httpStatus.CREATED).json(feedback);
