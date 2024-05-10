@@ -16,6 +16,7 @@ import { authenticateJwt } from '../middlewares';
 const router = express.Router();
 
 router.get('/', authenticateJwt, filterPharmacyController);
+router.get('/gust', filterPharmacyController);
 router.get('/:pharmacyId', parmacyDetailController);
 router.get('/pharmacist/my-pharmacy', authenticateJwt, getMyPharmacyController);
 router.post('/pharmacist', authenticateJwt, addPharmacyController);

@@ -4,7 +4,7 @@ import APIError from '../errors/APIError';
 import { paginationPipeline } from '../utils/index';
 
 export const filterPharmacyController = async (req, res, next) => {
-  const { role, _id } = req.user;
+  const { role, _id } = req.user || { role: 'gust', _id: '' };
   const { page, limit, name, drugName, sortBy, sortOrder } = req.query;
   let { status } = req.query;
   let adminId = '';
@@ -17,7 +17,7 @@ export const filterPharmacyController = async (req, res, next) => {
     if (role === 'admin') {
       status = 'pending';
       adminId = _id;
-    } else if (role === 'customer') {
+    } else if (role === 'gust') {
       status = 'approved';
     } else if (role === 'pharmacist') {
       pharmacistId = _id;
