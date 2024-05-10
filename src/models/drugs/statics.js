@@ -309,6 +309,7 @@ export async function drugDetail({ drugId, stockId }) {
             quantity: 1,
             cost: 1,
           },
+          pharmacy: 1,
         },
       },
       {
