@@ -56,11 +56,11 @@ export const signUpUserValidator = () => [
 ];
 
 export const userDetailValidator = () => [
-  param('id').isMongoId().withMessage('a valid user Id is required'),
+  param('userId').isMongoId().withMessage('a valid user Id is required'),
 ];
 
 export const updateUserValidator = () => [
-  param('id').isMongoId().withMessage('a valid user Id is required'),
+  param('userId').isMongoId().withMessage('a valid user Id is required'),
   body('name')
     .optional()
     .isString()
