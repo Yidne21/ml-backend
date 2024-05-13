@@ -10,6 +10,7 @@ import {
   transferToBank,
   getListOfTransfers,
 } from '../utils/chapa';
+import Order from '../models/orders';
 import { webhookKey } from '../config/environments';
 
 export const transactionDetailController = async (req, res, next) => {
@@ -54,47 +55,29 @@ export const chapaTransactionController = async (req, res, next) => {
     .digest('hex');
   try {
     if (hash === req.headers['x-chapa-signature']) {
-      console.log('Transaction is valid');
-      const {
-        account_name,
-        account_number,
-        bank_id,
-        bank_name,
-        currency,
-        amount,
-        type,
-        status,
-        reference,
-        chapa_reference,
-        created_at,
-        first_name,
-        last_name,
-        email,
-        charge,
-        mode,
-        updated_at,
-      } = req.body;
-      const transaction = {
-        account_name,
-        account_number,
-        bank_id,
-        bank_name,
-        currency,
-        amount,
-        type,
-        status,
-        reference,
-        chapa_reference,
-        created_at,
-        first_name,
-        last_name,
-        email,
-        charge,
-        mode,
-        updated_at,
-      };
-
-      await Transaction.createTransaction(transaction);
+      const { amount, type, reference, first_name, last_name } = req.body;
+      if (type === 'Payment Link') {
+        await Order.updateOne({ tz_ref: reference }, { status: 'pending' });
+        const orderPaymentTransaction = {
+          sender: last_name,
+          senderAccount: {
+            accountHolderName: first_name,
+          },
+          receiverAccount: {
+            accountHolderName: 'MedicineLocator System',
+            bankName: 'Chapa',
+          },
+          amount: parseFloat(amount),
+          tx_ref: reference,
+          reason: 'order-payment',
+          status: 'completed',
+        };
+        await Transaction.createTransaction(orderPaymentTransaction);
+      }
+      await Transaction.updateOne(
+        { tx_ref: reference },
+        { status: 'completed' }
+      );
       return res.sendStatus(200);
     }
     return res.sendStatus(401);
@@ -104,14 +87,21 @@ export const chapaTransactionController = async (req, res, next) => {
 };
 
 export const InitiateTransactionController = async (req, res, next) => {
-  const { amount, phone_number } = req.body;
-  const tx_ref = uuidv4();
+  const { email, _id, name, phoneNumber } = req.user;
+  const { amount, cartId } = req.body;
+  const tx_ref = cartId;
   const currency = 'ETB';
   const data = {
     amount,
-    phone_number,
+    email,
     tx_ref,
     currency,
+    first_name: name,
+    last_name: _id,
+    phone_number: phoneNumber || undefined,
+    'customizations[title]': 'Payment for Drug Order',
+    'customizations[description]':
+      'Payment for Drug Order using Medicine Locator system',
   };
   try {
     const response = await initializePayment(data);

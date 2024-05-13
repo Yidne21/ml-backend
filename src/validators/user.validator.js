@@ -90,7 +90,7 @@ export const updateUserValidator = () => [
 ];
 
 export const deleteUserValidator = () => [
-  param('id').isMongoId().withMessage('a valid user Id is required'),
+  param('userId').isMongoId().withMessage('a valid user Id is required'),
 ];
 
 export const getAllUserValidator = () => [

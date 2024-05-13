@@ -44,6 +44,49 @@ export const filterDrugController = async (req, res, next) => {
   }
 };
 
+export const filterDrugCustomerController = async (req, res, next) => {
+  const {
+    page,
+    limit,
+    name,
+    drugName,
+    maxPrice,
+    minPrice,
+    category,
+    pharmacyId,
+    location,
+    status,
+    sortBy,
+    sortOrder,
+  } = req.query;
+  let coordinates;
+
+  if (location) {
+    coordinates = location.split(',').map(Number);
+  }
+
+  const filterParams = {
+    page: parseInt(page, 10) || 1,
+    limit: parseInt(limit, 10) || 10,
+    name,
+    coordinates,
+    drugName,
+    maxPrice,
+    minPrice,
+    category,
+    pharmacyId,
+    status,
+    sortBy,
+    sortOrder,
+  };
+  try {
+    const drugs = await Drug.filterDrug(filterParams);
+    res.status(httpStatus.OK).json(drugs);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const drugDetailController = async (req, res, next) => {
   const { drugId } = req.params;
   const { stockId } = req.query;

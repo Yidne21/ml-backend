@@ -8,10 +8,8 @@ export async function filterDrug({
   maxPrice,
   minPrice,
   category,
-  name,
   page = 1,
   limit = 10,
-  coordinates,
   drugName,
   pharmacyId,
   status,
@@ -22,72 +20,9 @@ export async function filterDrug({
   const mainPipeline = [
     {
       $match: {
-        ...(pharmacyId && {
-          pharmacyId: mongoose.Types.ObjectId(pharmacyId),
-        }),
+        pharmacyId: mongoose.Types.ObjectId(pharmacyId),
       },
     },
-    ...(!pharmacyId
-      ? [
-          {
-            $lookup: {
-              from: 'pharmacies',
-              let: { pharmacyId: '$pharmacyId' },
-              pipeline: [
-                ...(coordinates
-                  ? [
-                      {
-                        $geoNear: {
-                          near: {
-                            type: 'Point',
-                            coordinates: [
-                              parseFloat(coordinates[1]),
-                              parseFloat(coordinates[0]),
-                            ],
-                          },
-                          distanceField: 'distance',
-                          distanceMultiplier: 0.001,
-                          includeLocs: 'location',
-                          spherical: true,
-                        },
-                      },
-                    ]
-                  : []),
-                {
-                  $match: {
-                    $expr: {
-                      $eq: ['$_id', '$$pharmacyId'],
-                    },
-                    status: 'approved',
-                  },
-                },
-                ...(name
-                  ? [{ $match: { name: { $regex: new RegExp(name, 'i') } } }]
-                  : []),
-                {
-                  $project: {
-                    _id: 1,
-                    name: 1,
-                    ...(coordinates && {
-                      distance: 1,
-                      location: 1,
-                    }),
-                  },
-                },
-              ],
-              as: 'pharmacy',
-            },
-          },
-          {
-            $unwind: { path: '$pharmacy', preserveNullAndEmptyArrays: true },
-          },
-          {
-            $match: {
-              pharmacy: { $ne: null },
-            },
-          },
-        ]
-      : []),
     ...(drugName
       ? [
           {
@@ -109,55 +44,190 @@ export async function filterDrug({
       ? [{ $match: { price: { $gte: parseInt(minPrice, 10) } } }]
       : []),
     ...(category ? [{ $match: { category } }] : []),
-    ...(!pharmacyId
-      ? [
-          {
-            $lookup: {
-              from: 'stocks',
-              let: { drugId: '$_id' },
-              pipeline: [
-                {
-                  $match: {
-                    $expr: { $eq: ['$drugId', '$$drugId'] },
-                    status: 'available',
-                  },
-                },
-                {
-                  $group: {
-                    _id: {
-                      price: '$price',
-                      expiredDate: '$expiredDate',
-                      stockId: '$_id',
-                    }, // Group by price
-                    quantity: { $sum: '$quantity' }, // Sum up the quantity for each price
-                  },
-                },
-                {
-                  $project: {
-                    _id: 0,
-                    price: '$_id.price',
-                    expiredDate: '$_id.expiredDate',
-                    stockId: '$_id.stockId',
-                    quantity: 1,
-                  },
-                },
-              ],
-              as: 'stocks',
-            },
-          },
-          { $unwind: '$stocks' },
-        ]
-      : []),
-    ...(!pharmacyId
-      ? [
-          {
-            $sort: {
-              'pharmacy.distance': 1,
-            },
-          },
-        ]
-      : []),
     ...(status ? [{ $match: { status } }] : []),
+    ...(sortBy && sortOrder
+      ? [{ $sort: { [sortBy]: sortOrder === 'asc' ? 1 : -1 } }]
+      : []),
+    {
+      $project: {
+        location: 1,
+        name: 1,
+        category: 1,
+        stocks: 1,
+        pharmacy: 1,
+        drugPhoto: 1,
+        stockLevel: 1,
+        needPrescription: 1,
+        createdAt: 1,
+        status: 1,
+      },
+    },
+    ...paginationPipeline(page, limit),
+  ];
+
+  try {
+    const drugs = await DrugModel.aggregate(mainPipeline);
+
+    return drugs[0];
+  } catch (error) {
+    if (error instanceof APIError) throw error;
+    else {
+      throw new APIError(
+        'Internal Error',
+        httpStatus.INTERNAL_SERVER_ERROR,
+        true
+      );
+    }
+  }
+}
+
+export async function filterCustomer({
+  maxPrice,
+  minPrice,
+  category,
+  name,
+  page = 1,
+  limit = 10,
+  coordinates,
+  drugName,
+  pharmacyId,
+  status,
+  sortBy,
+  sortOrder,
+}) {
+  const DrugModel = this.model(modelNames.drug);
+  const mainPipeline = [
+    {
+      $match: {
+        ...(pharmacyId && {
+          pharmacyId: mongoose.Types.ObjectId(pharmacyId),
+        }),
+      },
+    },
+
+    {
+      $lookup: {
+        from: 'pharmacies',
+        let: { pharmacyId: '$pharmacyId' },
+        pipeline: [
+          ...(coordinates
+            ? [
+                {
+                  $geoNear: {
+                    near: {
+                      type: 'Point',
+                      coordinates: [
+                        parseFloat(coordinates[1]),
+                        parseFloat(coordinates[0]),
+                      ],
+                    },
+                    distanceField: 'distance',
+                    distanceMultiplier: 0.001,
+                    includeLocs: 'location',
+                    spherical: true,
+                  },
+                },
+              ]
+            : []),
+          {
+            $match: {
+              $expr: {
+                $eq: ['$_id', '$$pharmacyId'],
+              },
+              status: 'approved',
+            },
+          },
+          ...(name
+            ? [{ $match: { name: { $regex: new RegExp(name, 'i') } } }]
+            : []),
+          {
+            $project: {
+              _id: 1,
+              name: 1,
+              ...(coordinates && {
+                distance: 1,
+                location: 1,
+              }),
+            },
+          },
+        ],
+        as: 'pharmacy',
+      },
+    },
+    {
+      $unwind: { path: '$pharmacy', preserveNullAndEmptyArrays: true },
+    },
+    {
+      $match: {
+        pharmacy: { $ne: null },
+      },
+    },
+
+    ...(drugName
+      ? [
+          {
+            $match: {
+              $expr: {
+                $regexMatch: {
+                  input: '$name',
+                  regex: new RegExp(drugName, 'i'),
+                },
+              },
+            },
+          },
+        ]
+      : []),
+    ...(category ? [{ $match: { category } }] : []),
+
+    {
+      $lookup: {
+        from: 'stocks',
+        let: { drugId: '$_id' },
+        pipeline: [
+          {
+            $match: {
+              $expr: { $eq: ['$drugId', '$$drugId'] },
+              status: 'available',
+            },
+          },
+          {
+            $group: {
+              _id: {
+                price: '$price',
+                expiredDate: '$expiredDate',
+                stockId: '$_id',
+              }, // Group by price
+              quantity: { $sum: '$quantity' }, // Sum up the quantity for each price
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+              price: '$_id.price',
+              expiredDate: '$_id.expiredDate',
+              stockId: '$_id.stockId',
+              quantity: 1,
+            },
+          },
+        ],
+        as: 'stocks',
+      },
+    },
+    { $unwind: '$stocks' },
+
+    {
+      $sort: {
+        'pharmacy.distance': 1,
+      },
+    },
+
+    ...(status ? [{ $match: { status } }] : []),
+    ...(maxPrice
+      ? [{ $match: { 'stocks.price': { $lte: parseInt(maxPrice, 10) } } }]
+      : []),
+    ...(minPrice
+      ? [{ $match: { 'stocks.price': { $gte: parseInt(minPrice, 10) } } }]
+      : []),
     ...(sortBy && sortOrder
       ? [{ $sort: { [sortBy]: sortOrder === 'asc' ? 1 : -1 } }]
       : []),
@@ -249,6 +319,11 @@ export async function drugDetail({ drugId, stockId }) {
                 _id: 1,
                 name: 1,
                 location: 1,
+                deliveryPricePerKm: 1,
+                hasDeliveryService: 1,
+                deliveryCoverage: 1,
+                minDeliveryTime: 1,
+                maxDeliveryTime: 1,
               },
             },
           ],
@@ -309,6 +384,7 @@ export async function drugDetail({ drugId, stockId }) {
             quantity: 1,
             cost: 1,
           },
+          pharmacy: 1,
         },
       },
       {

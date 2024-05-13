@@ -46,8 +46,8 @@ export const createOrderController = async (req, res, next) => {
       distance = calculateDistance({
         lat1: pharmacy.location.coordinates[1],
         long1: pharmacy.location.coordinates[0],
-        lat2: deliveryAddress.location.coordinates[1],
-        long2: deliveryAddress.location.coordinates[0],
+        lat2: deliveryAddress[0],
+        long2: deliveryAddress[1],
       });
       if (distance > pharmacy.deliveryCoverage) {
         await session.abortTransaction();
@@ -65,8 +65,8 @@ export const createOrderController = async (req, res, next) => {
     let totalCost = 0;
     let totalQuantity = 0;
 
-    cart.drugs.forEach((drug) => {
-      const stock = pharmacy.stocks.find({ _id: drug.stockId });
+    cart.drugs.forEach(async (drug) => {
+      const stock = await Stock.find({ _id: drug.stockId });
       totalAmount += stock.price * drug.quantity;
       totalCost += stock.cost * drug.quantity;
       totalQuantity += drug.quantity;
@@ -75,7 +75,10 @@ export const createOrderController = async (req, res, next) => {
     const data = {
       orderedTo: cart.pharmacyId,
       orderedBy: _id,
-      deliveryAddress,
+      deliveryAddress: {
+        type: 'Point',
+        coordinates: [deliveryAddress[1], deliveryAddress[0]],
+      },
       quantity: totalQuantity,
       hasDelivery,
       drugs: cart.drugs,
@@ -85,6 +88,7 @@ export const createOrderController = async (req, res, next) => {
       profit: totalAmount - totalCost,
       deliveryFee,
       totalCost,
+      tx_ref: cartId,
     };
 
     const success = await Order.createOrder(data);

@@ -80,3 +80,29 @@ export const deleteCartController = async (req, res, next) => {
     next(error);
   }
 };
+
+export const addToCartController = async (req, res, next) => {
+  const { _id, role } = req.user;
+  const { pharmacyId, drugId, quantity, stockId, deliveryFee } = req.body;
+
+  try {
+    if (role !== 'customer') {
+      throw new APIError(
+        'You are not authorized to perform this action',
+        httpStatus.UNAUTHORIZED,
+        true
+      );
+    }
+    const message = await Cart.addToCart({
+      userId: _id,
+      pharmacyId,
+      drugId,
+      quantity,
+      stockId,
+      deliveryFee,
+    });
+    res.status(httpStatus.OK).json(message);
+  } catch (error) {
+    next(error);
+  }
+};
