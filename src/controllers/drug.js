@@ -80,7 +80,7 @@ export const filterDrugCustomerController = async (req, res, next) => {
     sortOrder,
   };
   try {
-    const drugs = await Drug.filterDrug(filterParams);
+    const drugs = await Drug.filterCustomer(filterParams);
     res.status(httpStatus.OK).json(drugs);
   } catch (error) {
     next(error);
