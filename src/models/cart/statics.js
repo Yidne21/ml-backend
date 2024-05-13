@@ -101,6 +101,7 @@ export async function addToCart({
   drugId,
   quantity,
   stockId,
+  deliveryFee,
 }) {
   const CartModel = this.model(modelNames.cart);
   const DrugModel = this.model(modelNames.drug);
@@ -161,6 +162,7 @@ export async function addToCart({
       ],
       totalPrice: stock.price * quantity,
       totalQuantity: quantity,
+      deliveryFee,
     });
     await cart.save();
     return {

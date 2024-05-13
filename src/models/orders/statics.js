@@ -226,6 +226,8 @@ export async function createOrder({
   totalAmount,
   drugs,
   hasDelivery,
+  // eslint-disable-next-line camelcase
+  tx_ref,
 }) {
   const data = {
     orderedTo,
@@ -236,6 +238,7 @@ export async function createOrder({
     deliveryExpireDate,
     totalAmount,
     drugs,
+    tx_ref,
   };
   const OrderModel = this.model(modelNames.order);
   try {

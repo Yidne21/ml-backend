@@ -8,6 +8,7 @@ import {
   getDrugNamesController,
   saleDrugController,
   getDrugCategoriesController,
+  filterDrugCustomerController,
 } from '../controllers/drug';
 
 import {
@@ -22,6 +23,7 @@ import { authenticateJwt } from '../middlewares';
 const router = express.Router();
 
 router.get('/', filterDrugController);
+router.get('/customer', filterDrugCustomerController);
 router.get('/:drugId', drugDetailController);
 router.post('/:pharmacyId', createDrugController);
 router.put('/:drugId', updateDrugController);

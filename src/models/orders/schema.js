@@ -76,7 +76,9 @@ const orderSchema = new mongoose.Schema(
     deliveryPricePerKm: {
       type: Number,
     },
-
+    tx_ref: {
+      type: String,
+    },
     status: {
       type: String,
       enum: [
@@ -86,8 +88,9 @@ const orderSchema = new mongoose.Schema(
         'rejected',
         'pending',
         'refunded',
+        'unpaid',
       ],
-      default: 'pending',
+      default: 'unpaid',
       required: true,
     },
   },
