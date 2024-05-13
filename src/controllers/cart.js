@@ -83,7 +83,7 @@ export const deleteCartController = async (req, res, next) => {
 
 export const addToCartController = async (req, res, next) => {
   const { _id, role } = req.user;
-  const { pharmacyId, drugId, quantity, stockId } = req.body;
+  const { pharmacyId, drugId, quantity, stockId, deliveryFee } = req.body;
 
   try {
     if (role !== 'customer') {
@@ -99,6 +99,7 @@ export const addToCartController = async (req, res, next) => {
       drugId,
       quantity,
       stockId,
+      deliveryFee,
     });
     res.status(httpStatus.OK).json(message);
   } catch (error) {
