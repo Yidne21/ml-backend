@@ -147,8 +147,8 @@ const insertDummyData = async () => {
           location: {
             type: 'Point',
             coordinates: [
-              faker.location.longitude({ max: 40.4897, min: 34.53333 }),
-              faker.location.latitude({ max: 9.145, min: 4.05 }),
+              faker.location.latitude({ max: 9.145, min: 7.05 }),
+              faker.location.longitude({ max: 40.4897, min: 36.53333 }),
             ],
           },
         },
@@ -156,7 +156,9 @@ const insertDummyData = async () => {
     }
 
     if (userData.role === 'pharmacist') {
-      userData.pharmacistLicense = faker.image.urlLoremFlickr();
+      userData.pharmacistLicense = faker.image.urlLoremFlickr({
+        category: 'document',
+      });
     }
 
     const user = await User.create(userData);
@@ -483,12 +485,12 @@ const insertDummyData = async () => {
         instagram: faker.internet.url(),
         twitter: faker.internet.url(),
       },
-      pharmacyLicense: faker.image.urlPicsumPhotos({ height: 100, width: 500 }),
+      pharmacyLicense: faker.image.urlPicsumPhotos({ category: 'medicine' }),
       deliveryPricePerKm: faker.number.float({ min: 0, max: 100 }),
-      deliveryCoverage: faker.number.float({ min: 1000, max: 1000000 }),
+      deliveryCoverage: faker.number.float({ min: 1, max: 100 }),
       hasDeliveryService: faker.datatype.boolean(),
-      minDeliveryTime: faker.number.int({ min: 30, max: 3000 }),
-      maxDeliveryTime: faker.number.int({ min: 100, max: 10000 }),
+      minDeliveryTime: faker.number.int({ min: 50, max: 50 }),
+      maxDeliveryTime: faker.number.int({ min: 10, max: 1000 }),
       status: faker.helpers.arrayElement([
         'pending',
         'approved',
@@ -786,8 +788,8 @@ const insertDummyData = async () => {
       needPrescription: faker.datatype.boolean(),
       drugPhoto: [
         'https://fakeimg.pl/150x150/bdbdbd/ffffff?text=Drug+Photo&font=noto',
-        faker.image.urlLoremFlickr({ category: 'medicin' }),
-        faker.image.urlLoremFlickr({ category: 'medicin' }),
+        faker.image.urlLoremFlickr({ category: 'medicine' }),
+        faker.image.urlLoremFlickr({ category: 'medicine' }),
       ],
       status: 'available',
     };

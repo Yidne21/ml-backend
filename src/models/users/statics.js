@@ -262,6 +262,7 @@ export async function getAllUser({
           phoneNumber: 1,
           role: 1,
           email: 1,
+          status: 1,
         },
       },
       {

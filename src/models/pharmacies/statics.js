@@ -172,7 +172,6 @@ export async function getPharmacyDetail(pharmacyId) {
                 name: 1,
                 phoneNumber: 1,
                 pharmacistLicense: 1,
-                status: 1,
                 address: 1,
                 email: 1,
               },
@@ -207,6 +206,7 @@ export async function getPharmacyDetail(pharmacyId) {
           pharmacyLicense: 1,
           account: 1,
           pharmacist: 1,
+          status: 1,
         },
       },
       {
@@ -248,6 +248,7 @@ export async function getMyPharmacy(_id) {
           logo: 1,
           email: 1,
           status: 1,
+          phoneNumber: 1,
         },
       },
     ]);
