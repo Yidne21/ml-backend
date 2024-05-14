@@ -14,7 +14,7 @@ const router = express.Router();
 
 router.get('/:transactionId', authenticateJwt, transactionDetailController);
 router.get('/', authenticateJwt, filterTransactionController);
-router.post('/chapa', authenticateJwt, chapaTransactionController);
+router.post('/chapa', chapaTransactionController);
 router.post(
   '/chapa/initiatePayment',
   authenticateJwt,

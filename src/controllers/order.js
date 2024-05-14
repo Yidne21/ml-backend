@@ -126,19 +126,16 @@ export const orderDetailController = async (req, res, next) => {
 };
 
 export const filterOrderController = async (req, res, next) => {
-  const {
-    customerId,
-    pharmacyId,
-    searchQuery,
-    sortBy,
-    sortOrder,
-    status,
-    page,
-    limit,
-  } = req.query;
+  let { _id } = req.user;
+  const { role } = req.user;
+  if (role === 'pharmacist') {
+    _id = '';
+  }
+  const { pharmacyId, searchQuery, sortBy, sortOrder, status, page, limit } =
+    req.query;
 
   const filter = {
-    customerId,
+    customerId: _id,
     pharmacyId,
     searchQuery,
     sortBy,

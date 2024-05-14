@@ -502,7 +502,6 @@ const insertDummyData = async () => {
     };
 
     const pharmacy = await Pharmacy.create(pharmacyData);
-    console.log('Inserted dummy data for Pharmacy:', pharmacy);
 
     const categories = [
       'analgesics',
@@ -981,6 +980,7 @@ const insertDummyData = async () => {
       drugs,
       totalQuantity: toqty,
       totalPrice: totAmount,
+      deliveryFee: orderData.deliveryFee,
     };
 
     const cart = await Cart.create(cartData);

@@ -15,8 +15,8 @@ import { authenticateJwt } from '../middlewares';
 const router = express.Router();
 
 router.post('/:cartId', authenticateJwt, createOrderController);
-router.get('/:orderId', orderDetailController);
-router.get('/', filterOrderController);
+router.get('/:orderId', authenticateJwt, orderDetailController);
+router.get('/', authenticateJwt, filterOrderController);
 router.put(
   '/:orderId/confirm-delivery',
   authenticateJwt,

@@ -25,6 +25,7 @@ export async function filterOrders({
           ...(pharmacyId && {
             orderedTo: mongoose.Types.ObjectId(pharmacyId),
           }),
+          status: { $ne: 'unpaid' },
           ...(status && { status }),
         },
       },

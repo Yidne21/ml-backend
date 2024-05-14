@@ -90,7 +90,7 @@ const orderSchema = new mongoose.Schema(
         'refunded',
         'unpaid',
       ],
-      default: 'unpaid',
+      default: 'pending',
       required: true,
     },
   },

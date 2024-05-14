@@ -102,7 +102,7 @@ router.post(
 
 router.post(
   '/pharmacist',
-  registerPharmacistValidator(),
+  // registerPharmacistValidator(),
   parseValidationResult,
   multerUploads.single('file'),
   registerPharmacistController

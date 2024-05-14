@@ -19,7 +19,7 @@ const start = async () => {
   if (!module.parent) {
     await connectToDb();
 
-    // for (let i = 0; i < 30; i += 1) {
+    // for (let i = 0; i < 20; i += 1) {
     //   insertDummyData();
     // }
     app.listen(environments.port, () => {
