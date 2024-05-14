@@ -126,7 +126,7 @@ export const addPharmacyController = async (req, res, next) => {
     email,
     location: {
       type: 'Point',
-      coordinates: [parseFloat(lat), parseFloat(lng)],
+      coordinates: [parseFloat(lng), parseFloat(lat)],
     },
     pharmacyLicense,
     phoneNumber,
