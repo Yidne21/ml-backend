@@ -30,7 +30,7 @@ const generateAccountActivationUrl = (
 ) => {
   const token = jwt.sign({ _id: userId }, passwordOrKey, { expiresIn });
   // Change this with the appropirate route that will open your client side and send the token and email to the activate endpoint
-  const url = `${appDomain}/change-password?token=${token}&email=${email}`;
+  const url = `http://localhost:5173/change-password?token=${token}&email=${email}`;
   return url;
 };
 
