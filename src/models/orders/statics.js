@@ -10,7 +10,6 @@ export async function filterOrders({
   searchQuery,
   sortBy,
   sortOrder,
-  status,
   page = 1,
   limit = 10,
 }) {

@@ -129,7 +129,7 @@ export const filterOrderController = async (req, res, next) => {
   let { _id } = req.user;
   const { role } = req.user;
   if (role === 'pharmacist') {
-    _id = '';
+    _id = undefined;
   }
   const { pharmacyId, searchQuery, sortBy, sortOrder, status, page, limit } =
     req.query;
