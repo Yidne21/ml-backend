@@ -24,7 +24,7 @@ export async function filterPharmacy({
             $geoNear: {
               near: {
                 type: 'Point',
-                coordinates: [location[1], location[0]],
+                coordinates: [location[0], location[1]],
               },
               distanceField: 'distance',
               distanceMultiplier: 0.001,

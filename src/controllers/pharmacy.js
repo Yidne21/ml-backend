@@ -118,15 +118,13 @@ export const addPharmacyController = async (req, res, next) => {
   const { _id } = req.user;
   const { name, email, location, pharmacyLicense, phoneNumber } = req.body;
 
-  const [lat, lng] = location.split(',');
-
   const pharmacyParams = {
     pharmacistId: _id,
     name,
     email,
     location: {
       type: 'Point',
-      coordinates: [parseFloat(lng), parseFloat(lat)],
+      coordinates: location,
     },
     pharmacyLicense,
     phoneNumber,

@@ -88,7 +88,6 @@ const orderSchema = new mongoose.Schema(
         'rejected',
         'pending',
         'refunded',
-        'unpaid',
       ],
       default: 'pending',
       required: true,
