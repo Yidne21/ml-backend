@@ -185,24 +185,24 @@ export const confirmOrderDeliveryController = async (req, res, next) => {
     await session.startTransaction();
 
     const reference = uuidv4();
-    const response = await transferToBank({
-      account_name: pharmacy.account.accountHolderName,
-      account_number: pharmacy.account.accountNumber,
-      amount: order.totalAmount,
-      beneficiary_name: pharmacy.name,
-      currency: 'ETB',
-      reference,
-      bank_code: pharmacy.bankCode,
-    });
+    // const response = await transferToBank({
+    //   account_name: pharmacy.account.accountHolderName,
+    //   account_number: '0900123456',
+    //   amount: order.totalAmount,
+    //   beneficiary_name: pharmacy.name,
+    //   currency: 'ETB',
+    //   reference,
+    //   bank_code: '80a510ea-7497-4499-8b49-ac13a3ab7d07',
+    // });
 
-    if (response.status === 'failed') {
-      await session.abortTransaction();
-      throw new APIError(
-        'please try again later',
-        httpStatus.INTERNAL_SERVER_ERROR,
-        true
-      );
-    }
+    // if (response.status === 'failed') {
+    //   await session.abortTransaction();
+    //   throw new APIError(
+    //     'please try again later',
+    //     httpStatus.INTERNAL_SERVER_ERROR,
+    //     true
+    //   );
+    // }
 
     const transactionData = {
       receiver: pharmacy._id,
@@ -260,11 +260,11 @@ export const refundController = async (req, res, next) => {
   const { bankName, accountName, accountNumber, bankCode, accountType } =
     req.body;
   const bankDetails = {
-    accountHolderName: accountName,
-    accountNumber,
+    accountHolderName: name,
+    accountNumbe: '0900123456',
     bankName,
     accountType,
-    bankCode,
+    bankCode: '80a510ea-7497-4499-8b49-ac13a3ab7d07',
   };
   try {
     if (role !== 'customer') {
@@ -297,24 +297,24 @@ export const refundController = async (req, res, next) => {
     await session.startTransaction();
     const reference = uuidv4();
 
-    const response = await transferToBank({
-      account_name: accountName,
-      account_number: accountNumber,
-      amount: order.totalAmount,
-      beneficiary_name: name,
-      currency: 'ETB',
-      reference,
-      bank_code: bankCode,
-    });
+    // const response = await transferToBank({
+    //   account_name: accountName,
+    //   account_number: accountNumber,
+    //   amount: order.totalAmount,
+    //   beneficiary_name: name,
+    //   currency: 'ETB',
+    //   reference,
+    //   bank_code: bankCode,
+    // });
 
-    if (response.status === 'failed') {
-      await session.abortTransaction();
-      throw new APIError(
-        'please try again later',
-        httpStatus.INTERNAL_SERVER_ERROR,
-        true
-      );
-    }
+    // if (response.status === 'failed') {
+    //   await session.abortTransaction();
+    //   throw new APIError(
+    //     'please try again later',
+    //     httpStatus.INTERNAL_SERVER_ERROR,
+    //     true
+    //   );
+    // }
 
     const transactionData = {
       receiver: _id,
