@@ -247,6 +247,7 @@ export async function createOrder({
     drugs,
     tx_ref,
   };
+  console.log(data);
   const OrderModel = this.model(modelNames.order);
   try {
     const order = await OrderModel.create(data);
@@ -255,6 +256,7 @@ export async function createOrder({
     }
     return order;
   } catch (error) {
+    console.log(error);
     if (error instanceof APIError) throw error;
     else {
       throw new APIError(

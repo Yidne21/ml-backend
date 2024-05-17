@@ -74,8 +74,8 @@ export async function deleteCart({ userId, cartId }) {
   const CartModel = this.model(modelNames.cart);
   try {
     const cart = await CartModel.findOneAndDelete({
-      userId: mongoose.Types.ObjectId(userId),
       _id: mongoose.Types.ObjectId(cartId),
+      userId: mongoose.Types.ObjectId(userId),
     });
 
     if (!cart) {

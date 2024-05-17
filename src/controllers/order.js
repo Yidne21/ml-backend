@@ -42,7 +42,7 @@ export const createOrderController = async (req, res, next) => {
     let distance = 0;
     let deliveryExpireDate;
     let hasDelivery = false;
-    if (deliveryAddress) {
+    if (deliveryAddress.length > 0) {
       distance = calculateDistance({
         lat1: pharmacy.location.coordinates[1],
         long1: pharmacy.location.coordinates[0],
@@ -63,13 +63,12 @@ export const createOrderController = async (req, res, next) => {
     const deliveryFee = distance * pharmacy.deliveryPricePerKm;
     let totalAmount = deliveryFee;
     let totalCost = 0;
-    let totalQuantity = 0;
+    let totalQuantity = cart.totalQuantity;
 
     cart.drugs.forEach(async (drug) => {
-      const stock = await Stock.find({ _id: drug.stockId });
+      const stock = await Stock.findOne({ _id: drug.stockId });
       totalAmount += stock.price * drug.quantity;
       totalCost += stock.cost * drug.quantity;
-      totalQuantity += drug.quantity;
     });
 
     const data = {
