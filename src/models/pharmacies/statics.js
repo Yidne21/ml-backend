@@ -273,6 +273,7 @@ export async function addPharmacy(pharmacyParams) {
 
     return { message: 'Your pharmacy is ready to review', pharmacy };
   } catch (error) {
+    console.log(error);
     if (error instanceof APIError) throw error;
     else {
       throw new APIError(

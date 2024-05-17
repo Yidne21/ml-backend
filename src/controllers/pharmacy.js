@@ -115,21 +115,22 @@ export const updatePharmacyController = async (req, res, next) => {
 };
 
 export const addPharmacyController = async (req, res, next) => {
-  const { _id } = req.user;
-  const { name, email, location, pharmacyLicense, phoneNumber } = req.body;
-
-  const pharmacyParams = {
-    pharmacistId: _id,
-    name,
-    email,
-    location: {
-      type: 'Point',
-      coordinates: location,
-    },
-    pharmacyLicense,
-    phoneNumber,
-  };
   try {
+    const { _id } = req.user;
+    const { name, email, location, pharmacyLicense, phoneNumber } = req.body;
+
+    const pharmacyParams = {
+      pharmacistId: _id,
+      name,
+      email,
+      location: {
+        type: 'Point',
+        coordinates: location,
+      },
+      pharmacyLicense,
+      phoneNumber,
+    };
+
     const pharmacy = await Pharmacy.addPharmacy(pharmacyParams);
     res.status(httpStatus.OK).json(pharmacy);
   } catch (error) {

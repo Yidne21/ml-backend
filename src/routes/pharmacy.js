@@ -19,7 +19,12 @@ router.get('/', authenticateJwt, filterPharmacyController);
 router.get('/gust', filterPharmacyController);
 router.get('/:pharmacyId', parmacyDetailController);
 router.get('/pharmacist/my-pharmacy', authenticateJwt, getMyPharmacyController);
-router.post('/pharmacist', authenticateJwt, addPharmacyController);
+router.post(
+  '/pharmacist',
+  authenticateJwt,
+  parseValidationResult,
+  addPharmacyController
+);
 router.put('/:pharmacyId', authenticateJwt, updatePharmacyController);
 router.put(
   '/admin/:pharmacyId',
