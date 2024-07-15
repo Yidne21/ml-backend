@@ -118,6 +118,7 @@ export const addPharmacyController = async (req, res, next) => {
   try {
     const { _id } = req.user;
     const { name, email, location, pharmacyLicense, phoneNumber } = req.body;
+    const coordinate = location.split(',').map(Number);
 
     const pharmacyParams = {
       pharmacistId: _id,
@@ -125,7 +126,7 @@ export const addPharmacyController = async (req, res, next) => {
       email,
       location: {
         type: 'Point',
-        coordinates: [location[1], location[0]],
+        coordinates: [coordinate[1], coordinate[0]],
       },
       pharmacyLicense,
       phoneNumber,
