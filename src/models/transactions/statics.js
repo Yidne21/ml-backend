@@ -5,10 +5,9 @@ import modelNames from '../../utils/constants';
 import { paginationPipeline } from '../../utils/index';
 
 export async function filterTransaction({
-  senderName,
-  receiverName,
-  accountHolderName,
-  accountNumber,
+  searchQuery,
+  customerId,
+  pharmacyId,
   sortBy,
   sortOrder,
   page = 1,
@@ -20,33 +19,42 @@ export async function filterTransaction({
     const transactions = await TransactionModel.aggregate([
       {
         $match: {
-          ...(accountHolderName && {
+          ...(customerId && {
+            $or: [
+              { sender: mongoose.Types.ObjectId(customerId) },
+              { receiver: mongoose.Types.ObjectId(customerId) },
+            ],
+          }),
+          ...(pharmacyId && {
+            receiverPharmacy: mongoose.Types.ObjectId(pharmacyId),
+          }),
+          ...(searchQuery && {
             $or: [
               {
                 'senderAccount.accountHolderName': {
-                  $regex: accountHolderName,
+                  $regex: searchQuery,
                   $options: 'i',
                 },
               },
               {
                 'receiverAccount.accountHolderName': {
-                  $regex: accountHolderName,
+                  $regex: searchQuery,
                   $options: 'i',
                 },
               },
             ],
           }),
-          ...(accountNumber && {
+          ...(searchQuery && {
             $or: [
               {
                 'senderAccount.accountNumber': {
-                  $regex: accountNumber,
+                  $regex: searchQuery,
                   $options: 'i',
                 },
               },
               {
                 'receiverAccount.accountNumber': {
-                  $regex: accountNumber,
+                  $regex: searchQuery,
                   $options: 'i',
                 },
               },
@@ -55,50 +63,16 @@ export async function filterTransaction({
         },
       },
       {
-        $lookup: {
-          from: 'users',
-          localField: 'sender',
-          foreignField: '_id',
-          as: 'sender',
-        },
-      },
-      {
-        $unwind: '$sender',
-      },
-      {
-        $lookup: {
-          from: 'users',
-          localField: 'receiver',
-          foreignField: '_id',
-          as: 'receiver',
-        },
-      },
-      {
-        $unwind: '$receiver',
-      },
-      {
-        $match: {
-          ...(senderName && {
-            'sender.name': { $regex: senderName, $options: 'i' },
-          }),
-          ...(receiverName && {
-            'receiver.name': { $regex: receiverName, $options: 'i' },
-          }),
-        },
-      },
-      {
         $project: {
-          sender: {
-            name: 1,
-            email: 1,
-          },
-          receiver: {
-            name: 1,
-            email: 1,
-          },
+          sender: 1,
+          receiver: 1,
+          receiverPharmacy: 1,
           senderAccount: 1,
           receiverAccount: 1,
+          amount: 1,
+          tx_ref: 1,
           reason: 1,
+          status: 1,
           createdAt: 1,
         },
       },
@@ -128,6 +102,7 @@ export async function transactionDetail(transactionId) {
     if (!mongoose.Types.ObjectId.isValid(transactionId)) {
       throw new APIError('Invalid transactionId', httpStatus.BAD_REQUEST, true);
     }
+
     const transaction = await TransactionModel.aggregate([
       {
         $match: {
@@ -136,44 +111,40 @@ export async function transactionDetail(transactionId) {
       },
       {
         $lookup: {
-          from: 'users',
-          localField: 'sender',
+          from: 'orders',
+          localField: 'orderId',
           foreignField: '_id',
-          as: 'sender',
+          as: 'order',
         },
       },
       {
-        $unwind: '$sender',
-      },
-      {
-        $lookup: {
-          from: 'users',
-          localField: 'receiver',
-          foreignField: '_id',
-          as: 'receiver',
+        $unwind: {
+          path: '$order',
+          preserveNullAndEmptyArrays: true,
         },
-      },
-      {
-        $unwind: '$receiver',
       },
       {
         $project: {
-          sender: {
-            name: 1,
-            email: 1,
+          sender: 1,
+          order: {
+            orderedBy: 1,
+            totalAmount: 1,
+            quantity: 1,
+            status: 1,
           },
-          receiver: {
-            name: 1,
-            email: 1,
-          },
+          amount: 1,
+          tx_ref: 1,
+          status: 1,
+          receiver: 1,
           senderAccount: 1,
+          receiverPharmacy: 1,
           receiverAccount: 1,
           reason: 1,
           createdAt: 1,
         },
       },
     ]);
-    if (!transaction) {
+    if (!transaction[0]) {
       throw new APIError('Transaction not found', httpStatus.NOT_FOUND, true);
     }
     return transaction[0];

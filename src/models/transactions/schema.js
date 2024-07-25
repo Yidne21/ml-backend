@@ -7,6 +7,10 @@ const transactionSchema = new mongoose.Schema(
       type: mongoose.Types.ObjectId,
       ref: 'User',
     },
+    receiverPharmacy: {
+      type: mongoose.Types.ObjectId,
+      ref: 'Pharmacy',
+    },
     orderId: {
       type: mongoose.Types.ObjectId,
       ref: 'Order',
@@ -15,14 +19,14 @@ const transactionSchema = new mongoose.Schema(
       accountHolderName: { type: String },
       accountNumber: { type: String },
       bankName: { type: String },
-      branchName: { type: String },
+      bankCode: { type: String },
       accountType: { type: String },
     },
     receiverAccount: {
       accountHolderName: { type: String },
       accountNumber: { type: String },
       bankName: { type: String },
-      branchName: { type: String },
+      bankCode: { type: String },
       accountType: { type: String },
     },
     amount: { type: Number, required: true },

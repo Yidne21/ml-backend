@@ -7,13 +7,9 @@ import { paginationPipeline } from '../../utils';
 export async function filterOrders({
   customerId,
   pharmacyId,
-  customerName,
-  customerEmail,
-  pharmacyName,
-  pharmacyEmail,
+  searchQuery,
   sortBy,
   sortOrder,
-  status,
   page = 1,
   limit = 10,
 }) {
@@ -28,7 +24,6 @@ export async function filterOrders({
           ...(pharmacyId && {
             orderedTo: mongoose.Types.ObjectId(pharmacyId),
           }),
-          ...(status && { status }),
         },
       },
       {
@@ -42,51 +37,50 @@ export async function filterOrders({
       {
         $unwind: '$customer',
       },
-      {
-        $lookup: {
-          from: 'pharmacies',
-          localField: 'orderedTo',
-          foreignField: '_id',
-          as: 'pharmacy',
-        },
-      },
-      {
-        $unwind: '$pharmacy',
-      },
-      {
-        $lookup: {
-          from: 'drugs',
-          localField: 'drugId',
-          foreignField: '_id',
-          as: 'drug',
-        },
-      },
-      {
-        $unwind: '$drug',
-      },
+      ...(!pharmacyId
+        ? [
+            {
+              $lookup: {
+                from: 'pharmacies',
+                localField: 'orderedTo',
+                foreignField: '_id',
+                as: 'pharmacy',
+              },
+            },
+            {
+              $unwind: '$pharmacy',
+            },
+          ]
+        : []),
       {
         $match: {
-          ...(customerName && {
+          ...(searchQuery && {
             'customer.name': {
-              $regex: customerName,
+              $regex: searchQuery,
               $options: 'i',
             },
           }),
-          ...(customerEmail && {
+          ...(searchQuery && {
             'customer.email': {
-              $regex: customerEmail,
+              $regex: searchQuery,
               $options: 'i',
             },
           }),
-          ...(pharmacyName && {
+          ...(searchQuery && {
+            'customer.phoneNumber': {
+              $regex: searchQuery,
+              $options: 'i',
+            },
+          }),
+          ...(searchQuery && {
             'pharmacy.name': {
-              $regex: pharmacyName,
+              $regex: searchQuery,
               $options: 'i',
             },
           }),
-          ...(pharmacyEmail && {
+          ...(searchQuery && {
             'pharmacy.email': {
-              $regex: pharmacyEmail,
+              $regex: searchQuery,
               $options: 'i',
             },
           }),
@@ -98,27 +92,19 @@ export async function filterOrders({
           'customer.email': 1,
           'pharmacy.name': 1,
           'pharmacy.email': 1,
-          'drug.name': 1,
-          'drug.price': 1,
-          'drug.cost': 1,
           deliveryAddress: 1,
-          drugId: 1,
-          orderedBy: 1,
-          orderedTo: 1,
-          deliveryDate: 1,
+          deliveryExpireDate: 1,
           status: 1,
-          createdAt: 1,
+          hasDelivery: 1,
+          totalAmount: 1,
+          drugs: 1,
+          deliveryDistance: 1,
           quantity: 1,
-          profit: {
-            $subtract: [
-              {
-                $multiply: ['$drug.price', '$quantity'],
-              },
-              {
-                $multiply: ['$drug.cost', '$quantity'],
-              },
-            ],
-          },
+          deliveryFee: 1,
+          profit: 1,
+          totalCost: 1,
+          deliveryPricePerKm: 1,
+          createdAt: 1,
         },
       },
       {
@@ -167,28 +153,6 @@ export async function getOrder(orderId) {
         },
       },
       {
-        $lookup: {
-          from: 'drugs',
-          localField: 'drugId',
-          foreignField: '_id',
-          as: 'drug',
-        },
-      },
-      {
-        $lookup: {
-          from: 'transactions',
-          localField: 'transactionId',
-          foreignField: '_id',
-          as: 'transaction',
-        },
-      },
-      {
-        $unwind: '$transaction',
-      },
-      {
-        $unwind: '$drug',
-      },
-      {
         $unwind: '$customer',
       },
       {
@@ -200,28 +164,99 @@ export async function getOrder(orderId) {
           'customer.email': 1,
           'pharmacy.name': 1,
           'pharmacy.email': 1,
-          'drug.name': 1,
-          'drug.price': 1,
-          'drug.cost': 1,
-          'drug.expiredDate': 1,
-          'transaction.amount': 1,
-          'transaction.reason': 1,
-          'transaction.senderAccount': 1,
-          'transaction.receiverAccount': 1,
+          'pharmacy.phoneNumber': 1,
+          'pharmacy.location': 1,
+          'pharmacy._id': 1,
           deliveryAddress: 1,
-          drugId: 1,
-          deliveryDate: 1,
+          deliveryExpireDate: 1,
+          hasDelivery: 1,
+          totalAmount: 1,
+          drugs: 1,
+          deliveryDistance: 1,
           status: 1,
           quantity: 1,
-          orderedAt: 1,
-          abortedAt: 1,
-          deliveredAt: 1,
-          transactionId: 1,
+          deliveryFee: 1,
+          profit: 1,
+          totalCost: 1,
+          deliveryPricePerKm: 1,
         },
       },
     ]);
     return order[0];
   } catch (error) {
+    if (error instanceof APIError) throw error;
+    else {
+      throw new APIError(
+        'Internal Error',
+        httpStatus.INTERNAL_SERVER_ERROR,
+        true
+      );
+    }
+  }
+}
+
+export async function updateOrderStatus({
+  orderId,
+  status,
+  deliveryExpireDate,
+}) {
+  const OrderModel = this.model(modelNames.order);
+  try {
+    const order = await OrderModel.findByIdAndUpdate(
+      orderId,
+      { status, ...(deliveryExpireDate ? { deliveryExpireDate } : {}) },
+      { new: true }
+    );
+    if (!order) {
+      throw new APIError('Order not found', httpStatus.NOT_FOUND, true);
+    }
+
+    return { success: true };
+  } catch (error) {
+    if (error instanceof APIError) throw error;
+    else {
+      throw new APIError(
+        'Internal Error',
+        httpStatus.INTERNAL_SERVER_ERROR,
+        true
+      );
+    }
+  }
+}
+
+export async function createOrder({
+  orderedTo,
+  orderedBy,
+  deliveryAddress,
+  quantity,
+  deliveryExpireDate,
+  totalAmount,
+  drugs,
+  hasDelivery,
+  // eslint-disable-next-line camelcase
+  tx_ref,
+}) {
+  const data = {
+    orderedTo,
+    orderedBy,
+    deliveryAddress,
+    quantity,
+    hasDelivery,
+    deliveryExpireDate,
+    totalAmount,
+    drugs,
+    tx_ref,
+  };
+  console.log(data);
+  const OrderModel = this.model(modelNames.order);
+  try {
+    const order = await OrderModel.create(data);
+    if (!order) {
+      throw new APIError('Order not created', httpStatus.BAD_REQUEST, true);
+    }
+    return order;
+  } catch (error) {
+    console.log(error);
     if (error instanceof APIError) throw error;
     else {
       throw new APIError(

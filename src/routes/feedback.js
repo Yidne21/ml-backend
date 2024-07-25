@@ -7,12 +7,14 @@ import {
   updateFeedbackController,
 } from '../controllers/feedback';
 
+import { authenticateJwt } from '../middlewares';
+
 const router = express.Router();
 
-router.post('/', createFeedbackController);
+router.post('/', authenticateJwt, createFeedbackController);
 router.get('/:feedbackId', feedbackDetailController);
 router.get('/', filterFeedbackController);
-router.delete('/:feedbackId', deleteFeedbackController);
-router.put('/:feedbackId', updateFeedbackController);
+router.delete('/:feedbackId', authenticateJwt, deleteFeedbackController);
+router.put('/:feedbackId', authenticateJwt, updateFeedbackController);
 
 export default router;

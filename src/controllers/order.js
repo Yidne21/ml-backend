@@ -1,23 +1,119 @@
 import httpStatus from 'http-status';
+import { v4 as uuidv4 } from 'uuid';
+import mongoose from 'mongoose';
 import Order from '../models/orders';
+import Transaction from '../models/transactions';
+import Notification from '../models/notifications';
+import Pharmacy from '../models/pharmacies';
+import Drug from '../models/drugs';
+import { transferToBank } from '../utils/chapa';
+import APIError from '../errors/APIError';
+import { addMinutes, calculateDistance } from '../utils';
+import Stock from '../models/stocks';
+import Cart from '../models/cart';
 
 export const createOrderController = async (req, res, next) => {
-  const { orderTo, orderedBy, deliveryAddress, drugId, deliveryDate } =
-    req.body;
-  const data = {
-    orderTo,
-    orderedBy,
-    deliveryAddress,
-    drugId,
-    deliveryDate,
-  };
+  const { role, _id } = req.user;
+
+  const { deliveryAddress } = req.body;
+
+  const { cartId } = req.params;
   try {
-    const order = await Order.createOrder(data);
-    res.status(httpStatus.CREATED).json(order);
+    if (role !== 'customer') {
+      throw new APIError(
+        'You are not authorized to perform this action',
+        httpStatus.UNAUTHORIZED,
+        true
+      );
+    }
+    const cart = await Cart.findOne({ _id: cartId });
+    if (!cart) {
+      throw new APIError('Cart not found', httpStatus.NOT_FOUND, true);
+    }
+
+    const pharmacy = await Pharmacy.findOne({ _id: cart.pharmacyId });
+    if (!pharmacy) {
+      throw new APIError('Pharmacy not found', httpStatus.NOT_FOUND, true);
+    }
+
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    let distance = 0;
+    let deliveryExpireDate;
+    let hasDelivery = false;
+    if (deliveryAddress.length > 0) {
+      distance = calculateDistance({
+        lat1: pharmacy.location.coordinates[1],
+        long1: pharmacy.location.coordinates[0],
+        lat2: deliveryAddress[0],
+        long2: deliveryAddress[1],
+      });
+      if (distance > pharmacy.deliveryCoverage) {
+        await session.abortTransaction();
+        throw new APIError(
+          'Delivery address is out of the pharmacy delivery coverage, please choose another address or pharmacy',
+          httpStatus.BAD_REQUEST,
+          true
+        );
+      }
+      deliveryExpireDate = addMinutes(new Date(), pharmacy.maxDeliveryTime);
+      hasDelivery = true;
+    }
+    const deliveryFee = distance * pharmacy.deliveryPricePerKm;
+    let totalAmount = deliveryFee;
+    let totalCost = 0;
+    let totalQuantity = cart.totalQuantity;
+
+    cart.drugs.forEach(async (drug) => {
+      const stock = await Stock.findOne({ _id: drug.stockId });
+      totalAmount += stock.price * drug.quantity;
+      totalCost += stock.cost * drug.quantity;
+    });
+
+    const data = {
+      orderedTo: cart.pharmacyId,
+      orderedBy: _id,
+      deliveryAddress: {
+        type: 'Point',
+        coordinates: [deliveryAddress[1], deliveryAddress[0]],
+      },
+      quantity: totalQuantity,
+      hasDelivery,
+      drugs: cart.drugs,
+      deliveryExpireDate,
+      totalAmount,
+      deliveryDistance: distance,
+      profit: totalAmount - totalCost,
+      deliveryFee,
+      totalCost,
+      tx_ref: cartId,
+    };
+
+    const success = await Order.createOrder(data);
+    if (!success) {
+      await session.abortTransaction();
+      throw new APIError(
+        'Failed to create order, please try again later',
+        httpStatus.INTERNAL_SERVER_ERROR,
+        true
+      );
+    }
+
+    await Notification.createNotification({
+      userId: pharmacy.pharmacistId,
+      title: 'New Order',
+      message: `You have a new order from ${req.user.name}, please check your ${pharmacy.name} pharmacy dashboard`,
+    });
+
+    await Cart.deleteCart({ userId: _id, cartId });
+    await session.commitTransaction();
+    res.status(httpStatus.CREATED).json(success);
   } catch (error) {
     next(error);
   }
-}; // after a successful payment
+};
+
 export const orderDetailController = async (req, res, next) => {
   const { orderId } = req.params;
   try {
@@ -27,28 +123,20 @@ export const orderDetailController = async (req, res, next) => {
     next(error);
   }
 };
+
 export const filterOrderController = async (req, res, next) => {
-  const {
-    customerId,
-    pharmacyId,
-    customerName,
-    customerEmail,
-    pharmacyName,
-    pharmacyEmail,
-    sortBy,
-    sortOrder,
-    status,
-    page,
-    limit,
-  } = req.query;
+  let { _id } = req.user;
+  const { role } = req.user;
+  if (role === 'pharmacist') {
+    _id = undefined;
+  }
+  const { pharmacyId, searchQuery, sortBy, sortOrder, status, page, limit } =
+    req.query;
 
   const filter = {
-    customerId,
+    customerId: _id,
     pharmacyId,
-    customerName,
-    customerEmail,
-    pharmacyName,
-    pharmacyEmail,
+    searchQuery,
     sortBy,
     sortOrder,
     status,
@@ -62,26 +150,436 @@ export const filterOrderController = async (req, res, next) => {
     next(error);
   }
 };
+
 export const confirmOrderDeliveryController = async (req, res, next) => {
   const { orderId } = req.params;
+  const { role, _id } = req.user;
   try {
-    const message = await Order.confirmDelivery(orderId);
+    if (role !== 'customer') {
+      throw new APIError(
+        'You are not authorized to perform this action',
+        httpStatus.UNAUTHORIZED,
+        true
+      );
+    }
+    const order = await Order.findOne({ _id: orderId, orderedBy: _id });
+    if (!order) {
+      throw new APIError('Order not found', httpStatus.NOT_FOUND, true);
+    }
+
+    if (order.status !== 'inprogress' && order.hasDelivery !== true) {
+      throw new APIError(
+        'Order is not accepted yet or does not have delivery',
+        httpStatus.BAD_REQUEST,
+        true
+      );
+    }
+
+    const pharmacy = await Pharmacy.findOne({ _id: order.orderedTo });
+    if (!pharmacy) {
+      throw new APIError('Pharmacy not found', httpStatus.NOT_FOUND, true);
+    }
+
+    const session = await mongoose.startSession();
+    await session.startTransaction();
+
+    const reference = uuidv4();
+    // const response = await transferToBank({
+    //   account_name: pharmacy.account.accountHolderName,
+    //   account_number: '0900123456',
+    //   amount: order.totalAmount,
+    //   beneficiary_name: pharmacy.name,
+    //   currency: 'ETB',
+    //   reference,
+    //   bank_code: '80a510ea-7497-4499-8b49-ac13a3ab7d07',
+    // });
+
+    // if (response.status === 'failed') {
+    //   await session.abortTransaction();
+    //   throw new APIError(
+    //     'please try again later',
+    //     httpStatus.INTERNAL_SERVER_ERROR,
+    //     true
+    //   );
+    // }
+
+    const transactionData = {
+      receiver: pharmacy._id,
+      orderId,
+      senderAccount: {
+        accountHolderName: 'Medicine Locator system',
+        accountType: 'chapa',
+      },
+      receiverAccount: pharmacy.account,
+      amount: order.totalAmount,
+      tx_ref: reference,
+      reason: 'pharmacy-payment',
+    };
+
+    const transaction = await Transaction.createTransaction(transactionData);
+    if (!transaction) {
+      await session.abortTransaction();
+      throw new APIError(
+        'Failed to create transaction, please try again later',
+        httpStatus.INTERNAL_SERVER_ERROR,
+        true
+      );
+    }
+
+    const message = await Order.updateOrderStatus({
+      orderId,
+      status: 'delivered',
+    });
+
+    if (!message) {
+      await session.abortTransaction();
+      throw new APIError(
+        'Failed to update order status, please try again later',
+        httpStatus.INTERNAL_SERVER_ERROR,
+        true
+      );
+    }
+
+    await Notification.createNotification({
+      userId: pharmacy.pharmacistId,
+      title: 'Order Delivered',
+      message: `Order with id ${orderId} has been delivered, please check your account for payment with reference ${reference}`,
+    });
+
+    await session.commitTransaction();
     res.status(httpStatus.OK).json(message);
   } catch (error) {
     next(error);
   }
-}; // after delivery
+};
 
-export const cancelOrderController = async (req, res, next) => {
+export const refundController = async (req, res, next) => {
+  const { _id, role, name } = req.user;
   const { orderId } = req.params;
-  const { bank, accountName, accountNumber } = req.body;
+  const { bankName, accountName, accountNumber, bankCode, accountType } =
+    req.body;
   const bankDetails = {
-    bank,
-    accountName,
-    accountNumber,
+    accountHolderName: name,
+    accountNumbe: '0900123456',
+    bankName,
+    accountType,
+    bankCode: '80a510ea-7497-4499-8b49-ac13a3ab7d07',
   };
   try {
-    const message = await Order.cancelOrder(orderId, bankDetails);
+    if (role !== 'customer') {
+      throw new APIError(
+        'You are not authorized to perform this action',
+        httpStatus.UNAUTHORIZED,
+        true
+      );
+    }
+
+    const order = await Order.findOne({ _id: orderId, orderedBy: _id });
+    if (!order) {
+      throw new APIError('Order not found', httpStatus.NOT_FOUND, true);
+    }
+
+    if (order.status !== 'rejected' && order.status !== 'expired') {
+      throw new APIError(
+        'cannot refund order that is not rejected or expired',
+        httpStatus.BAD_REQUEST,
+        true
+      );
+    }
+
+    const pharmacy = await Pharmacy.findOne({ _id: order.orderedTo });
+    if (!pharmacy) {
+      throw new APIError('Pharmacy not found', httpStatus.NOT_FOUND, true);
+    }
+
+    const session = await mongoose.startSession();
+    await session.startTransaction();
+    const reference = uuidv4();
+
+    // const response = await transferToBank({
+    //   account_name: accountName,
+    //   account_number: accountNumber,
+    //   amount: order.totalAmount,
+    //   beneficiary_name: name,
+    //   currency: 'ETB',
+    //   reference,
+    //   bank_code: bankCode,
+    // });
+
+    // if (response.status === 'failed') {
+    //   await session.abortTransaction();
+    //   throw new APIError(
+    //     'please try again later',
+    //     httpStatus.INTERNAL_SERVER_ERROR,
+    //     true
+    //   );
+    // }
+
+    const transactionData = {
+      receiver: _id,
+      orderId,
+      senderAccount: {
+        accountHolderName: 'Medicine Locator system',
+        accountType: 'chapa',
+      },
+      receiverAccount: bankDetails,
+      amount: order.totalAmount,
+      tx_ref: reference,
+      reason: 'refund',
+    };
+
+    const transaction = await Transaction.createTransaction(transactionData);
+    if (!transaction) {
+      await session.abortTransaction();
+      throw new APIError(
+        'Failed to create transaction, please try again later',
+        httpStatus.INTERNAL_SERVER_ERROR,
+        true
+      );
+    }
+
+    const message = await Order.updateOrderStatus({
+      orderId,
+      status: 'refunded',
+    });
+
+    if (!message) {
+      await session.abortTransaction();
+      throw new APIError(
+        'Failed to update order status, please try again later',
+        httpStatus.INTERNAL_SERVER_ERROR,
+        true
+      );
+    }
+
+    await Notification.createNotification({
+      userId: order.orderedBy,
+      title: 'Order Refunded',
+      message: `Order with id ${orderId} has been refunded, please check your account for payment with reference ${reference}`,
+    });
+
+    await Notification.createNotification({
+      userId: pharmacy.pharmacistId,
+      title: 'Order Refunded',
+      message: `Order with id ${orderId} has been refunded`,
+    });
+
+    await session.commitTransaction();
+
+    res.status(httpStatus.OK).json(message);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const rejectOrderController = async (req, res, next) => {
+  const { _id, role } = req.user;
+
+  const { orderId } = req.params;
+  try {
+    if (role !== 'pharmacist') {
+      throw new APIError(
+        'You are not authorized to perform this action',
+        httpStatus.UNAUTHORIZED,
+        true
+      );
+    }
+
+    const order = await Order.findOne({ _id: orderId });
+    if (!order) {
+      throw new APIError('Order not found', httpStatus.NOT_FOUND, true);
+    }
+
+    if (order.status !== 'pending') {
+      throw new APIError(
+        'cannot reject order that is not in pending state',
+        httpStatus.UNAUTHORIZED,
+        true
+      );
+    }
+
+    const pharmacy = await Pharmacy.findOne({ _id: order.orderedTo });
+    if (pharmacy.pharmacistId.toString() !== _id.toString()) {
+      throw new APIError(
+        'Your not allowed to reject other pharmacies order',
+        httpStatus.UNAUTHORIZED,
+        true
+      );
+    }
+
+    const session = await mongoose.startSession();
+    await session.startTransaction();
+
+    const message = await Order.updateOrderStatus({
+      orderId,
+      status: 'rejected',
+    });
+
+    if (!message.success) {
+      await session.abortTransaction();
+      throw new APIError(
+        'Failed to update order status, please try again later',
+        httpStatus.INTERNAL_SERVER_ERROR,
+        true
+      );
+    }
+
+    await Notification.createNotification({
+      userId: order.orderedBy,
+      title: 'Order Rejected',
+      message: `Order with id ${orderId} has been rejected by ${pharmacy.name}, You can now request for refund in your order list`,
+    });
+
+    await session.commitTransaction();
+
+    res.status(httpStatus.OK).json(message);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const acceptOrderController = async (req, res, next) => {
+  const { _id, role } = req.user;
+  if (role !== 'pharmacist') {
+    throw new APIError(
+      'You are not authorized to perform this action',
+      httpStatus.UNAUTHORIZED,
+      true
+    );
+  }
+  const { orderId } = req.params;
+  try {
+    const order = await Order.findOne({
+      _id: orderId,
+    });
+
+    if (!order) {
+      throw new APIError('order not found', httpStatus.NOT_FOUND, true);
+    }
+
+    const pharmacy = await Pharmacy.findOne({ _id: order.orderedTo });
+
+    if (pharmacy.pharmacistId.toString() !== _id.toString()) {
+      throw new APIError(
+        'Your not allowed to accept other pharmacies order',
+        httpStatus.UNAUTHORIZED,
+        true
+      );
+    }
+
+    if (order.status !== 'pending') {
+      throw new APIError(
+        'cannot accept order that is not in pending state',
+        httpStatus.UNAUTHORIZED,
+        true
+      );
+    }
+
+    const session = await mongoose.startSession();
+    await session.startTransaction();
+    order.drugs.forEach(async (drug) => {
+      const updatedStock = await Stock.findByIdAndUpdate(
+        drug.stockId,
+        { $inc: { currentQuantity: -drug.quantity } },
+        { new: true }
+      );
+      if (updatedStock.currentQuantity < 0) {
+        await session.abortTransaction;
+        const erro = new APIError(
+          'insufficient stock',
+          httpStatus.NOT_ACCEPTABLE,
+          true
+        );
+        next(erro);
+      }
+      const profit = drug.quantity * (updatedStock.price - updatedStock.cost);
+      await Drug.findByIdAndUpdate(drug.drugId, {
+        $inc: { profit, totalSale: drug.quantity },
+      });
+    });
+
+    const message = await Order.updateOrderStatus({
+      orderId,
+      status: 'inprogress',
+    });
+
+    if (!message) {
+      await session.abortTransaction();
+      throw new APIError(
+        'Failed to update order status, please try again later',
+        httpStatus.INTERNAL_SERVER_ERROR,
+        true
+      );
+    }
+
+    await Notification.createNotification({
+      userId: order.orderedBy,
+      title: 'Order Accepted',
+      message: `Order with id ${orderId} has been accepted by the ${pharmacy.name} pharmacy, please wait for delivery`,
+    });
+
+    await session.commitTransaction();
+    res.status(httpStatus.OK).json(message);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const extendOrderController = async (req, res, next) => {
+  const { _id, role } = req.user;
+  const { orderId } = req.params;
+  try {
+    if (role !== 'customer') {
+      throw new APIError(
+        'You are not authorized to perform this action',
+        httpStatus.UNAUTHORIZED,
+        true
+      );
+    }
+
+    const order = await Order.findOne({ _id: orderId, orderedBy: _id });
+    if (!order) {
+      throw new APIError('Order not found', httpStatus.NOT_FOUND, true);
+    }
+
+    if (order.status !== 'expired') {
+      throw new APIError(
+        'cannot extend order that is not expired',
+        httpStatus.UNAUTHORIZED,
+        true
+      );
+    }
+
+    const pharmacy = await Pharmacy.findOne({ _id: order.orderedTo });
+    if (!pharmacy) {
+      throw new APIError('Pharmacy not found', httpStatus.NOT_FOUND, true);
+    }
+
+    const session = await mongoose.startSession();
+    await session.startTransaction();
+
+    const deliveryExpireDate = addMinutes(new Date(), pharmacy.maxDeliveryTime);
+    const message = await Order.updateOrderStatus({
+      orderId,
+      status: 'pending',
+      deliveryExpireDate,
+    });
+
+    if (!message) {
+      await session.abortTransaction();
+      throw new APIError(
+        'Failed extend expire date, please try again later',
+        httpStatus.INTERNAL_SERVER_ERROR,
+        true
+      );
+    }
+
+    await Notification.createNotification({
+      userId: pharmacy.pharmacistId,
+      title: 'Order delivery date Extended',
+      message: `Order with id ${orderId} has been extended, please hurry up with delivery`,
+    });
+    session.commitTransaction();
     res.status(httpStatus.OK).json(message);
   } catch (error) {
     next(error);

@@ -1,6 +1,7 @@
 import httpStatus from 'http-status';
 import bcrypt from 'bcrypt';
 import mongoose from 'mongoose';
+import jwt from 'jsonwebtoken';
 import APIError from '../../errors/APIError';
 import modelNames from '../../utils/constants';
 import {
@@ -9,29 +10,34 @@ import {
   generateJwtRefreshToken,
   verifyRefreshToken,
   paginationPipeline,
+  sendEmail,
+  generateAccountActivationUrl,
 } from '../../utils';
 import { uploadFile } from '../../utils/cloudinary';
+import emailTemplate from '../../utils/mailTemplate';
+import { appEmailAddress, secretKey } from '../../config/environments';
 
-export async function signUpUser({ name, phoneNumber, password, role, email }) {
-  const hashedpassword = await bcrypt.hash(password, 10);
+export async function signUpUser({ name, phoneNumber, password, email }) {
   const UserModel = this.model(modelNames.user);
   const otpModel = this.model(modelNames.otp);
-
-  const user = {
-    name,
-    phoneNumber,
-    role,
-    password: hashedpassword,
-    email,
-  };
 
   const existingEmail = await UserModel.findOne({ email });
   if (existingEmail) {
     throw new APIError(
       `This ${email} email is already used try another`,
-      httpStatus.CLIENT_ERROR
+      httpStatus.CONFLICT
     );
   }
+
+  const hashedpassword = await bcrypt.hash(password, 10);
+
+  const user = {
+    name,
+    phoneNumber,
+    role: 'customer',
+    password: hashedpassword,
+    email,
+  };
 
   const newUser = new UserModel(user);
 
@@ -44,10 +50,10 @@ export async function signUpUser({ name, phoneNumber, password, role, email }) {
       type: 'verify',
     };
 
-    await otpModel.createOtp(otpPayload);
+    const message = await otpModel.createOtp(otpPayload);
     await newUser.save();
 
-    return newUser.clean();
+    return message;
   } catch (error) {
     if (error instanceof APIError) throw error;
     else {
@@ -60,7 +66,7 @@ export async function signUpUser({ name, phoneNumber, password, role, email }) {
   }
 }
 
-export async function userDetail(userId, role) {
+export async function userDetail(userId) {
   const UserModel = this.model(modelNames.user);
 
   try {
@@ -70,26 +76,10 @@ export async function userDetail(userId, role) {
           _id: new mongoose.Types.ObjectId(userId),
         },
       },
-      ...(role === 'pharmacist' && [
-        {
-          $lookup: {
-            from: 'pharmacies',
-            localField: '_id',
-            foreignField: 'pharmacistId',
-            as: 'pharmacies',
-          },
-        },
-      ]),
       {
         $project: {
-          name: 1,
-          phoneNumber: 1,
-          avatar: 1,
-          email: 1,
-          address: 1,
-          location: 1,
-          coverPhoto: 1,
-          pharmacies: 1,
+          password: 0,
+          __v: 0,
         },
       },
     ]);
@@ -272,6 +262,7 @@ export async function getAllUser({
           phoneNumber: 1,
           role: 1,
           email: 1,
+          status: 1,
         },
       },
       {
@@ -375,19 +366,19 @@ export async function registerPharmacist(data) {
     session.abortTransaction();
     throw new APIError(
       `This ${email} email is already used try another`,
-      httpStatus.CLIENT_ERROR
+      httpStatus.CONFLICT
     );
   }
 
   try {
-    const pharmaciestLicense = await uploadFile(file, 'pharmaciestLicense');
+    const pharmacistLicense = await uploadFile(file, 'pharmaciestLicense');
 
     const user = {
       name,
       password: hashedpassword,
       role: 'pharmacist',
       email,
-      pharmaciestLicense,
+      pharmacistLicense,
     };
 
     const otp = generateOtp(6);
@@ -433,9 +424,8 @@ export async function registerPharmacist(data) {
 }
 
 export async function registerAdmin(data) {
-  const { name, password, email } = data;
+  const { name, email, role = 'admin' } = data;
 
-  const hashedpassword = await bcrypt.hash(password, 10);
   const UserModel = this.model(modelNames.user);
 
   const existingEmail = await UserModel.find({ email });
@@ -449,15 +439,60 @@ export async function registerAdmin(data) {
   try {
     const user = {
       name,
-      password: hashedpassword,
-      role: 'admin',
       email,
+      role,
     };
 
-    await UserModel.create(user);
-    return {
-      message: 'Admin created successfully',
+    const admin = await UserModel.create(user);
+
+    const activationUrl = generateAccountActivationUrl(
+      secretKey,
+      admin._id,
+      email
+    );
+
+    const type = 'Admin create password link';
+    const content = emailTemplate(activationUrl, type);
+    const emailContent = {
+      to: email,
+      from: `Medicine Locator <${appEmailAddress}`,
+      subject: type,
+      html: content,
     };
+
+    await sendEmail(emailContent);
+    return {
+      success: true,
+    };
+  } catch (error) {
+    if (error instanceof APIError) throw error;
+    else {
+      throw new APIError(
+        'Internal Error',
+        httpStatus.INTERNAL_SERVER_ERROR,
+        true
+      );
+    }
+  }
+}
+
+export async function setPassWord({ token, email, password }) {
+  const tokenOwner = await this.findOne({ email }).exec();
+  if (!tokenOwner) {
+    throw new APIError('Not found', httpStatus.NOT_FOUND, true);
+  }
+
+  try {
+    const decoded = jwt.verify(token, secretKey);
+    if (decoded._id === `${tokenOwner._id}`) {
+      const hashedpassword = await bcrypt.hash(password, 10);
+      tokenOwner.emailVerified = true;
+      tokenOwner.password = hashedpassword;
+      await tokenOwner.save();
+      return tokenOwner.clean();
+    }
+
+    throw new APIError('Unauthorized', httpStatus.UNAUTHORIZED, true);
   } catch (error) {
     if (error instanceof APIError) throw error;
     else {

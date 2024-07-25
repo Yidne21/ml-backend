@@ -12,6 +12,9 @@ export const filterDrugController = async (req, res, next) => {
     category,
     pharmacyId,
     location,
+    status,
+    sortBy,
+    sortOrder,
   } = req.query;
   let coordinates;
 
@@ -29,6 +32,9 @@ export const filterDrugController = async (req, res, next) => {
     minPrice,
     category,
     pharmacyId,
+    status,
+    sortBy,
+    sortOrder,
   };
   try {
     const drugs = await Drug.filterDrug(filterParams);
@@ -38,12 +44,54 @@ export const filterDrugController = async (req, res, next) => {
   }
 };
 
+export const filterDrugCustomerController = async (req, res, next) => {
+  const {
+    page,
+    limit,
+    name,
+    drugName,
+    maxPrice,
+    minPrice,
+    category,
+    pharmacyId,
+    location,
+    status,
+    sortBy,
+    sortOrder,
+  } = req.query;
+  let coordinates;
+
+  if (location) {
+    coordinates = location.split(',').map(Number);
+  }
+
+  const filterParams = {
+    page: parseInt(page, 10) || 1,
+    limit: parseInt(limit, 10) || 10,
+    name,
+    coordinates,
+    drugName,
+    maxPrice,
+    minPrice,
+    category,
+    pharmacyId,
+    status,
+    sortBy,
+    sortOrder,
+  };
+  try {
+    const drugs = await Drug.filterCustomer(filterParams);
+    res.status(httpStatus.OK).json(drugs);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const drugDetailController = async (req, res, next) => {
   const { drugId } = req.params;
-  // const { pharmacistId } = req.user;
-  // const { pharmacyId } = req.body;
+  const { stockId } = req.query;
   try {
-    const drug = await Drug.drugDetail(drugId);
+    const drug = await Drug.drugDetail({ drugId, stockId });
     res.status(httpStatus.OK).json(drug);
   } catch (error) {
     next(error);
@@ -51,7 +99,6 @@ export const drugDetailController = async (req, res, next) => {
 };
 
 export const createDrugController = async (req, res, next) => {
-  // const { pharmacyId } = req.user;
   const { pharmacyId } = req.params;
   const {
     name,
@@ -141,6 +188,26 @@ export const getDrugCategoriesController = async (req, res, next) => {
   try {
     const drugs = await Drug.getDrugCategories();
     res.status(httpStatus.OK).json(drugs);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const saleDrugController = async (req, res, next) => {
+  const { drugId } = req.params;
+  const { _id } = req.user;
+  const { quantity, stockId, pharmacyId } = req.body;
+
+  const data = {
+    userId: _id,
+    drugId,
+    pharmacyId,
+    quantity,
+    stockId,
+  };
+  try {
+    const sale = await Drug.saleDrug(data);
+    res.status(httpStatus.OK).json(sale);
   } catch (error) {
     next(error);
   }

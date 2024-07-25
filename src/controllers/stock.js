@@ -14,6 +14,7 @@ export const addStockController = async (req, res, next) => {
     expiredDate,
     batchNumber,
     quantity,
+    currentQuantity: quantity,
   };
 
   try {
@@ -26,7 +27,7 @@ export const addStockController = async (req, res, next) => {
 
 export const getStocksController = async (req, res, next) => {
   const { drugId } = req.params;
-  const { page, limit, sortBy, sortOrder } = req.query;
+  const { page, limit, sortBy, sortOrder, status } = req.query;
 
   try {
     const stocks = await Stock.filterStock({
@@ -35,6 +36,7 @@ export const getStocksController = async (req, res, next) => {
       limit,
       sortBy,
       sortOrder,
+      status,
     });
     res.status(httpStatus.OK).json(stocks);
   } catch (error) {
@@ -54,6 +56,7 @@ export const updateStockController = async (req, res, next) => {
     expiredDate,
     batchNumber,
     quantity,
+    currentQuantity: quantity,
   };
 
   try {

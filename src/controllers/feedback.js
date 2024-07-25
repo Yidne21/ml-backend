@@ -2,9 +2,9 @@ import httpStatus from 'http-status';
 import Feedback from '../models/feedbacks';
 
 export const createFeedbackController = async (req, res, next) => {
-  // const userId = req.user;
-  const { title, content, userId } = req.body;
-  const feedbackData = { userId, title, content };
+  const { _id } = req.user;
+  const { title, content, type } = req.body;
+  const feedbackData = { userId: _id, title, content, type };
   try {
     const feedback = await Feedback.createFeedback(feedbackData);
     res.status(httpStatus.CREATED).json(feedback);
@@ -22,23 +22,14 @@ export const feedbackDetailController = async (req, res, next) => {
   }
 };
 export const filterFeedbackController = async (req, res, next) => {
-  const {
-    userRole,
-    sortOrder,
-    sortBy,
-    title,
-    userEmail,
-    userName,
-    page,
-    limit,
-  } = req.query;
+  const { userRole, sortOrder, sortBy, type, searchQuery, page, limit } =
+    req.query;
   const filter = {
     userRole,
     sortOrder,
     sortBy,
-    title,
-    userEmail,
-    userName,
+    searchQuery,
+    type,
     page,
     limit,
   };
@@ -60,8 +51,8 @@ export const deleteFeedbackController = async (req, res, next) => {
 };
 export const updateFeedbackController = async (req, res, next) => {
   const { feedbackId } = req.params;
-  const { title, content } = req.body;
-  const feedbackData = { title, content };
+  const { title, content, type } = req.body;
+  const feedbackData = { title, content, type };
   try {
     const feedback = await Feedback.updateFeedback(feedbackId, feedbackData);
     res.status(httpStatus.OK).json(feedback);

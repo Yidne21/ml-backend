@@ -27,14 +27,16 @@ const otpSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now,
-    expires: 60 * 9, // auto delete after 5 minutes
+    expires: 60 * 60 * 24, // auto delete after a day
   },
 });
 
 // eslint-disable-next-line func-names
 otpSchema.pre('save', async function (next) {
   const type =
-    this.otpType === 'forgot' ? 'Reset Password' : 'email verification';
+    this.otpType === 'forgot'
+      ? 'Reset Password Code'
+      : 'email verification Code';
   const content = emailTemplate(this.otp, type);
   const emailContent = {
     to: this.email,

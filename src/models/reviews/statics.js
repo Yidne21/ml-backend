@@ -72,6 +72,7 @@ export async function filterReview({
           reviewedBy: 1,
           pharmacyId: 1,
           'customer.name': 1,
+          'customer.avatar': 1,
           'customer.email': 1,
           'pharmacy.name': 1,
           'pharmacy.email': 1,

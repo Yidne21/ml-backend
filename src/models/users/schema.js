@@ -2,12 +2,23 @@ import mongoose from 'mongoose';
 
 const userSchema = new mongoose.Schema(
   {
-    name: { type: String },
+    name: { type: String, required: true },
     phoneNumber: { type: String },
-    password: { type: String, required: true },
+    password: { type: String },
     email: { type: String, required: true, unique: true },
     address: {
       type: String,
+    },
+    emailVerified: { type: Boolean, default: false, required: true },
+    role: {
+      type: String,
+      enum: ['admin', 'pharmacist', 'customer', 'superAdmin'],
+      required: true,
+    },
+    status: {
+      type: String,
+      enum: ['active', 'inactive', 'deactivated'],
+      default: 'active',
     },
     avatar: {
       type: String,
@@ -42,18 +53,7 @@ const userSchema = new mongoose.Schema(
         },
       },
     ],
-    pharmaciestLicense: { type: String },
-    emailVerified: { type: Boolean, default: false, required: true },
-    role: {
-      type: String,
-      enum: ['admin', 'pharmacist', 'customer', 'superAdmin'],
-      required: true,
-    },
-    status: {
-      type: String,
-      enum: ['active', 'inactive', 'deactivated'],
-      default: 'active',
-    },
+    pharmacistLicense: { type: String },
   },
   { timestamps: true }
 );

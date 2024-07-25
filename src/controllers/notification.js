@@ -2,7 +2,7 @@ import httpStatus from 'http-status';
 import Notification from '../models/notifications';
 
 export const getNewNotificationController = async (req, res, next) => {
-  const { _id } = req.user;
+  const { id } = req.query;
   res.writeHead(httpStatus.OK, {
     'Content-Type': 'text/event-stream',
     'Cache-Control': 'no-cache',
@@ -14,9 +14,9 @@ export const getNewNotificationController = async (req, res, next) => {
   };
 
   try {
-    const notification = await Notification.getNewNotification(_id);
+    const notification = await Notification.getNewNotification(id);
     const interval = setInterval(async () => {
-      const newNotification = await Notification.getNewNotification(_id);
+      const newNotification = await Notification.getNewNotification(id);
       if (newNotification.unreadCount > notification.unreadCount) {
         sendNotification(newNotification);
       } else {

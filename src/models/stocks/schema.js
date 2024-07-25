@@ -7,8 +7,8 @@ const stockSchema = new mongoose.Schema(
       required: true,
       ref: 'Drug',
     },
-    price: { type: String, required: true },
-    cost: { type: String, required: true },
+    price: { type: Number, required: true },
+    cost: { type: Number, required: true },
     recievedFrom: {
       type: String,
       required: true,
@@ -22,12 +22,12 @@ const stockSchema = new mongoose.Schema(
       required: true,
     },
     quantity: { type: Number, required: true, default: 0 },
-    currentQuantity: { type: Number, required: true },
+    currentQuantity: { type: Number, required: true, default: 0 },
     status: {
       type: String,
-      enum: ['sold', 'avilable', 'expired'],
+      enum: ['available', 'expired'],
       required: true,
-      default: 'avilable',
+      default: 'available',
     },
   },
   { timestamps: true }

@@ -9,32 +9,45 @@ export async function filterPharmacy({
   page = 1,
   limit = 10,
   location,
-  drugName,
+  status,
+  sortBy,
+  sortOrder,
+  adminId,
+  pharmacistId,
 }) {
   const PharmacyModel = this.model(modelNames.pharmacy);
-  const [Lat, Long] = location;
 
   const mainPipeline = [
-    {
-      $geoNear: {
-        near: {
-          type: 'Point',
-          coordinates: [Long, Lat],
-        },
-        distanceField: 'distance',
-        distanceMultiplier: 0.001,
-        includeLocs: 'location',
-        spherical: true,
-      },
-    },
-    {
-      $addFields: {
-        distance: {
-          $round: ['$distance', 2],
-        },
-      },
-    },
-
+    ...(location
+      ? [
+          {
+            $geoNear: {
+              near: {
+                type: 'Point',
+                coordinates: [location[1], location[0]],
+              },
+              distanceField: 'distance',
+              distanceMultiplier: 0.001,
+              includeLocs: 'location',
+              spherical: true,
+            },
+          },
+          {
+            $addFields: {
+              distance: {
+                $round: ['$distance', 2],
+              },
+            },
+          },
+        ]
+      : []),
+    ...(pharmacistId
+      ? [{ $match: { pharmacistId: mongoose.Types.ObjectId(pharmacistId) } }]
+      : []),
+    ...(adminId
+      ? [{ $match: { assignedTo: mongoose.Types.ObjectId(adminId) } }]
+      : []),
+    ...(status ? [{ $match: { status } }] : []),
     ...(name
       ? [
           {
@@ -44,44 +57,7 @@ export async function filterPharmacy({
           },
         ]
       : []),
-
-    ...(drugName
-      ? [
-          {
-            $lookup: {
-              from: 'drugs',
-              let: { pharmacyId: '$_id' },
-              pipeline: [
-                {
-                  $match: {
-                    $expr: {
-                      $and: [
-                        { $eq: ['$pharmacyId', '$$pharmacyId'] },
-                        // { $eq: ['$name', drugName] },
-                        {
-                          $regexMatch: {
-                            input: '$name',
-                            regex: new RegExp(drugName, 'i'),
-                          },
-                        },
-                      ],
-                    },
-                  },
-                },
-              ],
-              as: 'drug',
-            },
-          },
-          {
-            $match: {
-              drug: { $ne: [] },
-            },
-          },
-          {
-            $unwind: { path: '$drug', preserveNullAndEmptyArrays: true },
-          },
-        ]
-      : []),
+    ...(sortBy ? [{ $sort: { [sortBy]: sortOrder === 'des' ? -1 : 1 } }] : []),
     {
       $project: {
         _id: 1,
@@ -89,9 +65,10 @@ export async function filterPharmacy({
         distance: 1,
         location: 1,
         logo: 1,
-        'drug._id': 1,
-        'drug.name': 1,
-        'drug.stockLevel': 1,
+        avgRating: 1,
+        status: 1,
+        email: 1,
+        assignedTo: 1,
       },
     },
     ...paginationPipeline(page, limit),
@@ -179,6 +156,34 @@ export async function getPharmacyDetail(pharmacyId) {
         },
       },
       {
+        $lookup: {
+          from: 'users',
+          let: { pharmacistId: '$pharmacistId' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $eq: ['$_id', '$$pharmacistId'],
+                },
+              },
+            },
+            {
+              $project: {
+                name: 1,
+                phoneNumber: 1,
+                pharmacistLicense: 1,
+                address: 1,
+                email: 1,
+              },
+            },
+          ],
+          as: 'pharmacist',
+        },
+      },
+      {
+        $unwind: { path: '$pharmacist', preserveNullAndEmptyArrays: true },
+      },
+      {
         $project: {
           _id: 1,
           name: 1,
@@ -193,8 +198,15 @@ export async function getPharmacyDetail(pharmacyId) {
           logo: 1,
           avgRating: { $round: ['$avgRating', 2] },
           reviews: 1,
-          deliverPricePerKm: 1,
+          deliveryPricePerKm: 1,
+          hasDeliveryService: 1,
+          deliveryCoverage: 1,
+          minDeliveryTime: 1,
+          maxDeliveryTime: 1,
           pharmacyLicense: 1,
+          account: 1,
+          pharmacist: 1,
+          status: 1,
         },
       },
       {
@@ -236,6 +248,7 @@ export async function getMyPharmacy(_id) {
           logo: 1,
           email: 1,
           status: 1,
+          phoneNumber: 1,
         },
       },
     ]);
@@ -261,6 +274,128 @@ export async function addPharmacy(pharmacyParams) {
     return { message: 'Your pharmacy is ready to review', pharmacy };
   } catch (error) {
     console.log(error);
+    if (error instanceof APIError) throw error;
+    else {
+      throw new APIError(
+        'Internal Error',
+        httpStatus.INTERNAL_SERVER_ERROR,
+        true
+      );
+    }
+  }
+}
+
+export async function updatePharmacy({
+  pharmacistId,
+  pharmacyId,
+  logo,
+  address,
+  phoneNumber,
+  cover,
+  socialMedia,
+  workingHours,
+  deliveryPricePerKm,
+  deliveryCoverage,
+  hasDeliveryService,
+  minDeliveryTime,
+  maxDeliveryTime,
+  account,
+  location,
+  email,
+  about,
+}) {
+  const PharmacyModel = this.model(modelNames.pharmacy);
+  try {
+    const currentPharmacy = await PharmacyModel.findOne({
+      _id: pharmacyId,
+      ...(pharmacistId ? { pharmacistId } : {}),
+    });
+
+    if (!currentPharmacy) {
+      throw new APIError('Pharmacy not found', httpStatus.NOT_FOUND, true);
+    }
+
+    const updatedPharmacy = await PharmacyModel.findOneAndUpdate(
+      {
+        _id: pharmacyId,
+        pharmacistId,
+      },
+      {
+        ...(logo ? { logo } : {}),
+        ...(address ? { address } : {}),
+        ...(phoneNumber ? { phoneNumber } : {}),
+        ...(cover ? { cover } : {}),
+        ...(socialMedia ? { socialMedia } : {}),
+        ...(workingHours ? { workingHours } : {}),
+        ...(deliveryPricePerKm ? { deliveryPricePerKm } : {}),
+        ...(deliveryCoverage ? { deliveryCoverage } : {}),
+        ...(account ? { account } : {}),
+        ...(location ? { location } : {}),
+        ...(email ? { email } : {}),
+        ...(about ? { about } : {}),
+        ...(hasDeliveryService ? { hasDeliveryService } : {}),
+        ...(minDeliveryTime ? { minDeliveryTime } : {}),
+        ...(maxDeliveryTime ? { maxDeliveryTime } : {}),
+      },
+      { new: true }
+    );
+    return { message: 'Pharmacy updated successfully', updatedPharmacy };
+  } catch (error) {
+    if (error instanceof APIError) throw error;
+    else {
+      throw new APIError(
+        'Internal Error',
+        httpStatus.INTERNAL_SERVER_ERROR,
+        true
+      );
+    }
+  }
+}
+
+export async function updatePharmacyStatus({ pharmacyId, status }) {
+  const PharmacyModel = this.model(modelNames.pharmacy);
+  try {
+    await PharmacyModel.findOneAndUpdate(
+      {
+        _id: mongoose.Types.ObjectId(pharmacyId),
+      },
+      {
+        status,
+      },
+      { new: true }
+    );
+    return { message: `Pharmacy ${status} updated successfully` };
+  } catch (error) {
+    if (error instanceof APIError) throw error;
+    else {
+      throw new APIError(
+        'Internal Error',
+        httpStatus.INTERNAL_SERVER_ERROR,
+        true
+      );
+    }
+  }
+}
+
+export async function assignToAdmin({ adminId, numberofPharmacies }) {
+  const PharmacyModel = this.model(modelNames.pharmacy);
+  try {
+    const noOfAssigned = await PharmacyModel.updateMany(
+      {
+        status: 'unassigned',
+      },
+      {
+        assignedTo: mongoose.Types.ObjectId(adminId),
+        status: 'pending',
+      },
+      { new: true, limit: numberofPharmacies }
+    );
+
+    return {
+      message: `Found ${noOfAssigned.n} unassigned pharmacies assigned ${noOfAssigned.nModified} to this admin`,
+      noOfAssigned,
+    };
+  } catch (error) {
     if (error instanceof APIError) throw error;
     else {
       throw new APIError(

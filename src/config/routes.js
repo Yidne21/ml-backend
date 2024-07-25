@@ -8,6 +8,7 @@ import feedbackRoutes from '../routes/feedback';
 import reviewRoutes from '../routes/review';
 import fileRoutes from '../routes/uploadFile';
 import notificationRoutes from '../routes/notification';
+import cartRoutes from '../routes/cart';
 
 const router = express.Router();
 
@@ -20,5 +21,6 @@ router.use('/feedback', feedbackRoutes);
 router.use('/review', reviewRoutes);
 router.use('/file', fileRoutes);
 router.use('/notification', notificationRoutes);
+router.use('/cart', cartRoutes);
 
 export default router;

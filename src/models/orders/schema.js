@@ -25,36 +25,71 @@ const orderSchema = new mongoose.Schema(
         },
       },
     },
-    drugId: {
-      type: mongoose.Types.ObjectId,
-      required: true,
-      ref: 'Drug',
-    },
-    transactionId: {
-      type: mongoose.Types.ObjectId,
-      required: true,
-      ref: 'Transaction',
-    },
-    deliveredAt: {
-      type: Date,
-    },
-    abortedAt: {
-      type: Date,
-    },
-    orderedAt: {
-      type: Date,
-      default: Date.now,
-    },
-    deliveryDate: {
+    drugs: [
+      {
+        drugId: {
+          type: mongoose.Types.ObjectId,
+          ref: 'Drug',
+        },
+        stockId: {
+          type: mongoose.Types.ObjectId,
+          ref: 'Stock',
+        },
+        quantity: {
+          type: Number,
+          default: 1,
+        },
+        price: {
+          type: Number,
+        },
+        drugName: {
+          type: String,
+        },
+      },
+    ],
+    deliveryExpireDate: {
       type: Date,
     },
     quantity: {
       type: Number,
     },
+    totalAmount: {
+      type: Number,
+      required: true,
+    },
+    profit: {
+      type: Number,
+    },
+    hasDelivery: {
+      type: Boolean,
+      default: false,
+    },
+    deliveryDistance: {
+      type: Number,
+    },
+    deliveryFee: {
+      type: Number,
+    },
+    totalCost: {
+      type: Number,
+    },
+    deliveryPricePerKm: {
+      type: Number,
+    },
+    tx_ref: {
+      type: String,
+    },
     status: {
       type: String,
-      enum: ['inprogress', 'delivered', 'aborted'],
-      default: 'inprogress',
+      enum: [
+        'inprogress',
+        'delivered',
+        'expired',
+        'rejected',
+        'pending',
+        'refunded',
+      ],
+      default: 'pending',
       required: true,
     },
   },

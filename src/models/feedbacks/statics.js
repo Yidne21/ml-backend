@@ -6,17 +6,21 @@ import { paginationPipeline } from '../../utils/index';
 
 export async function filterFeedback({
   userRole,
+  type,
   sortOrder,
   sortBy,
-  title,
-  userEmail,
-  userName,
+  searchQuery,
   page = 1,
   limit = 10,
 }) {
   const FeedbackModel = this.model(modelNames.feedback);
   try {
     const feedbacks = await FeedbackModel.aggregate([
+      {
+        $match: {
+          ...(type ? { type } : {}),
+        },
+      },
       {
         $lookup: {
           from: 'users',
@@ -34,12 +38,11 @@ export async function filterFeedback({
       {
         $match: {
           ...(userRole ? { 'user.role': userRole } : {}),
-          ...(title ? { title: { $regex: new RegExp(title, 'i') } } : {}),
-          ...(userEmail
-            ? { 'user.email': { $regex: new RegExp(userEmail, 'i') } }
+          ...(searchQuery
+            ? { 'user.email': { $regex: new RegExp(searchQuery, 'i') } }
             : {}),
-          ...(userName
-            ? { 'user.name': { $regex: new RegExp(userName, 'i') } }
+          ...(searchQuery
+            ? { 'user.name': { $regex: new RegExp(searchQuery, 'i') } }
             : {}),
         },
       },
@@ -48,6 +51,7 @@ export async function filterFeedback({
           _id: 1,
           title: 1,
           content: 1,
+          type: 1,
           user: {
             _id: 1,
             name: 1,
@@ -106,6 +110,7 @@ export async function getFeedbackById(feedbackId) {
           _id: 1,
           title: 1,
           content: 1,
+          type: 1,
           user: {
             _id: 1,
             name: 1,
@@ -178,6 +183,7 @@ export async function updateFeedback(feedbackId, feedbackData) {
   const updateFields = {
     title: feedbackData.title || currentFeedback.title,
     content: feedbackData.content || currentFeedback.content,
+    type: feedbackData.type || currentFeedback.type,
   };
   try {
     const feedback = await FeedbackModel.findByIdAndUpdate(

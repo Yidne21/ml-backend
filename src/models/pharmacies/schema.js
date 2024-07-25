@@ -21,6 +21,10 @@ const pharmacySchema = new mongoose.Schema(
       required: true,
       ref: 'User',
     },
+    assignedTo: {
+      type: mongoose.Types.ObjectId,
+      ref: 'User',
+    },
     about: { type: String },
     logo: { type: String },
     cover: { type: String },
@@ -33,12 +37,15 @@ const pharmacySchema = new mongoose.Schema(
       telegram: { type: String },
     },
     pharmacyLicense: { type: String, required: true },
-    deliverPricePerKm: { type: Number, default: 0 },
+    deliveryPricePerKm: { type: Number, default: 0 },
     deliveryCoverage: { type: Number, default: 0 },
+    hasDeliveryService: { type: Boolean, default: false },
+    minDeliveryTime: { type: Number, default: 0 },
+    maxDeliveryTime: { type: Number, default: 0 },
     status: {
       type: String,
-      default: 'pending',
-      enum: ['pending', 'approved', 'rejected', 'deactivated'],
+      default: 'unassigned',
+      enum: ['pending', 'approved', 'rejected', 'deactivated', 'unassigned'],
     },
     account: {
       accountHolderName: { type: String },
@@ -46,7 +53,9 @@ const pharmacySchema = new mongoose.Schema(
       bankName: { type: String },
       branchName: { type: String },
       accountType: { type: String },
+      bankCode: { type: String },
     },
+    avgRating: { type: Number, default: 0 },
   },
   { timestamps: true }
 );

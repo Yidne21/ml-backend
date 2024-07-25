@@ -6,6 +6,7 @@ import { paginationPipeline } from '../../utils';
 
 export async function filterStock({
   sortBy = 'expiredDate',
+  status,
   sortOrder,
   drugId,
   page = 1,
@@ -18,11 +19,28 @@ export async function filterStock({
         ...(drugId && {
           drugId: mongoose.Types.ObjectId(drugId),
         }),
+        ...(status && {
+          status,
+        }),
       },
     },
     {
       $sort: {
         [sortBy]: sortOrder === 'asc' ? 1 : -1,
+      },
+    },
+    {
+      $project: {
+        drugId: 1,
+        _id: 1,
+        price: 1,
+        cost: 1,
+        recievedFrom: 1,
+        expiredDate: 1,
+        batchNumber: 1,
+        quantity: 1,
+        currentQuantity: 1,
+        status: 1,
       },
     },
     ...paginationPipeline(page, limit),
@@ -152,7 +170,6 @@ export async function updateStock(stockId, updateBody) {
     await session.commitTransaction();
     return { message: 'Stock updated successfully', updatedStockDoc };
   } catch (error) {
-    console.log(error);
     await session.abortTransaction();
     if (error instanceof APIError) throw error;
     else {
@@ -180,7 +197,6 @@ export async function deleteStock(stockId) {
         status: httpStatus.NOT_FOUND,
       });
     }
-    console.log(stock.drugId, stock.quantity);
     const drug = await DrugModel.findByIdAndUpdate(stock.drugId, {
       $inc: { stockLevel: -stock.quantity },
     });

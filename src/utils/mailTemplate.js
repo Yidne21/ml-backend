@@ -50,7 +50,7 @@ const emailTemplate = (otp, subject) => `<html>
       <div class="content-text">
         <h2>${subject}</h2>
         <p>
-          Here is your ${subject} code: ${otp}
+          Here is your ${subject}: ${otp}
         </p>
       </div>
     </div> 

@@ -9,13 +9,6 @@ const feedbackSchema = new mongoose.Schema(
       type: String,
       enum: ['complaint', 'suggestion', 'question'],
     },
-    replayedTo: { type: mongoose.Types.ObjectId, ref: 'User' },
-    status: {
-      type: String,
-      enum: ['pending', 'replayed', 'closed'],
-      default: 'pending',
-    },
-    feedbackId: { type: mongoose.Types.ObjectId, ref: 'Feedback' },
   },
   { timestamps: true }
 );
